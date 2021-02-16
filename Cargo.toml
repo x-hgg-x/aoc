@@ -3,3 +3,6 @@ name = "aoc"
 version = "0.1.0"
 authors = ["x-hgg-x <39058530+x-hgg-x@users.noreply.github.com>"]
 edition = "2018"
+
+[dependencies]
+itertools = "0.10"
