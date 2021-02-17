@@ -12,14 +12,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let result1: i32 = iter.clone().sum();
 
-    let result2 = iter
+    let result2 = 1 + iter
         .scan(0, |state, x| {
             *state += x;
             Some(*state)
         })
         .position(|x| x == -1)
-        .unwrap()
-        + 1;
+        .unwrap();
 
     println!("{}", result1);
     println!("{}", result2);
