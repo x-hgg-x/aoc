@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use std::fs;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let input = fs::read_to_string("inputs/2015-day9.txt")?;
+    let input = fs::read_to_string("inputs/2015-day09.txt")?;
 
     let regex_nodes = Regex::new(r#"(?m)^(\w+ to \w+)"#).unwrap();
     let regex_edges = Regex::new(r#"(?m)^(\w+) to (\w+) = (\d+)$"#).unwrap();

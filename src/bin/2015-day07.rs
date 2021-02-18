@@ -146,7 +146,7 @@ impl ParseRegex {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let input = fs::read_to_string("inputs/2015-day7.txt")?;
+    let input = fs::read_to_string("inputs/2015-day07.txt")?;
 
     let parse_regex = ParseRegex {
         regex_identity: Regex::new(r#"^(?P<op>\w+) -> (?P<name>\w+)$"#).unwrap(),

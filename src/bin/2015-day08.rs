@@ -3,7 +3,7 @@ use regex::Regex;
 use std::fs;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let input = fs::read_to_string("inputs/2015-day8.txt")?;
+    let input = fs::read_to_string("inputs/2015-day08.txt")?;
 
     let re = Regex::new(r#"(?m)(?:\\\\|\\"|\\x[0-9A-Fa-f]{2}|^"|"$)"#).unwrap();
 

@@ -1,7 +1,7 @@
 use std::fs;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let input = fs::read_to_string("inputs/2015-day1.txt")?;
+    let input = fs::read_to_string("inputs/2015-day01.txt")?;
     let input = input.trim();
 
     let iter = input.chars().map(|c| match c {

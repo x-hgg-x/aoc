@@ -1,7 +1,7 @@
 use std::fs;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let input = fs::read_to_string("inputs/2015-day4.txt")?;
+    let input = fs::read_to_string("inputs/2015-day04.txt")?;
     let input = input.trim();
 
     let mut result1: u64 = 1;

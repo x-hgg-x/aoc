@@ -3,7 +3,7 @@ use itertools::Itertools;
 use std::fs;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let input = fs::read_to_string("inputs/2015-day2.txt")?;
+    let input = fs::read_to_string("inputs/2015-day02.txt")?;
 
     let edges = input
         .lines()
