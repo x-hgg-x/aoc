@@ -37,10 +37,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             line.as_bytes()
                 .windows(2)
                 .enumerate()
-                .map(|(i, x)| (i as isize, x))
-                .sorted_unstable_by_key(|x| x.1)
-                .dedup_by_with_count(|&x, &y| x.1 == y.1 && (x.0 - y.0).abs() > 1)
-                .any(|x| x.0 > 1)
+                .sorted_unstable_by_key(|(_, x)| *x)
+                .dedup_by_with_count(|&(pos1, x1), &(pos2, x2)| {
+                    x1 == x2 && (pos1 as isize - pos2 as isize).abs() > 1
+                })
+                .any(|(count, _)| count > 1)
                 .then(|| line.as_bytes().windows(3).any(|x| x[0] == x[2]))
                 .filter(|&x| x)
                 .is_some()
