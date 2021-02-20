@@ -7,17 +7,23 @@ use std::fs;
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let input = fs::read_to_string("inputs/2015-day09.txt")?;
 
-    let regex_nodes = Regex::new(r#"(?m)^(\w+ to \w+)"#).unwrap();
-    let regex_edges = Regex::new(r#"(?m)^(\w+) to (\w+) = (\d+)$"#).unwrap();
+    let re = Regex::new(r#"(?m)^(\w+) to (\w+) = (\d+)$"#).unwrap();
 
-    let nodes = regex_nodes
-        .find_iter(&input)
-        .flat_map(|x| x.as_str().split(" to "))
+    let nodes = re
+        .captures_iter(&input)
+        .flat_map(|cap| {
+            cap.iter()
+                .skip(1)
+                .take(2)
+                .filter_map(|x| x)
+                .map(|x| &input[x.range()])
+                .collect_vec()
+        })
         .sorted_unstable()
         .dedup()
         .collect_vec();
 
-    let edges: HashMap<(String, String), u32> = regex_edges
+    let edges: HashMap<(String, String), u32> = re
         .captures_iter(&input)
         .flat_map(|cap| {
             let distance: u32 = cap[3].parse().unwrap();
