@@ -9,9 +9,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .lines()
         .flat_map(|line| line.split('x').next_tuple())
         .map(|(x, y, z)| {
-            vec![x.parse::<i32>(), y.parse::<i32>(), z.parse::<i32>()]
+            vec![x.parse(), y.parse(), z.parse()]
                 .into_iter()
-                .collect::<Result<Vec<_>, _>>()
+                .collect::<Result<Vec<i32>, _>>()
                 .unwrap()
         });
 
