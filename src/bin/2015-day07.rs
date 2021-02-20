@@ -71,7 +71,7 @@ impl Variable {
                 Operation::Identity(op) => op.value(map),
                 Operation::And(op1, op2) => op1.value(map) & op2.value(map),
                 Operation::Or(op1, op2) => op1.value(map) | op2.value(map),
-                Operation::Not(op) => op.value(map) ^ 0xFFFF,
+                Operation::Not(op) => !op.value(map),
                 Operation::LShift(op1, op2) => op1.value(map) << op2.value(map),
                 Operation::RShift(op1, op2) => op1.value(map) >> op2.value(map),
             });
