@@ -2,29 +2,36 @@ use itertools::Itertools;
 
 use std::fs;
 
-fn apply(input: String) -> String {
-    input
-        .chars()
-        .map(|c| c.to_digit(10).unwrap())
-        .dedup_with_count()
-        .map(|(count, digit)| format!("{}{}", count, digit))
-        .collect()
+struct LookAndSay {
+    data: String,
+}
+
+impl Iterator for LookAndSay {
+    type Item = String;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.data = self
+            .data
+            .chars()
+            .map(|c| c.to_digit(10).unwrap())
+            .dedup_with_count()
+            .map(|(count, digit)| format!("{}{}", count, digit))
+            .collect();
+
+        Some(self.data.clone())
+    }
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let input = fs::read_to_string("inputs/2015-day10.txt")?;
     let input = input.trim();
 
-    let mut data = input.to_owned();
-    for _ in 0..40 {
-        data = apply(data);
-    }
-    let result1 = data.len();
+    let mut look_and_say = LookAndSay {
+        data: input.to_owned(),
+    };
 
-    for _ in 0..10 {
-        data = apply(data);
-    }
-    let result2 = data.len();
+    let result1 = look_and_say.nth(39).unwrap().len();
+    let result2 = look_and_say.nth(9).unwrap().len();
 
     println!("{}", result1);
     println!("{}", result2);
