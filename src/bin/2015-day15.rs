@@ -9,7 +9,7 @@ struct Composition {
 }
 
 impl Composition {
-    fn new(sum: usize, len: usize) -> Result<Composition, &'static str> {
+    fn new(sum: usize, len: usize) -> Result<Self, &'static str> {
         if sum < len {
             Err("unable to construct Composition: sum < len")
         } else {
