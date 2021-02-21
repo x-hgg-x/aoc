@@ -32,6 +32,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 Some((pos, *braces))
             })
             .find(|&(_, braces)| braces == 0)
+            .map(|(pos, _)| pos)
             .unwrap();
 
         let after = input[x.end()..]
@@ -46,9 +47,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 Some((pos, *braces))
             })
             .find(|&(_, braces)| braces == 0)
+            .map(|(pos, _)| pos)
             .unwrap();
 
-        let range = x.start() - before.0..x.end() + after.0;
+        let range = (x.start() - before)..(x.end() + after);
         input[range].fill(b' ');
     }
 
