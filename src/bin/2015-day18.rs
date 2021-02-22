@@ -1,3 +1,5 @@
+use itertools::iproduct;
+
 use std::fs;
 
 struct Grid {
@@ -39,7 +41,7 @@ impl Grid {
         let rows = row.saturating_sub(1)..=(row + 1).min(self.height - 1);
         let columns = column.saturating_sub(1)..=(column + 1).min(self.width - 1);
 
-        rows.flat_map(|row| columns.clone().map(move |column| (row, column)))
+        iproduct!(rows, columns)
             .map(|(row, column)| self.lights[self.get_index(row, column)])
             .filter(|&x| x)
             .count()
