@@ -27,7 +27,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 v_fly * (time / (t_fly + t_rest) * t_fly + t_fly.min(time % (t_fly + t_rest)))
             })
             .enumerate()
-            .max_by(|(_, d1), (_, d2)| Ord::cmp(d1, d2))
+            .max_by_key(|&(_, d)| d)
             .unwrap()
     });
 
