@@ -12,7 +12,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     const SUM: u32 = 150;
 
-    let iter = (1..max)
+    let combinations: Vec<_> = (1..max)
         .scan((0, 0), |state, index| {
             let new_gray = index ^ (index >> 1);
             let bit_changed = state.1 ^ new_gray;
@@ -27,12 +27,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             Some((state.0, new_gray.count_ones()))
         })
         .filter(|&(sum, _)| sum == SUM)
-        .map(|(_, size)| size);
+        .map(|(_, size)| size)
+        .collect();
 
-    let result1 = iter.clone().count();
+    let result1 = combinations.len();
 
-    let min = iter.clone().min().unwrap();
-    let result2 = iter.filter(|&x| x == min).count();
+    let min = combinations.iter().min().unwrap();
+    let result2 = combinations.iter().filter(|&x| x == min).count();
 
     println!("{}", result1);
     println!("{}", result2);

@@ -20,20 +20,24 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         })
         .collect_vec();
 
-    let iter = (1..=TIME).into_iter().map(|time| {
-        reindeers
-            .iter()
-            .map(|&(v_fly, t_fly, t_rest)| {
-                v_fly * (time / (t_fly + t_rest) * t_fly + t_fly.min(time % (t_fly + t_rest)))
-            })
-            .enumerate()
-            .max_by_key(|&(_, d)| d)
-            .unwrap()
-    });
+    let race = (1..=TIME)
+        .into_iter()
+        .map(|time| {
+            reindeers
+                .iter()
+                .map(|&(v_fly, t_fly, t_rest)| {
+                    v_fly * (time / (t_fly + t_rest) * t_fly + t_fly.min(time % (t_fly + t_rest)))
+                })
+                .enumerate()
+                .max_by_key(|&(_, d)| d)
+                .unwrap()
+        })
+        .collect_vec();
 
-    let result1 = iter.clone().last().unwrap().1;
+    let result1 = race.last().unwrap().1;
 
-    let result2 = iter
+    let result2 = race
+        .iter()
         .map(|(pos, _)| pos)
         .sorted_unstable()
         .dedup_with_count()

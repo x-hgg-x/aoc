@@ -1,10 +1,11 @@
+use itertools::{izip, Itertools};
 use regex::Regex;
+use smallvec::SmallVec;
 
 use std::fs;
 
-#[derive(Clone)]
 struct Composition {
-    vec: Vec<usize>,
+    vec: SmallVec<[usize; 4]>,
     start: bool,
 }
 
@@ -13,7 +14,7 @@ impl Composition {
         if sum < len {
             Err("unable to construct Composition: sum < len")
         } else {
-            let mut vec = vec![1; len];
+            let mut vec = SmallVec::from_elem(1, len);
             vec[len - 1] = sum - len + 1;
             Ok(Composition { vec, start: true })
         }
@@ -21,7 +22,7 @@ impl Composition {
 }
 
 impl Iterator for Composition {
-    type Item = Vec<usize>;
+    type Item = SmallVec<[usize; 4]>;
 
     fn next(&mut self) -> Option<Self::Item> {
         let v = &mut self.vec;
@@ -29,7 +30,7 @@ impl Iterator for Composition {
 
         if self.start {
             self.start = false;
-            return Some(v.clone());
+            return Some(SmallVec::from_slice(v));
         }
 
         (1..len).rev().find(|&i| v[i] > 1).map(|index| {
@@ -37,7 +38,7 @@ impl Iterator for Composition {
             v[index] -= 1;
             v[len - 1] += v[index..len - 1].iter().sum::<usize>() + index + 1 - len;
             v[index..len - 1].fill(1);
-            v.clone()
+            SmallVec::from_slice(v)
         })
     }
 }
@@ -47,7 +48,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let re = Regex::new(r#"capacity (-?\d+), durability (-?\d+), flavor (-?\d+), texture (-?\d+), calories (-?\d+)"#).unwrap();
 
-    let ingredients: Vec<_> = re
+    let ingredients = re
         .captures_iter(&input)
         .map(|cap| -> [i32; 5] {
             let capacity = cap[1].parse().unwrap();
@@ -57,30 +58,35 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let calories = cap[5].parse().unwrap();
             [capacity, durability, flavor, texture, calories]
         })
-        .collect();
+        .collect_vec();
 
-    let iter = Composition::new(100, ingredients.len())?.map(|amounts| {
-        let properties = ingredients
-            .iter()
-            .zip(amounts)
-            .fold([0; 5], |total, (weight, amount)| {
-                let mut sum = [0; 5];
-                let zip_iter = sum.iter_mut().zip(total.iter()).zip(weight.iter());
-                for ((sum, &total), &weight) in zip_iter {
-                    *sum = total + amount as i32 * weight;
-                }
-                sum
-            });
+    let cookies = Composition::new(100, ingredients.len())?
+        .map(|amounts| {
+            let properties =
+                ingredients
+                    .iter()
+                    .zip(amounts)
+                    .fold([0; 5], |total, (weight, amount)| {
+                        let mut sum = [0; 5];
+                        for (sum, &total, &weight) in
+                            izip!(sum.iter_mut(), total.iter(), weight.iter())
+                        {
+                            *sum = total + amount as i32 * weight;
+                        }
+                        sum
+                    });
 
-        let score: i32 = properties[..4].iter().map(|&x| x.max(0)).product();
-        let calories: i32 = properties[4];
-        (score, calories)
-    });
+            let score: i32 = properties[..4].iter().map(|&x| x.max(0)).product();
+            let calories: i32 = properties[4];
+            (score, calories)
+        })
+        .collect_vec();
 
-    let result1 = iter.clone().map(|(score, _)| score).max().unwrap();
+    let result1 = cookies.iter().map(|(score, _)| score).max().unwrap();
 
-    let result2 = iter
-        .filter(|&(_, calories)| calories == 500)
+    let result2 = cookies
+        .iter()
+        .filter(|&&(_, calories)| calories == 500)
         .map(|(score, _)| score)
         .max()
         .unwrap();

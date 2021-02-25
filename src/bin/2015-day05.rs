@@ -8,25 +8,25 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let result1 = input
         .lines()
         .map(|line| {
-            let iter1 = line
+            let vowels_count = line.matches(|c| "aeiou".contains(c)).count();
+
+            let doubles = line
                 .as_bytes()
-                .iter()
-                .filter(|&&x| x == b'a' || x == b'e' || x == b'i' || x == b'o' || x == b'u');
+                .windows(2)
+                .map(|x| {
+                    if x == b"ab" || x == b"cd" || x == b"pq" || x == b"xy" {
+                        None
+                    } else if x[0] == x[1] {
+                        Some(true)
+                    } else {
+                        Some(false)
+                    }
+                })
+                .collect_vec();
 
-            let iter2 = line.as_bytes().windows(2).map(|x| {
-                if x == [b'a', b'b'] || x == [b'c', b'd'] || x == [b'p', b'q'] || x == [b'x', b'y']
-                {
-                    None
-                } else if x[0] == x[1] {
-                    Some(true)
-                } else {
-                    Some(false)
-                }
-            });
-
-            iter1.count() >= 3
-                && !iter2.clone().any(|x| x.is_none())
-                && iter2.filter_map(|x| x).any(|x| x)
+            vowels_count >= 3
+                && !doubles.iter().any(|x| x.is_none())
+                && doubles.iter().filter_map(|&x| x).any(|x| x)
         })
         .filter(|&x| x)
         .count();

@@ -12,20 +12,25 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let replacements = regex_replacements
         .captures_iter(&input)
-        .map(|cap| (cap[1].to_owned(), cap[2].to_owned()))
+        .map(|cap| {
+            (
+                cap.get(1).unwrap().as_bytes(),
+                cap.get(2).unwrap().as_bytes(),
+            )
+        })
         .collect_vec();
 
     let molecule = regex_molecule.find(&input).map(|x| x.as_bytes()).unwrap();
 
     let result1 = replacements
         .iter()
-        .flat_map(|(old, new)| {
+        .flat_map(|&(old, new)| {
             Regex::new(&String::from_utf8_lossy(old))
                 .unwrap()
                 .find_iter(&molecule)
                 .map(|x| {
                     let mut molecule = molecule.to_vec();
-                    molecule.splice(x.range(), new.clone()).last();
+                    molecule.splice(x.range(), new.iter().cloned()).last();
                     molecule
                 })
                 .collect_vec()

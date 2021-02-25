@@ -9,11 +9,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let result1: i32 = re
         .find_iter(&input)
-        .map(|x| match x.as_str().as_bytes() {
-            br#"""# => 1,
-            br#"\\"# => 1,
-            br#"\""# => 1,
-            &[b'\\', b'x', _, _] => 3,
+        .map(|x| match *x.as_str().as_bytes() {
+            [b'"'] | [b'\\', b'\\'] | [b'\\', b'"'] => 1,
+            [b'\\', b'x', _, _] => 3,
             _ => 0,
         })
         .sum();

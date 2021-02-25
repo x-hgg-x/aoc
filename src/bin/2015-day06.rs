@@ -4,11 +4,11 @@ use std::fs;
 
 type F = Box<dyn Fn(&str) -> Box<dyn Fn(i8) -> i8>>;
 
-fn parse_regex(re: &Regex, text: &str) -> (String, usize, usize, usize, usize) {
+fn parse_regex<'a>(re: &Regex, text: &'a str) -> (&'a str, usize, usize, usize, usize) {
     re.captures_iter(text)
         .map(|x| {
             (
-                x[1].to_owned(),
+                x.get(1).unwrap().as_str(),
                 x[2].parse().unwrap(),
                 x[3].parse().unwrap(),
                 x[4].parse().unwrap(),

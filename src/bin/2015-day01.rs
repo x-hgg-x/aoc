@@ -4,15 +4,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let input = fs::read_to_string("inputs/2015-day01.txt")?;
     let input = input.trim();
 
-    let iter = input.chars().map(|c| match c {
-        '(' => 1,
-        ')' => -1,
-        _ => 0,
-    });
+    let floors: Vec<_> = input
+        .chars()
+        .map(|c| match c {
+            '(' => 1,
+            ')' => -1,
+            _ => 0,
+        })
+        .collect();
 
-    let result1: i32 = iter.clone().sum();
+    let result1: i32 = floors.iter().sum();
 
-    let result2 = 1 + iter
+    let result2 = 1 + floors
+        .iter()
         .scan(0, |state, x| {
             *state += x;
             Some(*state)

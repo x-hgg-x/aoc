@@ -81,8 +81,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .chain(rings.iter().combinations(1))
         .chain(rings.iter().combinations(2));
 
-    let iter = iproduct!(weapons.iter(), armors.iter(), rings_combinations).map(
-        |(weapon, armor, rings)| {
+    let battles = iproduct!(weapons.iter(), armors.iter(), rings_combinations)
+        .map(|(weapon, armor, rings)| {
             let rings: Equipment = rings.iter().cloned().sum();
 
             let cost = weapon.cost + armor.cost + rings.cost;
@@ -98,20 +98,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let win = player_turns <= boss_turns;
 
             (cost, win)
-        },
-    );
+        })
+        .collect_vec();
 
-    let result1 = iter
-        .clone()
-        .filter(|&(_, win)| win)
-        .map(|(cost, _)| cost)
-        .min()
-        .unwrap();
-
-    let result2 = iter
-        .filter(|&(_, win)| !win)
-        .map(|(cost, _)| cost)
-        .max()
+    let (result1, result2) = battles
+        .iter()
+        .scan((i32::MAX, i32::MIN), |state, &(cost, win)| {
+            if win {
+                state.0 = state.0.min(cost);
+            } else {
+                state.1 = state.1.max(cost);
+            }
+            Some(*state)
+        })
+        .last()
         .unwrap();
 
     println!("{}", result1);

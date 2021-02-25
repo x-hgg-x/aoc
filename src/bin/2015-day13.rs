@@ -1,5 +1,6 @@
 use itertools::Itertools;
 use regex::Regex;
+use smallvec::SmallVec;
 
 use std::collections::HashMap;
 use std::fs;
@@ -30,13 +31,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut nodes = re
         .captures_iter(&input)
         .flat_map(|cap| {
-            cap.iter()
-                .enumerate()
-                .filter_map(|(pos, x)| {
-                    x.map(|x| &input[x.range()])
-                        .and_then(|x| (pos == 1 || pos == 4).then(|| x))
-                })
-                .collect_vec()
+            SmallVec::from_buf([cap.get(1).unwrap().as_str(), cap.get(4).unwrap().as_str()])
         })
         .sorted_unstable()
         .dedup()

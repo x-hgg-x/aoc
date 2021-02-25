@@ -1,4 +1,4 @@
-use itertools::iproduct;
+use itertools::{iproduct, Itertools};
 
 use std::fs;
 
@@ -67,9 +67,7 @@ impl Grid {
         let columns = 0..self.width;
 
         for _ in 0..n {
-            self.lights = rows
-                .clone()
-                .flat_map(|row| columns.clone().map(move |column| (row, column)))
+            self.lights = iproduct!(rows.clone(), columns.clone())
                 .map(|(row, column)| {
                     let index = self.get_index(row, column);
                     let light_state = self.lights[index];
@@ -97,14 +95,14 @@ impl Grid {
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let input = fs::read_to_string("inputs/2015-day18.txt")?;
 
-    let lights: Vec<_> = input
+    let lights = input
         .chars()
         .filter_map(|c| match c {
             '.' => Some(false),
             '#' => Some(true),
             _ => None,
         })
-        .collect();
+        .collect_vec();
 
     let result1 = Grid::new(100, 100, lights.clone(), false)?
         .step(100)
