@@ -21,7 +21,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .collect_vec();
 
     let race = (1..=TIME)
-        .into_iter()
         .map(|time| {
             reindeers
                 .iter()
