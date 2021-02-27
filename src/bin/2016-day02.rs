@@ -1,36 +1,26 @@
+use itertools::Itertools;
+
 use std::fs;
 
-fn get_code(input: &[u8], keypad: &[&[u32]], start_pos: (usize, usize)) -> String {
+fn get_code(input: &str, keypad: &[&[u32]], start_pos: (usize, usize)) -> String {
     let (height, width) = (keypad.len(), keypad[0].len());
 
     input
-        .iter()
-        .scan(start_pos, |state, c| match c {
-            b'U' => {
-                if state.0 != 0 && keypad[state.0 - 1][state.1] != 0 {
-                    state.0 -= 1;
-                }
-                Some(None)
+        .chars()
+        .scan(start_pos, |state, c| {
+            if c == 'U' && state.0 != 0 && keypad[state.0 - 1][state.1] != 0 {
+                state.0 -= 1;
             }
-            b'D' => {
-                if state.0 != height - 1 && keypad[state.0 + 1][state.1] != 0 {
-                    state.0 += 1;
-                }
-                Some(None)
+            if c == 'D' && state.0 != height - 1 && keypad[state.0 + 1][state.1] != 0 {
+                state.0 += 1;
             }
-            b'L' => {
-                if state.1 != 0 && keypad[state.0][state.1 - 1] != 0 {
-                    state.1 -= 1;
-                }
-                Some(None)
+            if c == 'L' && state.1 != 0 && keypad[state.0][state.1 - 1] != 0 {
+                state.1 -= 1;
             }
-            b'R' => {
-                if state.1 != width - 1 && keypad[state.0][state.1 + 1] != 0 {
-                    state.1 += 1;
-                }
-                Some(None)
+            if c == 'R' && state.1 != width - 1 && keypad[state.0][state.1 + 1] != 0 {
+                state.1 += 1;
             }
-            _ => Some(std::char::from_digit(keypad[state.0][state.1], 16)),
+            Some((c == '\n').then(|| std::char::from_digit(keypad[state.0][state.1], 16).unwrap()))
         })
         .filter_map(|x| x.map(|c| c.to_ascii_uppercase()))
         .collect()
@@ -38,8 +28,8 @@ fn get_code(input: &[u8], keypad: &[&[u32]], start_pos: (usize, usize)) -> Strin
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let input = fs::read_to_string("inputs/2016-day02.txt")?;
-    let mut input = input.trim().as_bytes().to_vec();
-    input.push(b'\n');
+    let mut input = input.lines().join("\n");
+    input.push('\n');
 
     let keypad1 = [&[1, 2, 3][..], &[4, 5, 6][..], &[7, 8, 9][..]];
 
