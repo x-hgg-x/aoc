@@ -63,11 +63,8 @@ impl Grid {
     }
 
     fn step(&mut self, n: u32) -> &mut Self {
-        let rows = 0..self.height;
-        let columns = 0..self.width;
-
         for _ in 0..n {
-            self.lights = iproduct!(rows.clone(), columns.clone())
+            self.lights = iproduct!(0..self.height, 0..self.width)
                 .map(|(row, column)| {
                     let index = self.get_index(row, column);
                     let light_state = self.lights[index];
