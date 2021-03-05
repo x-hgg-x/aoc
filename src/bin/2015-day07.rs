@@ -1,6 +1,6 @@
 use regex::Regex;
 
-use std::cell::RefCell;
+use std::cell::Cell;
 use std::collections::HashMap;
 use std::fs;
 
@@ -54,35 +54,34 @@ enum Operation {
 
 struct Variable {
     operation: Operation,
-    value: RefCell<Option<u16>>,
+    value: Cell<Option<u16>>,
 }
 
 impl Variable {
     fn new(operation: Operation) -> Self {
         Variable {
             operation,
-            value: RefCell::new(None),
+            value: Cell::new(None),
         }
     }
 
     fn value(&self, map: &GlobalMap) -> u16 {
-        if self.value.borrow().is_none() {
-            *self.value.borrow_mut() = Some(match &self.operation {
+        self.value.get().unwrap_or_else(|| {
+            let value = match &self.operation {
                 Operation::Identity(op) => op.value(map),
                 Operation::And(op1, op2) => op1.value(map) & op2.value(map),
                 Operation::Or(op1, op2) => op1.value(map) | op2.value(map),
                 Operation::Not(op) => !op.value(map),
                 Operation::LShift(op1, op2) => op1.value(map) << op2.value(map),
                 Operation::RShift(op1, op2) => op1.value(map) >> op2.value(map),
-            });
-        }
-        return self.value.borrow().unwrap();
+            };
+            self.value.set(Some(value));
+            value
+        })
     }
 
     fn clear(&self) {
-        if self.value.borrow().is_some() {
-            *self.value.borrow_mut() = None;
-        }
+        self.value.set(None);
     }
 }
 
