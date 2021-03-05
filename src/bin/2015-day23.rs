@@ -1,3 +1,5 @@
+use smallvec::SmallVec;
+
 use std::fs;
 
 enum Instruction {
@@ -9,10 +11,10 @@ enum Instruction {
     JumpIfOne(usize, i32),
 }
 
-fn get_register(c: u8) -> usize {
-    match c {
-        b'a' => 0,
-        b'b' => 1,
+fn get_register(register: &str) -> usize {
+    match register {
+        "a" => 0,
+        "b" => 1,
         other => panic!("unknown register: {}", other),
     }
 }
@@ -52,22 +54,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let instructions: Vec<_> = input
         .lines()
         .map(|line| {
-            let bytes = line.as_bytes();
+            let args: SmallVec<[_; 3]> = line
+                .split(|c: char| c.is_ascii_whitespace() || c == ',')
+                .filter(|s| !s.is_empty())
+                .collect();
 
-            match &bytes[..3] {
-                b"hlf" => Instruction::Half(get_register(bytes[4])),
-                b"tpl" => Instruction::Triple(get_register(bytes[4])),
-                b"inc" => Instruction::Increment(get_register(bytes[4])),
-                b"jmp" => Instruction::Jump(String::from_utf8_lossy(&bytes[4..]).parse().unwrap()),
-                b"jie" => Instruction::JumpIfEven(
-                    get_register(bytes[4]),
-                    String::from_utf8_lossy(&bytes[7..]).parse().unwrap(),
-                ),
-                b"jio" => Instruction::JumpIfOne(
-                    get_register(bytes[4]),
-                    String::from_utf8_lossy(&bytes[7..]).parse().unwrap(),
-                ),
-                other => panic!("unknown instruction: {}", String::from_utf8_lossy(other)),
+            match args[0] {
+                "hlf" => Instruction::Half(get_register(args[1])),
+                "tpl" => Instruction::Triple(get_register(args[1])),
+                "inc" => Instruction::Increment(get_register(args[1])),
+                "jmp" => Instruction::Jump(args[1].parse().unwrap()),
+                "jie" => Instruction::JumpIfEven(get_register(args[1]), args[2].parse().unwrap()),
+                "jio" => Instruction::JumpIfOne(get_register(args[1]), args[2].parse().unwrap()),
+                other => panic!("unknown instruction: {}", other),
             }
         })
         .collect();
