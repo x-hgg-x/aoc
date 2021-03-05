@@ -174,6 +174,7 @@ fn solve(state: &State) -> usize {
         }
 
         swap(&mut current_states, &mut next_states);
+        next_states.clear();
     }
 }
 
