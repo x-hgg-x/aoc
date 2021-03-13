@@ -10,7 +10,7 @@ impl<'a> Password<'a> {
         for x in self.data.iter_mut().rev() {
             if *x + carry <= b'z' {
                 *x += carry;
-                carry = 0;
+                break;
             } else {
                 *x = b'a';
                 carry = 1;
