@@ -4,25 +4,11 @@ use std::collections::HashMap;
 use std::fs;
 use std::ops::RangeInclusive;
 
-fn get_aunt(
-    input: &str,
-    gift: &HashMap<String, RangeInclusive<u32>>,
-    regex_compounds: &Regex,
-    regex_num: &Regex,
-) -> u32 {
+fn get_aunt(input: &str, gift: &HashMap<String, RangeInclusive<u32>>, regex_compounds: &Regex, regex_num: &Regex) -> u32 {
     input
         .lines()
-        .filter(|&line| {
-            regex_compounds
-                .captures_iter(line)
-                .all(|cap| gift[&cap[1]].contains(&cap[2].parse().unwrap()))
-        })
-        .map(|line| {
-            regex_num
-                .captures(line)
-                .and_then(|cap| cap[1].parse().ok())
-                .unwrap()
-        })
+        .filter(|&line| regex_compounds.captures_iter(line).all(|cap| gift[&cap[1]].contains(&cap[2].parse().unwrap())))
+        .map(|line| regex_num.captures(line).and_then(|cap| cap[1].parse().ok()).unwrap())
         .next()
         .unwrap()
 }
@@ -33,7 +19,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let regex_compounds = Regex::new(r#"(children|cats|samoyeds|pomeranians|akitas|vizslas|goldfish|trees|cars|perfumes): (\d+)(?:, )?"#).unwrap();
     let regex_num = Regex::new(r#"^Sue (\d+): "#).unwrap();
 
-    let mut gift: HashMap<String, RangeInclusive<u32>> = vec![
+    let mut gift = <HashMap<_, _>>::from_iter([
         ("children".into(), 3..=3),
         ("cats".into(), 7..=7),
         ("samoyeds".into(), 2..=2),
@@ -44,9 +30,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         ("trees".into(), 3..=3),
         ("cars".into(), 2..=2),
         ("perfumes".into(), 1..=1),
-    ]
-    .into_iter()
-    .collect();
+    ]);
 
     let result1 = get_aunt(&input, &gift, &regex_compounds, &regex_num);
 

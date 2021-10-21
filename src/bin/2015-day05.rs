@@ -24,9 +24,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 })
                 .collect_vec();
 
-            vowels_count >= 3
-                && !doubles.iter().any(|x| x.is_none())
-                && doubles.iter().filter_map(|&x| x).any(|x| x)
+            vowels_count >= 3 && !doubles.iter().any(|x| x.is_none()) && doubles.iter().filter_map(|&x| x).any(|x| x)
         })
         .filter(|&x| x)
         .count();
@@ -38,9 +36,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .windows(2)
                 .enumerate()
                 .sorted_unstable_by_key(|(_, x)| *x)
-                .dedup_by_with_count(|&(pos1, x1), &(pos2, x2)| {
-                    x1 == x2 && (pos1 as isize - pos2 as isize).abs() > 1
-                })
+                .dedup_by_with_count(|&(pos1, x1), &(pos2, x2)| x1 == x2 && (pos1 as isize - pos2 as isize).abs() > 1)
                 .any(|(count, _)| count > 1)
                 .then(|| line.as_bytes().windows(3).any(|x| x[0] == x[2]))
                 .filter(|&x| x)

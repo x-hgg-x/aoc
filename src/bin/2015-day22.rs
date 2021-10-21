@@ -158,25 +158,8 @@ struct GameState {
 }
 
 impl GameState {
-    fn new(
-        hard_mode: bool,
-        player_hp: i32,
-        player_mana: i32,
-        boss_hp: i32,
-        boss_damage: i32,
-    ) -> Self {
-        Self {
-            hard_mode,
-            status: Status {
-                player_hp,
-                mana_spent: 0,
-                player_armor: 0,
-                player_mana,
-                boss_hp,
-                boss_damage,
-            },
-            spells: Default::default(),
-        }
+    fn new(hard_mode: bool, player_hp: i32, player_mana: i32, boss_hp: i32, boss_damage: i32) -> Self {
+        Self { hard_mode, status: Status { player_hp, mana_spent: 0, player_armor: 0, player_mana, boss_hp, boss_damage }, spells: Default::default() }
     }
 
     fn try_cast<S: Spell>(&self, spell: &S) -> Option<GameResult> {
@@ -241,12 +224,7 @@ enum GameResult {
     Unknown(GameState),
 }
 
-fn process_result(
-    heap: &mut BinaryHeap<GameState>,
-    min_mana: &mut i32,
-    current_state: &GameState,
-    spell: &impl Spell,
-) {
+fn process_result(heap: &mut BinaryHeap<GameState>, min_mana: &mut i32, current_state: &GameState, spell: &impl Spell) {
     if let Some(game_result) = current_state.try_cast(spell) {
         match game_result {
             GameResult::GameWon(mana_spent) => {
@@ -288,15 +266,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let re = Regex::new(r#"Hit Points: (\d+)\s+Damage: (\d+)"#).unwrap();
 
-    let (boss_hp, boss_damage) = re
-        .captures(&input)
-        .map(|cap| {
-            (
-                cap[1].parse::<i32>().unwrap(),
-                cap[2].parse::<i32>().unwrap(),
-            )
-        })
-        .unwrap();
+    let (boss_hp, boss_damage) = re.captures(&input).map(|cap| (cap[1].parse::<i32>().unwrap(), cap[2].parse::<i32>().unwrap())).unwrap();
 
     let result1 = solve(false, boss_hp, boss_damage);
     let result2 = solve(true, boss_hp, boss_damage);

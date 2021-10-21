@@ -17,10 +17,7 @@ struct Pair {
 
 impl Pair {
     fn new(chip_floor: i8, gen_floor: i8) -> Self {
-        Self {
-            chip_floor,
-            gen_floor,
-        }
+        Self { chip_floor, gen_floor }
     }
 }
 
@@ -49,10 +46,7 @@ impl Hash for State {
 
 impl State {
     fn new(pairs: SmallVec<[Pair; 8]>, elevator_floor: i8) -> Self {
-        Self {
-            pairs,
-            elevator_floor,
-        }
+        Self { pairs, elevator_floor }
     }
 
     fn is_valid(&self) -> bool {
@@ -63,40 +57,29 @@ impl State {
                 if pair.chip_floor == pair.gen_floor {
                     true
                 } else {
-                    self.pairs
-                        .iter()
-                        .all(|other_pair| other_pair.gen_floor != pair.chip_floor)
+                    self.pairs.iter().all(|other_pair| other_pair.gen_floor != pair.chip_floor)
                 }
             })
         }
     }
 
     fn is_final(&self) -> bool {
-        self.pairs
-            .iter()
-            .all(|pair| pair.chip_floor == 3 && pair.gen_floor == 3)
+        self.pairs.iter().all(|pair| pair.chip_floor == 3 && pair.gen_floor == 3)
     }
 
-    fn next_states<'a>(
-        &'a self,
-        possible_moves: &'a [(IndicesVec, IndicesVec)],
-    ) -> impl Iterator<Item = State> + 'a {
+    fn next_states<'a>(&'a self, possible_moves: &'a [(IndicesVec, IndicesVec)]) -> impl Iterator<Item = State> + 'a {
         possible_moves
             .iter()
             .filter(move |(chips, generators)| {
                 if let Some(chips) = chips {
-                    let check = chips.iter().all(|&chip_index| {
-                        self.pairs[chip_index].chip_floor == self.elevator_floor
-                    });
+                    let check = chips.iter().all(|&chip_index| self.pairs[chip_index].chip_floor == self.elevator_floor);
                     if !check {
                         return false;
                     }
                 }
 
                 if let Some(generators) = generators {
-                    let check = generators.iter().all(|&generator_index| {
-                        self.pairs[generator_index].gen_floor == self.elevator_floor
-                    });
+                    let check = generators.iter().all(|&generator_index| self.pairs[generator_index].gen_floor == self.elevator_floor);
                     if !check {
                         return false;
                     }
@@ -105,7 +88,7 @@ impl State {
                 true
             })
             .flat_map(move |(chips, generators)| {
-                let mut new_states = SmallVec::from_buf([self.clone(), self.clone()]);
+                let mut new_states = [self.clone(), self.clone()];
 
                 if let Some(chips) = chips {
                     for &chip_index in chips {
@@ -136,20 +119,15 @@ fn solve(state: &State) -> usize {
         .combinations(1)
         .flat_map(|x| {
             let x = SmallVec::from_slice(&x);
-            SmallVec::from_buf([
-                (Some(x.clone()), None),
-                (None, Some(x.clone())),
-                (Some(x.clone()), Some(x)),
-            ])
+            [(Some(x.clone()), None), (None, Some(x.clone())), (Some(x.clone()), Some(x))]
         })
         .chain((0..state.pairs.len()).combinations(2).flat_map(|x| {
             let x = SmallVec::from_slice(&x);
-            SmallVec::from_buf([(Some(x.clone()), None), (None, Some(x))])
+            [(Some(x.clone()), None), (None, Some(x))]
         }))
         .collect_vec();
 
-    let mut current_states = Vec::new();
-    current_states.push(state.clone());
+    let mut current_states = vec![state.clone()];
 
     let mut previous_states = HashSet::new();
     previous_states.insert(state.clone());
@@ -206,11 +184,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
-    let pairs = chips
-        .iter()
-        .map(|(&name, &chip_floor)| Pair::new(chip_floor, generators[name]))
-        .sorted_unstable()
-        .collect();
+    let pairs = chips.iter().map(|(&name, &chip_floor)| Pair::new(chip_floor, generators[name])).sorted_unstable().collect();
 
     let mut state = State::new(pairs, 0);
     let result1 = solve(&state);

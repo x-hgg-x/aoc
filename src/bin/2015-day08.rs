@@ -16,10 +16,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         })
         .sum();
 
-    let result2: usize = input
-        .lines()
-        .map(|line| 2 + line.chars().filter(|&c| c == '"' || c == '\\').count())
-        .sum();
+    let result2: usize = input.lines().map(|line| 2 + line.chars().filter(|&c| c == '"' || c == '\\').count()).sum();
 
     println!("{}", result1);
     println!("{}", result2);

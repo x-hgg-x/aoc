@@ -5,9 +5,7 @@ use regex::bytes::Regex;
 use std::fs;
 
 fn count(re: &Regex, input: &[u8]) -> i32 {
-    re.find_iter(&input)
-        .map(|x| -> i32 { String::from_utf8_lossy(x.as_bytes()).parse().unwrap() })
-        .sum()
+    re.find_iter(input).map(|x| -> i32 { String::from_utf8_lossy(x.as_bytes()).parse().unwrap() }).sum()
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {

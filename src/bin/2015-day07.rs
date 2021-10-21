@@ -12,7 +12,7 @@ impl GlobalMap {
     }
 
     fn value(&self, variable: &str) -> u16 {
-        self.0[variable].value(&self)
+        self.0[variable].value(self)
     }
 
     fn clear(&self) {
@@ -59,10 +59,7 @@ struct Variable {
 
 impl Variable {
     fn new(operation: Operation) -> Self {
-        Variable {
-            operation,
-            value: Cell::new(None),
-        }
+        Variable { operation, value: Cell::new(None) }
     }
 
     fn value(&self, map: &GlobalMap) -> u16 {
@@ -97,47 +94,17 @@ struct ParseRegex {
 impl ParseRegex {
     fn parse(&self, map: &mut GlobalMap, line: &str) {
         if let Some(cap) = self.regex_identity.captures(line) {
-            map.0.insert(
-                cap["name"].to_owned(),
-                Variable::new(Operation::Identity(Operand::parse_new(&cap["op"]))),
-            );
+            map.0.insert(cap["name"].to_owned(), Variable::new(Operation::Identity(Operand::parse_new(&cap["op"]))));
         } else if let Some(cap) = self.regex_and.captures(line) {
-            map.0.insert(
-                cap["name"].to_owned(),
-                Variable::new(Operation::And(
-                    Operand::parse_new(&cap["op1"]),
-                    Operand::parse_new(&cap["op2"]),
-                )),
-            );
+            map.0.insert(cap["name"].to_owned(), Variable::new(Operation::And(Operand::parse_new(&cap["op1"]), Operand::parse_new(&cap["op2"]))));
         } else if let Some(cap) = self.regex_or.captures(line) {
-            map.0.insert(
-                cap["name"].to_owned(),
-                Variable::new(Operation::Or(
-                    Operand::parse_new(&cap["op1"]),
-                    Operand::parse_new(&cap["op2"]),
-                )),
-            );
+            map.0.insert(cap["name"].to_owned(), Variable::new(Operation::Or(Operand::parse_new(&cap["op1"]), Operand::parse_new(&cap["op2"]))));
         } else if let Some(cap) = self.regex_not.captures(line) {
-            map.0.insert(
-                cap["name"].to_owned(),
-                Variable::new(Operation::Not(Operand::parse_new(&cap["op"]))),
-            );
+            map.0.insert(cap["name"].to_owned(), Variable::new(Operation::Not(Operand::parse_new(&cap["op"]))));
         } else if let Some(cap) = self.regex_lshift.captures(line) {
-            map.0.insert(
-                cap["name"].to_owned(),
-                Variable::new(Operation::LShift(
-                    Operand::parse_new(&cap["op1"]),
-                    Operand::parse_new(&cap["op2"]),
-                )),
-            );
+            map.0.insert(cap["name"].to_owned(), Variable::new(Operation::LShift(Operand::parse_new(&cap["op1"]), Operand::parse_new(&cap["op2"]))));
         } else if let Some(cap) = self.regex_rshift.captures(line) {
-            map.0.insert(
-                cap["name"].to_owned(),
-                Variable::new(Operation::RShift(
-                    Operand::parse_new(&cap["op1"]),
-                    Operand::parse_new(&cap["op2"]),
-                )),
-            );
+            map.0.insert(cap["name"].to_owned(), Variable::new(Operation::RShift(Operand::parse_new(&cap["op1"]), Operand::parse_new(&cap["op2"]))));
         } else {
             panic!("unknown instruction: {}", line);
         }

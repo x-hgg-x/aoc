@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use smallvec::SmallVec;
 
 use std::fs;
@@ -51,13 +52,10 @@ fn run(instructions: &[Instruction], mut registers: [i32; 2]) -> [i32; 2] {
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let input = fs::read_to_string("inputs/2015-day23.txt")?;
 
-    let instructions: Vec<_> = input
+    let instructions = input
         .lines()
         .map(|line| {
-            let args: SmallVec<[_; 3]> = line
-                .split(|c: char| c.is_ascii_whitespace() || c == ',')
-                .filter(|s| !s.is_empty())
-                .collect();
+            let args = <SmallVec<[_; 3]>>::from_iter(line.split(|c: char| c.is_ascii_whitespace() || c == ',').filter(|s| !s.is_empty()));
 
             match args[0] {
                 "hlf" => Instruction::Half(get_register(args[1])),
@@ -69,7 +67,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 other => panic!("unknown instruction: {}", other),
             }
         })
-        .collect();
+        .collect_vec();
 
     let result1 = run(&instructions, [0, 0])[1];
     let result2 = run(&instructions, [1, 0])[1];

@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use smallvec::SmallVec;
 
 use std::fs;
@@ -31,10 +32,7 @@ fn get_register(register: &str) -> usize {
 fn get_input(input: &str) -> Input {
     match parse_register(input) {
         Some(r) => Input::Register(r),
-        None => input
-            .parse()
-            .map(Input::Value)
-            .unwrap_or_else(|_| panic!("unknown register or value: {}", input)),
+        None => input.parse().map(Input::Value).unwrap_or_else(|_| panic!("unknown register or value: {}", input)),
     }
 }
 
@@ -67,13 +65,10 @@ fn run(instructions: &[Instruction], mut registers: [i32; 4]) -> [i32; 4] {
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let input = fs::read_to_string("inputs/2016-day12.txt")?;
 
-    let instructions: Vec<_> = input
+    let instructions = input
         .lines()
         .map(|line| {
-            let args: SmallVec<[_; 3]> = line
-                .split(|c: char| c.is_ascii_whitespace() || c == ',')
-                .filter(|s| !s.is_empty())
-                .collect();
+            let args: SmallVec<[_; 3]> = line.split(|c: char| c.is_ascii_whitespace() || c == ',').filter(|s| !s.is_empty()).collect();
 
             match args[0] {
                 "cpy" => Instruction::Copy(get_input(args[1]), get_register(args[2])),
@@ -83,7 +78,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 other => panic!("unknown instruction: {}", other),
             }
         })
-        .collect();
+        .collect_vec();
 
     let result1 = run(&instructions, [0, 0, 0, 0])[0];
     let result2 = run(&instructions, [0, 0, 1, 0])[0];

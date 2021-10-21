@@ -1,18 +1,16 @@
+use itertools::Itertools;
+
 use std::fs;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let input = fs::read_to_string("inputs/2015-day17.txt")?;
 
-    let set: Vec<u32> = input
-        .split_ascii_whitespace()
-        .flat_map(|x| x.parse().ok())
-        .collect();
-
+    let set = <Vec<u32>>::from_iter(input.split_ascii_whitespace().flat_map(|x| x.parse().ok()));
     let max: u32 = 1 << set.len();
 
     const SUM: u32 = 150;
 
-    let combinations: Vec<_> = (1..max)
+    let combinations = (1..max)
         .scan((0, 0), |state, index| {
             let new_gray = index ^ (index >> 1);
             let bit_changed = state.1 ^ new_gray;
@@ -28,7 +26,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         })
         .filter(|&(sum, _)| sum == SUM)
         .map(|(_, size)| size)
-        .collect();
+        .collect_vec();
 
     let result1 = combinations.len();
 

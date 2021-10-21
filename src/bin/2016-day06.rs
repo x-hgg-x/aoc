@@ -11,15 +11,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let (result1, result2): (String, String) = (0..size)
         .map(|n| {
-            let counts = &letters
-                .chars()
-                .skip(n)
-                .step_by(size)
-                .sorted_unstable()
-                .dedup_with_count()
-                .sorted_unstable()
-                .collect_vec();
-
+            let counts = letters.chars().skip(n).step_by(size).sorted_unstable().dedup_with_count().sorted_unstable().collect_vec();
             (counts.last().unwrap().1, counts.first().unwrap().1)
         })
         .unzip();

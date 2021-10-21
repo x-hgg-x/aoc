@@ -21,9 +21,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 _ => *direction,
             };
 
-            let intermediate_blocks = (1..=step)
-                .map(|i| (block.0 + i * direction.0, block.1 + i * direction.1))
-                .collect_vec();
+            let intermediate_blocks = (1..=step).map(|i| (block.0 + i * direction.0, block.1 + i * direction.1)).collect_vec();
 
             *block = *intermediate_blocks.last().unwrap();
 

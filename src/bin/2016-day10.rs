@@ -55,12 +55,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut input_edges = Vec::new();
 
     for line in input.lines() {
-        if let Some(cap) = regex_bot.captures(&line) {
+        if let Some(cap) = regex_bot.captures(line) {
             let bot_number: usize = cap[1].parse().unwrap();
             let node1 = parse_node(&cap[2], &cap[3], ValueType::Min);
             let node2 = parse_node(&cap[4], &cap[5], ValueType::Max);
             bot_instructions.push((bot_number, node1, node2));
-        } else if let Some(cap) = regex_value.captures(&line) {
+        } else if let Some(cap) = regex_value.captures(line) {
             let bot_number: usize = cap[2].parse().unwrap();
             let value = cap[1].parse().unwrap();
             input_edges.push((bot_number, value));
@@ -71,10 +71,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut bots = vec![Default::default(); bot_instructions.len()];
     for (bot_number, node1, node2) in bot_instructions {
-        bots[bot_number] = Bot {
-            values: SmallVec::new(),
-            outputs: SmallVec::from_buf([node1, node2]),
-        };
+        bots[bot_number] = Bot { values: SmallVec::new(), outputs: SmallVec::from_buf([node1, node2]) };
     }
 
     let mut processable_bots = Vec::with_capacity(input_edges.len());

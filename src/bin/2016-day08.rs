@@ -2,6 +2,7 @@ use regex::Regex;
 use smallvec::SmallVec;
 
 use std::fs;
+use std::iter::once;
 
 const WIDTH: usize = 50;
 const HEIGHT: usize = 6;
@@ -17,12 +18,7 @@ fn rotate_row(pixels: &mut [char], row: usize, shift: usize) {
 }
 
 fn rotate_column(pixels: &mut [char], column: usize, shift: usize) {
-    let mut column_pixels = pixels
-        .iter()
-        .cloned()
-        .skip(column)
-        .step_by(WIDTH)
-        .collect::<SmallVec<[char; HEIGHT]>>();
+    let mut column_pixels = <SmallVec<[char; HEIGHT]>>::from_iter(pixels.iter().cloned().skip(column).step_by(WIDTH));
 
     column_pixels.rotate_right(shift);
 
@@ -51,14 +47,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     let result1 = pixels.iter().filter(|&&x| x == '#').count();
-
-    let result2: String = (0..HEIGHT)
-        .flat_map(|row| {
-            pixels[row * WIDTH..(row + 1) * WIDTH]
-                .iter()
-                .chain(std::iter::once(&'\n'))
-        })
-        .collect();
+    let result2 = String::from_iter((0..HEIGHT).flat_map(|row| pixels[row * WIDTH..(row + 1) * WIDTH].iter().chain(once(&'\n'))));
 
     println!("{}", result1);
     println!("{}", result2);

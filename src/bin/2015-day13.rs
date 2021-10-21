@@ -1,6 +1,5 @@
 use itertools::Itertools;
 use regex::Regex;
-use smallvec::SmallVec;
 
 use std::collections::HashMap;
 use std::fs;
@@ -28,14 +27,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let re = Regex::new(r#"(?m)^(\w+) would (lose|gain) (\d+).*?(\w+).$"#).unwrap();
 
-    let mut nodes = re
-        .captures_iter(&input)
-        .flat_map(|cap| {
-            SmallVec::from_buf([cap.get(1).unwrap().as_str(), cap.get(4).unwrap().as_str()])
-        })
-        .sorted_unstable()
-        .dedup()
-        .collect_vec();
+    let mut nodes =
+        re.captures_iter(&input).flat_map(|cap| [cap.get(1).unwrap().as_str(), cap.get(4).unwrap().as_str()]).sorted_unstable().dedup().collect_vec();
 
     let mut edges = re
         .captures_iter(&input)

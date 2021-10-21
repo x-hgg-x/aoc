@@ -10,22 +10,12 @@ struct Grid {
 }
 
 impl Grid {
-    fn new(
-        width: usize,
-        height: usize,
-        lights: Vec<bool>,
-        stuck: bool,
-    ) -> Result<Self, &'static str> {
+    fn new(width: usize, height: usize, lights: Vec<bool>, stuck: bool) -> Result<Self, &'static str> {
         if width * height != lights.len() {
             return Err("unable to construct Grid: width * height != lights.len()");
         }
 
-        let mut grid = Self {
-            width,
-            height,
-            lights,
-            stuck,
-        };
+        let mut grid = Self { width, height, lights, stuck };
 
         if stuck {
             Self::stick_lights(&mut grid);
@@ -41,22 +31,13 @@ impl Grid {
         let rows = row.saturating_sub(1)..=(row + 1).min(self.height - 1);
         let columns = column.saturating_sub(1)..=(column + 1).min(self.width - 1);
 
-        iproduct!(rows, columns)
-            .map(|(row, column)| self.lights[self.get_index(row, column)])
-            .filter(|&x| x)
-            .count()
-            - state as usize
+        iproduct!(rows, columns).map(|(row, column)| self.lights[self.get_index(row, column)]).filter(|&x| x).count() - state as usize
     }
 
     fn stick_lights(&mut self) {
-        let stuck_index = [
-            (0, 0),
-            (0, self.width - 1),
-            (self.height - 1, 0),
-            (self.height - 1, self.width - 1),
-        ];
+        let stuck_index = [(0, 0), (0, self.width - 1), (self.height - 1, 0), (self.height - 1, self.width - 1)];
 
-        for &(row, column) in stuck_index.iter() {
+        for &(row, column) in &stuck_index {
             let index = self.get_index(row, column);
             self.lights[index] = true
         }
@@ -101,10 +82,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         })
         .collect_vec();
 
-    let result1 = Grid::new(100, 100, lights.clone(), false)?
-        .step(100)
-        .count();
-
+    let result1 = Grid::new(100, 100, lights.clone(), false)?.step(100).count();
     let result2 = Grid::new(100, 100, lights, true)?.step(100).count();
 
     println!("{}", result1);

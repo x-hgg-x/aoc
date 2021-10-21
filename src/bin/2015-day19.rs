@@ -10,16 +10,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let regex_replacements = Regex::new(r#"(?m)^(\w+) => (\w+)$"#).unwrap();
     let regex_molecule = Regex::new(r#"(\w+)$"#).unwrap();
 
-    let replacements = regex_replacements
-        .captures_iter(&input)
-        .map(|cap| {
-            (
-                cap.get(1).unwrap().as_bytes(),
-                cap.get(2).unwrap().as_bytes(),
-            )
-        })
-        .collect_vec();
-
+    let replacements = regex_replacements.captures_iter(&input).map(|cap| (cap.get(1).unwrap().as_bytes(), cap.get(2).unwrap().as_bytes())).collect_vec();
     let molecule = regex_molecule.find(&input).map(|x| x.as_bytes()).unwrap();
 
     let result1 = replacements
@@ -27,7 +18,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .flat_map(|&(old, new)| {
             Regex::new(&String::from_utf8_lossy(old))
                 .unwrap()
-                .find_iter(&molecule)
+                .find_iter(molecule)
                 .map(|x| {
                     let mut molecule = molecule.to_vec();
                     molecule.splice(x.range(), new.iter().cloned()).last();

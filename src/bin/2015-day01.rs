@@ -1,17 +1,19 @@
+use itertools::Itertools;
+
 use std::fs;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let input = fs::read_to_string("inputs/2015-day01.txt")?;
     let input = input.trim();
 
-    let floors: Vec<_> = input
+    let floors = input
         .chars()
         .map(|c| match c {
             '(' => 1,
             ')' => -1,
             _ => 0,
         })
-        .collect();
+        .collect_vec();
 
     let result1: i32 = floors.iter().sum();
 
