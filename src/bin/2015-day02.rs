@@ -11,7 +11,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let result1: i32 = edges
         .iter()
         .map(|edge| {
-            let surfaces = edge.iter().combinations(2).map(|x| x.iter().copied().product()).collect_vec();
+            let surfaces = edge.iter().tuple_combinations().map(|(side1, side2)| side1 * side2).collect_vec();
 
             let sum: i32 = surfaces.iter().sum();
             let min: i32 = surfaces.into_iter().min().unwrap();

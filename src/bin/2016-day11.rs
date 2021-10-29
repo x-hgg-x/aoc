@@ -1,6 +1,6 @@
 use itertools::Itertools;
 use regex::Regex;
-use smallvec::SmallVec;
+use smallvec::{smallvec, SmallVec};
 
 use std::collections::{HashMap, HashSet};
 use std::fs;
@@ -116,15 +116,9 @@ impl State {
 fn solve(state: &State) -> usize {
     // Possible moves: 1 chip or 1 generator or 2 chips or 2 generators or a pair of chip/generator of the same type
     let possible_moves = (0..state.pairs.len())
-        .combinations(1)
-        .flat_map(|x| {
-            let x = SmallVec::from_slice(&x);
-            [(Some(x.clone()), None), (None, Some(x.clone())), (Some(x.clone()), Some(x))]
-        })
-        .chain((0..state.pairs.len()).combinations(2).flat_map(|x| {
-            let x = SmallVec::from_slice(&x);
-            [(Some(x.clone()), None), (None, Some(x))]
-        }))
+        .tuple_combinations()
+        .flat_map(|(x,)| [(Some(smallvec![x]), None), (None, Some(smallvec![x])), (Some(smallvec![x]), Some(smallvec![x]))])
+        .chain((0..state.pairs.len()).tuple_combinations().flat_map(|(x, y)| [(Some(smallvec![x, y]), None), (None, Some(smallvec![x, y]))]))
         .collect_vec();
 
     let mut current_states = vec![state.clone()];

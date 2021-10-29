@@ -1,8 +1,9 @@
 use itertools::{iproduct, Itertools};
 use regex::Regex;
+use smallvec::{smallvec, SmallVec};
 
 use std::fs;
-use std::iter::Sum;
+use std::iter::{once, Sum};
 
 #[derive(Default)]
 struct Equipment {
@@ -53,7 +54,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Equipment::new(80, 0, 3),
     ];
 
-    let rings_combinations = rings.iter().combinations(0).chain(rings.iter().combinations(1)).chain(rings.iter().combinations(2));
+    let rings_combinations = once(SmallVec::<[_; 2]>::new())
+        .chain(rings.iter().tuple_combinations().map(|(x,)| smallvec![x]))
+        .chain(rings.iter().tuple_combinations().map(|(x, y)| smallvec![x, y]));
 
     let battles = iproduct!(&weapons, &armors, rings_combinations)
         .map(|(weapon, armor, rings)| {
