@@ -60,7 +60,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let battles = iproduct!(&weapons, &armors, rings_combinations)
         .map(|(weapon, armor, rings)| {
-            let rings: Equipment = rings.iter().cloned().sum();
+            let rings: Equipment = rings.iter().copied().sum();
 
             let cost = weapon.cost + armor.cost + rings.cost;
             let damage = weapon.damage + armor.damage + rings.damage;

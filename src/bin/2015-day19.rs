@@ -21,7 +21,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .find_iter(molecule)
                 .map(|x| {
                     let mut molecule = molecule.to_vec();
-                    molecule.splice(x.range(), new.iter().cloned()).last();
+                    molecule.splice(x.range(), new.iter().copied()).last();
                     molecule
                 })
                 .collect_vec()

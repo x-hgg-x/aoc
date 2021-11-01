@@ -18,7 +18,7 @@ fn rotate_row(pixels: &mut [char], row: usize, shift: usize) {
 }
 
 fn rotate_column(pixels: &mut [char], column: usize, shift: usize) {
-    let mut column_pixels = <SmallVec<[char; HEIGHT]>>::from_iter(pixels.iter().cloned().skip(column).step_by(WIDTH));
+    let mut column_pixels = <SmallVec<[char; HEIGHT]>>::from_iter(pixels.iter().copied().skip(column).step_by(WIDTH));
 
     column_pixels.rotate_right(shift);
 
