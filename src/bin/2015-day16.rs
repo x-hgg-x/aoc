@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::ops::RangeInclusive;
 
-fn get_aunt(input: &str, gift: &HashMap<String, RangeInclusive<u32>>, regex_compounds: &Regex, regex_num: &Regex) -> u32 {
+fn get_aunt(input: &str, gift: &HashMap<&str, RangeInclusive<u32>>, regex_compounds: &Regex, regex_num: &Regex) -> u32 {
     input
         .lines()
         .filter(|&line| regex_compounds.captures_iter(line).all(|cap| gift[&cap[1]].contains(&cap[2].parse().unwrap())))
@@ -20,16 +20,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let regex_num = Regex::new(r#"^Sue (\d+): "#).unwrap();
 
     let mut gift = <HashMap<_, _>>::from_iter([
-        ("children".into(), 3..=3),
-        ("cats".into(), 7..=7),
-        ("samoyeds".into(), 2..=2),
-        ("pomeranians".into(), 3..=3),
-        ("akitas".into(), 0..=0),
-        ("vizslas".into(), 0..=0),
-        ("goldfish".into(), 5..=5),
-        ("trees".into(), 3..=3),
-        ("cars".into(), 2..=2),
-        ("perfumes".into(), 1..=1),
+        ("children", 3..=3),
+        ("cats", 7..=7),
+        ("samoyeds", 2..=2),
+        ("pomeranians", 3..=3),
+        ("akitas", 0..=0),
+        ("vizslas", 0..=0),
+        ("goldfish", 5..=5),
+        ("trees", 3..=3),
+        ("cars", 2..=2),
+        ("perfumes", 1..=1),
     ]);
 
     let result1 = get_aunt(&input, &gift, &regex_compounds, &regex_num);

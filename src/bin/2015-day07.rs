@@ -4,9 +4,9 @@ use std::cell::Cell;
 use std::collections::HashMap;
 use std::fs;
 
-struct GlobalMap(HashMap<String, Variable>);
+struct GlobalMap<'a>(HashMap<&'a str, Variable<'a>>);
 
-impl GlobalMap {
+impl<'a> GlobalMap<'a> {
     fn new() -> Self {
         GlobalMap(HashMap::new())
     }
@@ -22,16 +22,16 @@ impl GlobalMap {
     }
 }
 
-enum Operand {
+enum Operand<'a> {
     Constant(u16),
-    Variable(String),
+    Variable(&'a str),
 }
 
-impl Operand {
-    fn parse_new(op: &str) -> Self {
+impl<'a> Operand<'a> {
+    fn parse_new(op: &'a str) -> Self {
         match op.parse::<u16>() {
             Ok(val) => Operand::Constant(val),
-            Err(_) => Operand::Variable(op.to_owned()),
+            Err(_) => Operand::Variable(op),
         }
     }
 
@@ -43,22 +43,22 @@ impl Operand {
     }
 }
 
-enum Operation {
-    Identity(Operand),
-    And(Operand, Operand),
-    Or(Operand, Operand),
-    Not(Operand),
-    LShift(Operand, Operand),
-    RShift(Operand, Operand),
+enum Operation<'a> {
+    Identity(Operand<'a>),
+    And(Operand<'a>, Operand<'a>),
+    Or(Operand<'a>, Operand<'a>),
+    Not(Operand<'a>),
+    LShift(Operand<'a>, Operand<'a>),
+    RShift(Operand<'a>, Operand<'a>),
 }
 
-struct Variable {
-    operation: Operation,
+struct Variable<'a> {
+    operation: Operation<'a>,
     value: Cell<Option<u16>>,
 }
 
-impl Variable {
-    fn new(operation: Operation) -> Self {
+impl<'a> Variable<'a> {
+    fn new(operation: Operation<'a>) -> Self {
         Variable { operation, value: Cell::new(None) }
     }
 
@@ -92,19 +92,35 @@ struct ParseRegex {
 }
 
 impl ParseRegex {
-    fn parse(&self, map: &mut GlobalMap, line: &str) {
+    fn parse<'a>(&self, map: &mut GlobalMap<'a>, line: &'a str) {
         if let Some(cap) = self.regex_identity.captures(line) {
-            map.0.insert(cap["name"].to_owned(), Variable::new(Operation::Identity(Operand::parse_new(&cap["op"]))));
+            let name = cap.name("name").unwrap().as_str();
+            let op = cap.name("op").unwrap().as_str();
+            map.0.insert(name, Variable::new(Operation::Identity(Operand::parse_new(op))));
         } else if let Some(cap) = self.regex_and.captures(line) {
-            map.0.insert(cap["name"].to_owned(), Variable::new(Operation::And(Operand::parse_new(&cap["op1"]), Operand::parse_new(&cap["op2"]))));
+            let name = cap.name("name").unwrap().as_str();
+            let op1 = cap.name("op1").unwrap().as_str();
+            let op2 = cap.name("op2").unwrap().as_str();
+            map.0.insert(name, Variable::new(Operation::And(Operand::parse_new(op1), Operand::parse_new(op2))));
         } else if let Some(cap) = self.regex_or.captures(line) {
-            map.0.insert(cap["name"].to_owned(), Variable::new(Operation::Or(Operand::parse_new(&cap["op1"]), Operand::parse_new(&cap["op2"]))));
+            let name = cap.name("name").unwrap().as_str();
+            let op1 = cap.name("op1").unwrap().as_str();
+            let op2 = cap.name("op2").unwrap().as_str();
+            map.0.insert(name, Variable::new(Operation::Or(Operand::parse_new(op1), Operand::parse_new(op2))));
         } else if let Some(cap) = self.regex_not.captures(line) {
-            map.0.insert(cap["name"].to_owned(), Variable::new(Operation::Not(Operand::parse_new(&cap["op"]))));
+            let name = cap.name("name").unwrap().as_str();
+            let op = cap.name("op").unwrap().as_str();
+            map.0.insert(name, Variable::new(Operation::Not(Operand::parse_new(op))));
         } else if let Some(cap) = self.regex_lshift.captures(line) {
-            map.0.insert(cap["name"].to_owned(), Variable::new(Operation::LShift(Operand::parse_new(&cap["op1"]), Operand::parse_new(&cap["op2"]))));
+            let name = cap.name("name").unwrap().as_str();
+            let op1 = cap.name("op1").unwrap().as_str();
+            let op2 = cap.name("op2").unwrap().as_str();
+            map.0.insert(name, Variable::new(Operation::LShift(Operand::parse_new(op1), Operand::parse_new(op2))));
         } else if let Some(cap) = self.regex_rshift.captures(line) {
-            map.0.insert(cap["name"].to_owned(), Variable::new(Operation::RShift(Operand::parse_new(&cap["op1"]), Operand::parse_new(&cap["op2"]))));
+            let name = cap.name("name").unwrap().as_str();
+            let op1 = cap.name("op1").unwrap().as_str();
+            let op2 = cap.name("op2").unwrap().as_str();
+            map.0.insert(name, Variable::new(Operation::RShift(Operand::parse_new(op1), Operand::parse_new(op2))));
         } else {
             panic!("unknown instruction: {}", line);
         }
@@ -127,11 +143,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     for line in input.lines() {
         parse_regex.parse(&mut map, line);
     }
-
     let result1 = map.value("a");
 
     map.clear();
-    parse_regex.parse(&mut map, &format!("{} -> b", result1));
+    let new_line = format!("{} -> b", result1);
+    parse_regex.parse(&mut map, &new_line);
     let result2 = map.value("a");
 
     println!("{}", result1);

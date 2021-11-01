@@ -6,7 +6,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let input = fs::read_to_string("inputs/2015-day25.txt")?;
 
     let re = Regex::new(r#"row (\d+), column (\d+)"#).unwrap();
-    let (row, column) = re.captures(&input).map(|cap| (cap[1].parse::<usize>().unwrap(), cap[2].parse::<usize>().unwrap())).unwrap();
+    let (row, column): (usize, usize) = re.captures(&input).map(|cap| (cap[1].parse().unwrap(), cap[2].parse().unwrap())).unwrap();
 
     let sum = row - 1 + column - 1;
     let n = sum * (sum + 1) / 2 + column - 1;

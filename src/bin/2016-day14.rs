@@ -4,8 +4,6 @@ use smallvec::SmallVec;
 use std::collections::VecDeque;
 use std::fs;
 
-const INTERVAL_LENGTH: usize = 1000;
-
 struct HashInfo {
     index: usize,
     triple: u8,
@@ -65,6 +63,8 @@ impl Queue {
     }
 
     fn compute_64th_key_index(&mut self, input: &str) -> usize {
+        const INTERVAL_LENGTH: usize = 1000;
+
         let mut key_count = 0;
 
         while self.is_empty() {

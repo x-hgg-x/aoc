@@ -4,19 +4,13 @@ use regex::Regex;
 use std::collections::HashMap;
 use std::fs;
 
-fn max_hapiness(nodes: &[&str], edges: &HashMap<(String, String), i32>) -> i32 {
+fn max_hapiness(nodes: &[&str], edges: &HashMap<(&str, &str), i32>) -> i32 {
     nodes
         .iter()
         .permutations(nodes.len())
         .map(|mut x| -> i32 {
             x.push(x[0]);
-            x.windows(2)
-                .map(|x| {
-                    let edge1 = ((*x[0]).into(), (*x[1]).into());
-                    let edge2 = ((*x[1]).into(), (*x[0]).into());
-                    edges[&edge1] + edges[&edge2]
-                })
-                .sum()
+            x.windows(2).map(|x| edges.get(&(*x[0], *x[1])).unwrap() + edges.get(&(*x[1], *x[0])).unwrap()).sum()
         })
         .max()
         .unwrap()
@@ -39,15 +33,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     "gain" => 1,
                     _ => 0,
                 };
-            ((cap[1].to_owned(), cap[4].to_owned()), happiness)
+            ((cap.get(1).unwrap().as_str(), cap.get(4).unwrap().as_str()), happiness)
         })
         .collect();
 
     let result1 = max_hapiness(&nodes, &edges);
 
     for &node in &nodes {
-        edges.insert(("Me".into(), node.into()), 0);
-        edges.insert((node.into(), "Me".into()), 0);
+        edges.insert(("Me", node), 0);
+        edges.insert((node, "Me"), 0);
     }
     nodes.push("Me");
 

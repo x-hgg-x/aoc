@@ -29,8 +29,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let re = Regex::new(r#"Hit Points: (\d+)\s+Damage: (\d+)\s+Armor: (\d+)"#).unwrap();
 
-    let (boss_hp, boss_damage, boss_armor) =
-        re.captures(&input).map(|cap| (cap[1].parse::<i32>().unwrap(), cap[2].parse::<i32>().unwrap(), cap[3].parse::<i32>().unwrap())).unwrap();
+    let (boss_hp, boss_damage, boss_armor): (i32, i32, i32) =
+        re.captures(&input).map(|cap| (cap[1].parse().unwrap(), cap[2].parse().unwrap(), cap[3].parse().unwrap())).unwrap();
 
     const HP: i32 = 100;
 

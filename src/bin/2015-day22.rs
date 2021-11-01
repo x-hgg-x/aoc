@@ -266,7 +266,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let re = Regex::new(r#"Hit Points: (\d+)\s+Damage: (\d+)"#).unwrap();
 
-    let (boss_hp, boss_damage) = re.captures(&input).map(|cap| (cap[1].parse::<i32>().unwrap(), cap[2].parse::<i32>().unwrap())).unwrap();
+    let (boss_hp, boss_damage): (i32, i32) = re.captures(&input).map(|cap| (cap[1].parse().unwrap(), cap[2].parse().unwrap())).unwrap();
 
     let result1 = solve(false, boss_hp, boss_damage);
     let result2 = solve(true, boss_hp, boss_damage);

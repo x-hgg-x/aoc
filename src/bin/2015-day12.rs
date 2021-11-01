@@ -1,5 +1,3 @@
-#![allow(clippy::trivial_regex)]
-
 use regex::bytes::Regex;
 
 use std::fs;
