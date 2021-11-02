@@ -1,8 +1,54 @@
 use itertools::Itertools;
+use md5::Digest;
 use smallvec::SmallVec;
 
 use std::collections::VecDeque;
 use std::fs;
+
+struct HashGenerator {
+    data: SmallVec<[u8; 24]>,
+    input_len: usize,
+    index: usize,
+}
+
+impl HashGenerator {
+    fn new(input: &str) -> Self {
+        let mut data = SmallVec::from_slice(input.as_bytes());
+        data.push(b'0');
+
+        Self { data, input_len: input.len(), index: 0 }
+    }
+}
+
+impl Iterator for HashGenerator {
+    type Item = Digest;
+
+    fn next(&mut self) -> Option<Digest> {
+        if self.index == 0 {
+            self.index += 1;
+            return Some(md5::compute(&self.data));
+        }
+
+        let mut carry = 1;
+        for (pos, x) in self.data[self.input_len..].iter_mut().enumerate().rev() {
+            if *x + carry <= b'9' {
+                *x += carry;
+                break;
+            } else if pos == 0 {
+                self.data[self.input_len..].fill(b'0');
+                self.data.push(b'0');
+                self.data[self.input_len] = b'1';
+                break;
+            } else {
+                *x = b'0';
+                carry = 1;
+            }
+        }
+
+        self.index += 1;
+        Some(md5::compute(&self.data))
+    }
+}
 
 struct HashInfo {
     index: usize,
@@ -12,25 +58,22 @@ struct HashInfo {
 
 struct Queue {
     additional_hashs: usize,
-    current_index: usize,
+    hash_generator: HashGenerator,
     hash_infos: VecDeque<HashInfo>,
     quintuples_count: [u16; 16],
 }
 
 impl Queue {
-    fn new(additional_hashs: usize) -> Self {
-        Self { additional_hashs, current_index: 0, hash_infos: VecDeque::new(), quintuples_count: [0; 16] }
+    fn new(input: &str, additional_hashs: usize) -> Self {
+        Self { additional_hashs, hash_generator: HashGenerator::new(input), hash_infos: VecDeque::new(), quintuples_count: [0; 16] }
     }
 
     fn is_empty(&self) -> bool {
         self.hash_infos.is_empty()
     }
 
-    fn compute_next_hash(&mut self, input: &str) {
-        let index = self.current_index;
-        self.current_index += 1;
-
-        let mut hex: SmallVec<[u8; 32]> = md5::compute(format!("{}{}", input, index)).iter().flat_map(|x| [(x & 0xF0) >> 4, x & 0x0F]).collect();
+    fn compute_next_hash(&mut self) {
+        let mut hex: SmallVec<[u8; 32]> = self.hash_generator.next().as_deref().into_iter().flatten().flat_map(|x| [(x & 0xF0) >> 4, x & 0x0F]).collect();
 
         for _ in 0..self.additional_hashs {
             for byte in &mut hex {
@@ -50,7 +93,7 @@ impl Queue {
                 *count += flag as u16;
             }
 
-            self.hash_infos.push_back(HashInfo { index, triple, quintuples });
+            self.hash_infos.push_back(HashInfo { index: self.hash_generator.index - 1, triple, quintuples });
         }
     }
 
@@ -62,20 +105,20 @@ impl Queue {
         hash_info
     }
 
-    fn compute_64th_key_index(&mut self, input: &str) -> usize {
+    fn compute_64th_key_index(&mut self) -> usize {
         const INTERVAL_LENGTH: usize = 1000;
 
         let mut key_count = 0;
 
         while self.is_empty() {
-            self.compute_next_hash(input);
+            self.compute_next_hash();
         }
 
         loop {
             let hash_info = self.pop_front();
 
-            while self.current_index < hash_info.index + INTERVAL_LENGTH + 1 {
-                self.compute_next_hash(input);
+            while self.hash_generator.index < hash_info.index + INTERVAL_LENGTH + 1 {
+                self.compute_next_hash();
             }
 
             if self.quintuples_count[hash_info.triple as usize] != 0 {
@@ -93,8 +136,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let input = fs::read_to_string("inputs/2016-day14.txt")?;
     let input = input.trim();
 
-    let result1 = Queue::new(0).compute_64th_key_index(input);
-    let result2 = Queue::new(2016).compute_64th_key_index(input);
+    let result1 = Queue::new(input, 0).compute_64th_key_index();
+    let result2 = Queue::new(input, 2016).compute_64th_key_index();
 
     println!("{}", result1);
     println!("{}", result2);

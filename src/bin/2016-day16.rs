@@ -1,6 +1,6 @@
-use std::fs;
-
 use itertools::Itertools;
+
+use std::fs;
 
 fn compute_checksum(input: &[u8], disk_size: usize) -> String {
     let mut disk = Vec::with_capacity(disk_size);
