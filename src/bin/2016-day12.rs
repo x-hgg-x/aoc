@@ -4,16 +4,26 @@ use smallvec::SmallVec;
 
 use std::fs;
 
+#[derive(Copy, Clone)]
 enum Input {
     Register(usize),
     Value(i32),
+}
+
+impl Input {
+    fn get_value(&self, registers: &[i32; 4]) -> i32 {
+        match *self {
+            Input::Register(r) => registers[r],
+            Input::Value(v) => v,
+        }
+    }
 }
 
 enum Instruction {
     Copy(Input, usize),
     Increment(usize),
     Decrement(usize),
-    JumpIfNotZero(Input, i32),
+    JumpIfNotZero(Input, Input),
 }
 
 fn parse_register(register: &str) -> Option<usize> {
@@ -41,19 +51,12 @@ fn run(instructions: &[Instruction], mut registers: [i32; 4]) -> [i32; 4] {
     let mut ip = 0;
     while (0..instructions.len()).contains(&(ip as usize)) {
         match instructions[ip as usize] {
-            Instruction::Copy(Input::Value(v), r) => registers[r] = v,
-            Instruction::Copy(Input::Register(r0), r) => registers[r] = registers[r0],
+            Instruction::Copy(input, r) => registers[r] = input.get_value(&registers),
             Instruction::Increment(r) => registers[r] += 1,
             Instruction::Decrement(r) => registers[r] -= 1,
-            Instruction::JumpIfNotZero(Input::Value(v), offset) => {
-                if v != 0 {
-                    ip += offset;
-                    continue;
-                }
-            }
-            Instruction::JumpIfNotZero(Input::Register(r), offset) => {
-                if registers[r] != 0 {
-                    ip += offset;
+            Instruction::JumpIfNotZero(input1, input2) => {
+                if input1.get_value(&registers) != 0 {
+                    ip += input2.get_value(&registers);
                     continue;
                 }
             }
@@ -75,7 +78,7 @@ fn main() -> Result<()> {
                 "cpy" => Instruction::Copy(get_input(args[1]), get_register(args[2])),
                 "inc" => Instruction::Increment(get_register(args[1])),
                 "dec" => Instruction::Decrement(get_register(args[1])),
-                "jnz" => Instruction::JumpIfNotZero(get_input(args[1]), args[2].parse().unwrap()),
+                "jnz" => Instruction::JumpIfNotZero(get_input(args[1]), get_input(args[2])),
                 other => panic!("unknown instruction: {}", other),
             }
         })
