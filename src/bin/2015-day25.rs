@@ -1,11 +1,12 @@
+use eyre::Result;
 use regex::Regex;
 
 use std::fs;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<()> {
     let input = fs::read_to_string("inputs/2015-day25.txt")?;
 
-    let re = Regex::new(r#"row (\d+), column (\d+)"#).unwrap();
+    let re = Regex::new(r#"row (\d+), column (\d+)"#)?;
     let (row, column): (usize, usize) = re.captures(&input).map(|cap| (cap[1].parse().unwrap(), cap[2].parse().unwrap())).unwrap();
 
     let sum = row - 1 + column - 1;

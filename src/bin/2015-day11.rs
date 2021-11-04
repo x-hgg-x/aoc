@@ -1,3 +1,4 @@
+use eyre::Result;
 use std::fs;
 
 struct Password<'a> {
@@ -37,7 +38,7 @@ impl<'a> Password<'a> {
     }
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<()> {
     let mut input = fs::read_to_string("inputs/2015-day11.txt")?.trim().as_bytes().to_vec();
 
     let mut password_generator = Password { data: &mut input };

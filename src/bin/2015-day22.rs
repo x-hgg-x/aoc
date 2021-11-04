@@ -1,3 +1,4 @@
+use eyre::Result;
 use regex::Regex;
 
 use std::cmp::Ordering;
@@ -261,10 +262,10 @@ fn solve(hard_mode: bool, boss_hp: i32, boss_damage: i32) -> i32 {
     min_mana
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<()> {
     let input = fs::read_to_string("inputs/2015-day22.txt")?;
 
-    let re = Regex::new(r#"Hit Points: (\d+)\s+Damage: (\d+)"#).unwrap();
+    let re = Regex::new(r#"Hit Points: (\d+)\s+Damage: (\d+)"#)?;
 
     let (boss_hp, boss_damage): (i32, i32) = re.captures(&input).map(|cap| (cap[1].parse().unwrap(), cap[2].parse().unwrap())).unwrap();
 

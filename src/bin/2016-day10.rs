@@ -1,3 +1,4 @@
+use eyre::{bail, eyre, Result};
 use regex::Regex;
 use smallvec::SmallVec;
 
@@ -37,15 +38,15 @@ impl Bot {
     }
 }
 
-fn parse_node(node_type: &str, node_number: &str, value_type: ValueType) -> Node {
+fn parse_node(node_type: &str, node_number: &str, value_type: ValueType) -> Result<Node> {
     match node_type {
-        "bot" => Node::Bot(node_number.parse().unwrap(), value_type),
-        "output" => Node::Output(node_number.parse().unwrap(), value_type),
-        other => panic!("unknown node type: {}", other),
+        "bot" => Ok(Node::Bot(node_number.parse()?, value_type)),
+        "output" => Ok(Node::Output(node_number.parse()?, value_type)),
+        other => Err(eyre!("unknown node type: {}", other)),
     }
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<()> {
     let input = fs::read_to_string("inputs/2016-day10.txt")?;
 
     let regex_bot = Regex::new(r#"(?m)^bot (\d+).*?(bot|output) (\d+).*?(bot|output) (\d+)$"#)?;
@@ -56,16 +57,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     for line in input.lines() {
         if let Some(cap) = regex_bot.captures(line) {
-            let bot_number: usize = cap[1].parse().unwrap();
-            let node1 = parse_node(&cap[2], &cap[3], ValueType::Min);
-            let node2 = parse_node(&cap[4], &cap[5], ValueType::Max);
+            let bot_number: usize = cap[1].parse()?;
+            let node1 = parse_node(&cap[2], &cap[3], ValueType::Min)?;
+            let node2 = parse_node(&cap[4], &cap[5], ValueType::Max)?;
             bot_instructions.push((bot_number, node1, node2));
         } else if let Some(cap) = regex_value.captures(line) {
-            let bot_number: usize = cap[2].parse().unwrap();
-            let value = cap[1].parse().unwrap();
+            let bot_number: usize = cap[2].parse()?;
+            let value = cap[1].parse()?;
             input_edges.push((bot_number, value));
         } else {
-            panic!("unknown instruction: {}", line)
+            bail!("unknown instruction: {}", line)
         }
     }
 

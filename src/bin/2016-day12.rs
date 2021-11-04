@@ -1,3 +1,4 @@
+use eyre::Result;
 use itertools::Itertools;
 use smallvec::SmallVec;
 
@@ -62,7 +63,7 @@ fn run(instructions: &[Instruction], mut registers: [i32; 4]) -> [i32; 4] {
     registers
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<()> {
     let input = fs::read_to_string("inputs/2016-day12.txt")?;
 
     let instructions = input

@@ -1,3 +1,4 @@
+use eyre::Result;
 use itertools::Itertools;
 
 use std::fs;
@@ -35,7 +36,7 @@ fn compute_checksum(input: &[u8], disk_size: usize) -> String {
     String::from_utf8_lossy(&checksum).into_owned()
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<()> {
     let input = fs::read_to_string("inputs/2016-day16.txt")?;
     let input = input.trim().as_bytes();
 

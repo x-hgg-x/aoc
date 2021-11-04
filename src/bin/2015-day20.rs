@@ -1,3 +1,5 @@
+use eyre::Result;
+
 use std::fs;
 
 fn get_min_house(min_presents: usize, presents_by_house: usize, max_houses_by_elf: usize) -> usize {
@@ -11,7 +13,7 @@ fn get_min_house(min_presents: usize, presents_by_house: usize, max_houses_by_el
     houses.iter().position(|&x| x >= min_presents).unwrap()
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<()> {
     let input = fs::read_to_string("inputs/2015-day20.txt")?;
 
     let min_presents: usize = input.trim().parse()?;

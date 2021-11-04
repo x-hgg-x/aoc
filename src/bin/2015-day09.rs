@@ -1,13 +1,14 @@
+use eyre::Result;
 use itertools::Itertools;
 use regex::Regex;
 
 use std::collections::HashMap;
 use std::fs;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<()> {
     let input = fs::read_to_string("inputs/2015-day09.txt")?;
 
-    let re = Regex::new(r#"(?m)^(\w+) to (\w+) = (\d+)$"#).unwrap();
+    let re = Regex::new(r#"(?m)^(\w+) to (\w+) = (\d+)$"#)?;
 
     let nodes = re.captures_iter(&input).flat_map(|cap| [cap.get(1).unwrap().as_str(), cap.get(2).unwrap().as_str()]).sorted_unstable().dedup().collect_vec();
 

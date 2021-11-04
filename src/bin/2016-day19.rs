@@ -1,6 +1,8 @@
+use eyre::Result;
+
 use std::fs;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<()> {
     let input = fs::read_to_string("inputs/2016-day19.txt")?;
 
     let n = input.trim().parse::<u64>()?;

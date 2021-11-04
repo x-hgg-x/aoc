@@ -1,3 +1,4 @@
+use eyre::Result;
 use std::collections::HashSet;
 use std::fs;
 use std::mem::swap;
@@ -14,7 +15,7 @@ impl Point {
     }
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<()> {
     let input = fs::read_to_string("inputs/2016-day13.txt")?;
 
     let favorite_number: i32 = input.trim().parse()?;

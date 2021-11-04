@@ -1,3 +1,4 @@
+use eyre::{bail, Result};
 use itertools::Itertools;
 use regex::Regex;
 use smallvec::{smallvec, SmallVec};
@@ -150,11 +151,11 @@ fn solve(state: &State) -> usize {
     }
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<()> {
     let input = fs::read_to_string("inputs/2016-day11.txt")?;
 
-    let regex_floor = Regex::new(r#"(\w+) floor"#).unwrap();
-    let regex_gen_chip = Regex::new(r#"a (\w+)( generator|-compatible microchip)"#).unwrap();
+    let regex_floor = Regex::new(r#"(\w+) floor"#)?;
+    let regex_gen_chip = Regex::new(r#"a (\w+)( generator|-compatible microchip)"#)?;
 
     let mut chips = HashMap::new();
     let mut generators = HashMap::new();
@@ -165,7 +166,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             "second" => 1,
             "third" => 2,
             "fourth" => 3,
-            other => panic!("unknown floor: {}", other),
+            other => bail!("unknown floor: {}", other),
         };
 
         for cap in regex_gen_chip.captures_iter(line) {
@@ -173,7 +174,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             match &cap[2] {
                 "-compatible microchip" => chips.insert(element_type, floor),
                 " generator" => generators.insert(element_type, floor),
-                other => panic!("unknown element: {}", other),
+                other => bail!("unknown element: {}", other),
             };
         }
     }

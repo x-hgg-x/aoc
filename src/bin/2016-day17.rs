@@ -1,3 +1,4 @@
+use eyre::Result;
 use std::fs;
 
 #[derive(Clone, Default)]
@@ -6,7 +7,7 @@ struct State {
     path: Vec<u8>,
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<()> {
     let input = fs::read_to_string("inputs/2016-day17.txt")?;
     let input = input.trim();
 

@@ -1,3 +1,4 @@
+use eyre::Result;
 use itertools::{iproduct, Itertools};
 use regex::bytes::Regex;
 
@@ -12,10 +13,10 @@ fn get_aba<'a>(bytes_list: &'a [&[u8]]) -> impl Iterator<Item = &'a [u8]> + Clon
     bytes_list.iter().flat_map(|bytes| bytes.windows(3).filter(|x| x[0] == x[2] && x[0] != x[1]))
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<()> {
     let input = fs::read_to_string("inputs/2016-day07.txt")?;
 
-    let re = Regex::new(r#"\[\w+\]"#).unwrap();
+    let re = Regex::new(r#"\[\w+\]"#)?;
 
     let ips = input
         .lines()

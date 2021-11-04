@@ -1,3 +1,4 @@
+use eyre::Result;
 use itertools::{Either, Itertools};
 
 use std::fs;
@@ -35,7 +36,7 @@ fn get_optimal_qe(weights: &[u64], goal_weight: u64, func: impl Fn(&[u64]) -> bo
     get_partition(filtered_set_iter, weights).filter(|(_, remaining)| func(remaining)).map(|(first_group, _)| first_group.iter().product()).min().unwrap()
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<()> {
     let input = fs::read_to_string("inputs/2015-day24.txt")?;
 
     let weights = input.split_ascii_whitespace().map(|x| x.parse::<u64>().unwrap()).collect_vec();

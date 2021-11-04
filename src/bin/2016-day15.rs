@@ -1,3 +1,4 @@
+use eyre::Result;
 use regex::Regex;
 
 use std::fs;
@@ -40,10 +41,10 @@ fn chinese_remainder_theorem(modulos: &[i64], remainders: &[i64]) -> i64 {
     solution.rem_euclid(product)
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<()> {
     let input = fs::read_to_string("inputs/2016-day15.txt")?;
 
-    let re = Regex::new(r#"(?m)^Disc #(\d+) has (\d+) positions; at time=0, it is at position (\d+).$"#).unwrap();
+    let re = Regex::new(r#"(?m)^Disc #(\d+) has (\d+) positions; at time=0, it is at position (\d+).$"#)?;
 
     let (mut modulos, mut remainders): (Vec<_>, Vec<_>) = re
         .captures_iter(&input)

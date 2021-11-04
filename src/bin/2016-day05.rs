@@ -1,3 +1,4 @@
+use eyre::Result;
 use itertools::Itertools;
 use md5::Digest;
 use smallvec::SmallVec;
@@ -32,7 +33,7 @@ fn hash_generator(input: &str) -> impl Iterator<Item = Digest> {
     }))
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<()> {
     let input = fs::read_to_string("inputs/2016-day05.txt")?;
     let input = input.trim();
 

@@ -1,9 +1,10 @@
+use eyre::Result;
 use itertools::Itertools;
 
 use std::fs;
 use std::iter::once;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<()> {
     let input = fs::read_to_string("inputs/2015-day03.txt")?;
     let input = input.trim();
 

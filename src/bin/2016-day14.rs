@@ -1,3 +1,4 @@
+use eyre::Result;
 use itertools::Itertools;
 use md5::Digest;
 use smallvec::SmallVec;
@@ -132,7 +133,7 @@ impl Queue {
     }
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<()> {
     let input = fs::read_to_string("inputs/2016-day14.txt")?;
     let input = input.trim();
 

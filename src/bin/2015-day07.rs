@@ -1,3 +1,4 @@
+use eyre::Result;
 use regex::Regex;
 
 use std::cell::Cell;
@@ -127,16 +128,16 @@ impl ParseRegex {
     }
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<()> {
     let input = fs::read_to_string("inputs/2015-day07.txt")?;
 
     let parse_regex = ParseRegex {
-        regex_identity: Regex::new(r#"^(?P<op>\w+) -> (?P<name>\w+)$"#).unwrap(),
-        regex_and: Regex::new(r#"^(?P<op1>\w+) AND (?P<op2>\w+) -> (?P<name>\w+)$"#).unwrap(),
-        regex_or: Regex::new(r#"^(?P<op1>\w+) OR (?P<op2>\w+) -> (?P<name>\w+)$"#).unwrap(),
-        regex_not: Regex::new(r#"^NOT (?P<op>\w+) -> (?P<name>\w+)$"#).unwrap(),
-        regex_lshift: Regex::new(r#"^(?P<op1>\w+) LSHIFT (?P<op2>\w+) -> (?P<name>\w+)$"#).unwrap(),
-        regex_rshift: Regex::new(r#"^(?P<op1>\w+) RSHIFT (?P<op2>\w+) -> (?P<name>\w+)$"#).unwrap(),
+        regex_identity: Regex::new(r#"^(?P<op>\w+) -> (?P<name>\w+)$"#)?,
+        regex_and: Regex::new(r#"^(?P<op1>\w+) AND (?P<op2>\w+) -> (?P<name>\w+)$"#)?,
+        regex_or: Regex::new(r#"^(?P<op1>\w+) OR (?P<op2>\w+) -> (?P<name>\w+)$"#)?,
+        regex_not: Regex::new(r#"^NOT (?P<op>\w+) -> (?P<name>\w+)$"#)?,
+        regex_lshift: Regex::new(r#"^(?P<op1>\w+) LSHIFT (?P<op2>\w+) -> (?P<name>\w+)$"#)?,
+        regex_rshift: Regex::new(r#"^(?P<op1>\w+) RSHIFT (?P<op2>\w+) -> (?P<name>\w+)$"#)?,
     };
 
     let mut map = GlobalMap::new();

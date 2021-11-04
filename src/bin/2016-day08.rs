@@ -1,3 +1,4 @@
+use eyre::Result;
 use regex::Regex;
 use smallvec::SmallVec;
 
@@ -27,7 +28,7 @@ fn rotate_column(pixels: &mut [char], column: usize, shift: usize) {
     }
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<()> {
     let input = fs::read_to_string("inputs/2016-day08.txt")?;
 
     let re = Regex::new(r#"(?m)^(rect |rotate row y=|rotate column x=)(\d+)(?:x| by )(\d+)$"#)?;

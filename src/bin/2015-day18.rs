@@ -1,3 +1,4 @@
+use eyre::{ensure, Result};
 use itertools::{iproduct, Itertools};
 
 use std::fs;
@@ -10,10 +11,8 @@ struct Grid {
 }
 
 impl Grid {
-    fn new(width: usize, height: usize, lights: Vec<bool>, stuck: bool) -> Result<Self, &'static str> {
-        if width * height != lights.len() {
-            return Err("unable to construct Grid: width * height != lights.len()");
-        }
+    fn new(width: usize, height: usize, lights: Vec<bool>, stuck: bool) -> Result<Self> {
+        ensure!(width * height == lights.len(), "unable to construct Grid: width * height != lights.len()");
 
         let mut grid = Self { width, height, lights, stuck };
 
@@ -70,7 +69,7 @@ impl Grid {
     }
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<()> {
     let input = fs::read_to_string("inputs/2015-day18.txt")?;
 
     let lights = input

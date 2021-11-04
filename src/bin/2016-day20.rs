@@ -1,3 +1,4 @@
+use eyre::Result;
 use itertools::Itertools;
 
 use std::fs;
@@ -10,7 +11,7 @@ fn merge((start1, end1): (u32, u32), (start2, end2): (u32, u32)) -> Option<(u32,
     }
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<()> {
     let input = fs::read_to_string("inputs/2016-day20.txt")?;
 
     let ranges = input

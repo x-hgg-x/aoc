@@ -1,13 +1,12 @@
+use eyre::{ensure, Result};
 use itertools::{izip, Itertools};
 use regex::Regex;
 use smallvec::SmallVec;
 
 use std::fs;
 
-fn composition(sum: usize, len: usize) -> Result<impl Iterator<Item = SmallVec<[usize; 4]>>, &'static str> {
-    if sum < len {
-        return Err("invalid parameters: sum < len");
-    }
+fn composition(sum: usize, len: usize) -> Result<impl Iterator<Item = SmallVec<[usize; 4]>>> {
+    ensure!(sum >= len, "invalid parameters: sum < len");
 
     let mut first = SmallVec::from_elem(1, len);
     first[len - 1] = sum - len + 1;
@@ -26,10 +25,10 @@ fn composition(sum: usize, len: usize) -> Result<impl Iterator<Item = SmallVec<[
     }))
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<()> {
     let input = fs::read_to_string("inputs/2015-day15.txt")?;
 
-    let re = Regex::new(r#"capacity (-?\d+), durability (-?\d+), flavor (-?\d+), texture (-?\d+), calories (-?\d+)"#).unwrap();
+    let re = Regex::new(r#"capacity (-?\d+), durability (-?\d+), flavor (-?\d+), texture (-?\d+), calories (-?\d+)"#)?;
 
     let ingredients = re
         .captures_iter(&input)

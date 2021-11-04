@@ -1,3 +1,4 @@
+use eyre::Result;
 use itertools::Itertools;
 
 use std::fs;
@@ -26,7 +27,7 @@ fn get_code(input: &str, keypad: &[&[u32]], start_pos: (usize, usize)) -> String
         .collect()
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<()> {
     let input = fs::read_to_string("inputs/2016-day02.txt")?;
     let mut input = input.lines().join("\n");
     input.push('\n');

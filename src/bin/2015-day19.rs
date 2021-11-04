@@ -1,14 +1,15 @@
+use eyre::Result;
 use itertools::Itertools;
 use regex::bytes::Regex;
 
 use std::fs;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<()> {
     let input = fs::read_to_string("inputs/2015-day19.txt")?;
     let input = input.trim().as_bytes().to_vec();
 
-    let regex_replacements = Regex::new(r#"(?m)^(\w+) => (\w+)$"#).unwrap();
-    let regex_molecule = Regex::new(r#"(\w+)$"#).unwrap();
+    let regex_replacements = Regex::new(r#"(?m)^(\w+) => (\w+)$"#)?;
+    let regex_molecule = Regex::new(r#"(\w+)$"#)?;
 
     let replacements = regex_replacements.captures_iter(&input).map(|cap| (cap.get(1).unwrap().as_bytes(), cap.get(2).unwrap().as_bytes())).collect_vec();
     let molecule = regex_molecule.find(&input).map(|x| x.as_bytes()).unwrap();

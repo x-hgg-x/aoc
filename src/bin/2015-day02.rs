@@ -1,8 +1,9 @@
+use eyre::Result;
 use itertools::Itertools;
 
 use std::fs;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<()> {
     let input = fs::read_to_string("inputs/2015-day02.txt")?;
 
     let edges =

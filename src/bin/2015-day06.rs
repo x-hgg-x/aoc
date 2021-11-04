@@ -1,3 +1,4 @@
+use eyre::Result;
 use regex::Regex;
 
 use std::fs;
@@ -25,10 +26,10 @@ fn set_lights(input: &str, re: &Regex, grid: &mut [[i8; 1000]; 1000], f: F) {
     }
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<()> {
     let input = fs::read_to_string("inputs/2015-day06.txt")?;
 
-    let re = Regex::new(r#"(.*?) (\d+),(\d+) through (\d+),(\d+)"#).unwrap();
+    let re = Regex::new(r#"(.*?) (\d+),(\d+) through (\d+),(\d+)"#)?;
 
     let f1: F = Box::new(|instruction| {
         Box::new(match instruction {

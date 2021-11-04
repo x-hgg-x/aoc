@@ -1,13 +1,14 @@
+use eyre::Result;
 use itertools::Itertools;
 use regex::Regex;
 
 use std::cmp::Reverse;
 use std::fs;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<()> {
     let input = fs::read_to_string("inputs/2016-day04.txt")?;
 
-    let re = Regex::new(r#"(?m)^([\w-]+?)-(\d+)\[(\w+)\]$"#).unwrap();
+    let re = Regex::new(r#"(?m)^([\w-]+?)-(\d+)\[(\w+)\]$"#)?;
 
     let real_rooms = re
         .captures_iter(&input)

@@ -1,12 +1,13 @@
+use eyre::Result;
 use itertools::Itertools;
 use regex::Regex;
 
 use std::fs;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<()> {
     let input = fs::read_to_string("inputs/2016-day01.txt")?;
 
-    let re = Regex::new(r#"([RL])(\d+)"#).unwrap();
+    let re = Regex::new(r#"([RL])(\d+)"#)?;
 
     let blocks = re
         .captures_iter(&input)

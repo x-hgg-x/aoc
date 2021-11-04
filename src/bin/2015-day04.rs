@@ -1,3 +1,4 @@
+use eyre::Result;
 use md5::Digest;
 use smallvec::SmallVec;
 
@@ -37,7 +38,7 @@ fn find_digest(input: &str, f: impl Fn(&Digest) -> bool) -> usize {
     hash_generator(input).find(|(_, digest)| f(digest)).map(|(n, _)| n).unwrap()
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<()> {
     let input = fs::read_to_string("inputs/2015-day04.txt")?;
     let input = input.trim();
 

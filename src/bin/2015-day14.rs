@@ -1,12 +1,13 @@
+use eyre::Result;
 use itertools::Itertools;
 use regex::Regex;
 
 use std::fs;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<()> {
     let input = fs::read_to_string("inputs/2015-day14.txt")?;
 
-    let re = Regex::new(r#"fly (\d+) km/s for (\d+) seconds.*?rest for (\d+)"#).unwrap();
+    let re = Regex::new(r#"fly (\d+) km/s for (\d+) seconds.*?rest for (\d+)"#)?;
 
     const TIME: i32 = 2503;
 

@@ -1,3 +1,4 @@
+use eyre::Result;
 use regex::bytes::Regex;
 
 use std::fs;
@@ -6,11 +7,11 @@ fn count(re: &Regex, input: &[u8]) -> i32 {
     re.find_iter(input).map(|x| -> i32 { String::from_utf8_lossy(x.as_bytes()).parse().unwrap() }).sum()
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<()> {
     let mut input = fs::read("inputs/2015-day12.txt")?;
 
-    let regex_num = Regex::new(r#"-?\d+"#).unwrap();
-    let regex_red = Regex::new(r#":"red""#).unwrap();
+    let regex_num = Regex::new(r#"-?\d+"#)?;
+    let regex_red = Regex::new(r#":"red""#)?;
 
     let result1 = count(&regex_num, &input);
 

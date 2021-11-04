@@ -1,3 +1,4 @@
+use eyre::Result;
 use regex::Regex;
 
 use std::collections::HashMap;
@@ -13,11 +14,11 @@ fn get_aunt(input: &str, gift: &HashMap<&str, RangeInclusive<u32>>, regex_compou
         .unwrap()
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<()> {
     let input = fs::read_to_string("inputs/2015-day16.txt")?;
 
-    let regex_compounds = Regex::new(r#"(children|cats|samoyeds|pomeranians|akitas|vizslas|goldfish|trees|cars|perfumes): (\d+)(?:, )?"#).unwrap();
-    let regex_num = Regex::new(r#"^Sue (\d+): "#).unwrap();
+    let regex_compounds = Regex::new(r#"(children|cats|samoyeds|pomeranians|akitas|vizslas|goldfish|trees|cars|perfumes): (\d+)(?:, )?"#)?;
+    let regex_num = Regex::new(r#"^Sue (\d+): "#)?;
 
     let mut gift = <HashMap<_, _>>::from_iter([
         ("children", 3..=3),

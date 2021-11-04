@@ -1,3 +1,4 @@
+use eyre::Result;
 use itertools::{iproduct, Itertools};
 use regex::Regex;
 use smallvec::{smallvec, SmallVec};
@@ -24,10 +25,10 @@ impl<'a> Sum<&'a Self> for Equipment {
     }
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<()> {
     let input = fs::read_to_string("inputs/2015-day21.txt")?;
 
-    let re = Regex::new(r#"Hit Points: (\d+)\s+Damage: (\d+)\s+Armor: (\d+)"#).unwrap();
+    let re = Regex::new(r#"Hit Points: (\d+)\s+Damage: (\d+)\s+Armor: (\d+)"#)?;
 
     let (boss_hp, boss_damage, boss_armor): (i32, i32, i32) =
         re.captures(&input).map(|cap| (cap[1].parse().unwrap(), cap[2].parse().unwrap(), cap[3].parse().unwrap())).unwrap();
