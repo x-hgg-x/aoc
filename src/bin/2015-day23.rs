@@ -8,9 +8,9 @@ enum Instruction {
     Half(usize),
     Triple(usize),
     Increment(usize),
-    Jump(i32),
-    JumpIfEven(usize, i32),
-    JumpIfOne(usize, i32),
+    Jump(i64),
+    JumpIfEven(usize, i64),
+    JumpIfOne(usize, i64),
 }
 
 fn get_register(register: &str) -> usize {
@@ -21,7 +21,7 @@ fn get_register(register: &str) -> usize {
     }
 }
 
-fn run(instructions: &[Instruction], mut registers: [i32; 2]) -> [i32; 2] {
+fn run(instructions: &[Instruction], mut registers: [i64; 2]) -> [i64; 2] {
     let mut ip = 0;
     while (0..instructions.len()).contains(&(ip as usize)) {
         match instructions[ip as usize] {

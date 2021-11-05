@@ -7,11 +7,11 @@ use std::fs;
 #[derive(Copy, Clone)]
 enum Input {
     Register(usize),
-    Value(i32),
+    Value(i64),
 }
 
 impl Input {
-    fn get_value(&self, registers: &[i32; 4]) -> i32 {
+    fn get_value(&self, registers: &[i64; 4]) -> i64 {
         match *self {
             Input::Register(r) => registers[r],
             Input::Value(v) => v,
@@ -47,7 +47,7 @@ fn get_input(input: &str) -> Input {
     }
 }
 
-fn run(instructions: &[Instruction], mut registers: [i32; 4]) -> [i32; 4] {
+fn run(instructions: &[Instruction], mut registers: [i64; 4]) -> [i64; 4] {
     let mut ip = 0;
     while (0..instructions.len()).contains(&(ip as usize)) {
         match instructions[ip as usize] {

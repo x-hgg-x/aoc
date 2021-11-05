@@ -3,7 +3,7 @@ use itertools::Itertools;
 use regex::Regex;
 
 use std::cmp::Ordering;
-use std::collections::{BinaryHeap, HashSet};
+use std::collections::{BinaryHeap, HashMap};
 use std::fs;
 
 struct Node {
@@ -29,19 +29,24 @@ impl Grid {
 }
 
 struct State {
-    hole_row: usize,
-    hole_column: usize,
+    hole_position: (usize, usize),
+    previous_hole_position: (usize, usize),
     steps: usize,
     distance: usize,
 }
 
 impl State {
-    fn new(hole_row: usize, hole_column: usize, goal_row: usize, goal_column: usize, steps: usize) -> Self {
+    fn new(hole_position: (usize, usize), previous_hole_position: (usize, usize), (goal_row, goal_column): (usize, usize), steps: usize) -> Self {
+        let (hole_row, hole_column) = hole_position;
         let abs_diff_x = if hole_row >= goal_row { hole_row - goal_row } else { goal_row - hole_row };
         let abs_diff_y = if hole_column >= goal_column { hole_column - goal_column } else { goal_column - hole_column };
         let distance = abs_diff_x + abs_diff_y;
 
-        Self { hole_row, hole_column, steps, distance }
+        Self { hole_position, previous_hole_position, steps, distance }
+    }
+
+    fn estimate(&self) -> usize {
+        self.steps + self.distance
     }
 }
 
@@ -49,13 +54,13 @@ impl Eq for State {}
 
 impl PartialEq for State {
     fn eq(&self, other: &Self) -> bool {
-        self.distance.eq(&other.distance)
+        self.estimate().eq(&other.estimate())
     }
 }
 
 impl Ord for State {
     fn cmp(&self, other: &Self) -> Ordering {
-        other.distance.cmp(&self.distance)
+        other.estimate().cmp(&self.estimate())
     }
 }
 
@@ -106,52 +111,66 @@ fn main() -> Result<()> {
     let initial_hole_index = grid.nodes.iter().position(|node| node.used == 0).unwrap();
     let initial_hole_row = initial_hole_index % grid.height;
     let initial_hole_column = initial_hole_index / grid.height;
+    let initial_position = (initial_hole_row, initial_hole_column);
 
     let goal_row = 0;
     let goal_column = grid.width - 2;
+    let goal_position = (goal_row, goal_column);
 
-    let mut previous_hole_indices = HashSet::new();
-    previous_hole_indices.insert(initial_hole_index);
+    let initial_state = State::new(initial_position, initial_position, goal_position, 0);
+
+    let mut previous_holes = HashMap::new();
+    previous_holes.insert(initial_hole_index, initial_state.steps);
 
     let mut current_states = BinaryHeap::new();
-    current_states.push(State::new(initial_hole_row, initial_hole_column, goal_row, goal_column, 0));
+    current_states.push(initial_state);
 
     let steps = loop {
         if let Some(state) = current_states.pop() {
-            if (state.hole_row, state.hole_column) == (goal_row, goal_column) {
+            if state.hole_position == goal_position {
                 break state.steps;
             }
 
-            let state_hole_index = grid.get_index(state.hole_row, state.hole_column);
+            let (state_hole_row, state_hole_column) = state.hole_position;
+            let state_hole_index = grid.get_index(state_hole_row, state_hole_column);
             let state_hole_node_size = grid.nodes[state_hole_index].size;
 
-            if state.hole_row > 0 {
-                let (new_hole_row, new_hole_column) = (state.hole_row - 1, state.hole_column);
+            let mut process_neighbors = |new_hole_row, new_hole_column| {
+                let new_hole_position = (new_hole_row, new_hole_column);
                 let new_hole_index = grid.get_index(new_hole_row, new_hole_column);
-                if grid.nodes[new_hole_index].used <= state_hole_node_size && previous_hole_indices.insert(new_hole_index) {
-                    current_states.push(State::new(new_hole_row, new_hole_column, goal_row, goal_column, state.steps + 1));
+                let new_steps = state.steps + 1;
+
+                if new_hole_position == state.previous_hole_position || grid.nodes[new_hole_index].used > state_hole_node_size {
+                    return;
                 }
+
+                match previous_holes.entry(new_hole_index) {
+                    std::collections::hash_map::Entry::Occupied(mut entry) => {
+                        let old_steps = entry.get_mut();
+                        if new_steps >= *old_steps {
+                            return;
+                        }
+                        *old_steps = new_steps;
+                    }
+                    std::collections::hash_map::Entry::Vacant(entry) => {
+                        entry.insert(new_steps);
+                    }
+                }
+
+                current_states.push(State::new(new_hole_position, state.previous_hole_position, goal_position, new_steps));
+            };
+
+            if state_hole_row > 0 {
+                process_neighbors(state_hole_row - 1, state_hole_column);
             }
-            if state.hole_row < height - 1 {
-                let (new_hole_row, new_hole_column) = (state.hole_row + 1, state.hole_column);
-                let new_hole_index = grid.get_index(new_hole_row, new_hole_column);
-                if grid.nodes[new_hole_index].used <= state_hole_node_size && previous_hole_indices.insert(new_hole_index) {
-                    current_states.push(State::new(new_hole_row, new_hole_column, goal_row, goal_column, state.steps + 1));
-                }
+            if state_hole_row < grid.height - 1 {
+                process_neighbors(state_hole_row + 1, state_hole_column);
             }
-            if state.hole_column > 0 {
-                let (new_hole_row, new_hole_column) = (state.hole_row, state.hole_column - 1);
-                let new_hole_index = grid.get_index(new_hole_row, new_hole_column);
-                if grid.nodes[new_hole_index].used <= state_hole_node_size && previous_hole_indices.insert(new_hole_index) {
-                    current_states.push(State::new(new_hole_row, new_hole_column, goal_row, goal_column, state.steps + 1));
-                }
+            if state_hole_column > 0 {
+                process_neighbors(state_hole_row, state_hole_column - 1);
             }
-            if state.hole_column < width - 1 {
-                let (new_hole_row, new_hole_column) = (state.hole_row, state.hole_column + 1);
-                let new_hole_index = grid.get_index(new_hole_row, new_hole_column);
-                if grid.nodes[new_hole_index].used <= state_hole_node_size && previous_hole_indices.insert(new_hole_index) {
-                    current_states.push(State::new(new_hole_row, new_hole_column, goal_row, goal_column, state.steps + 1));
-                }
+            if state_hole_column < grid.width - 1 {
+                process_neighbors(state_hole_row, state_hole_column + 1);
             }
         }
     };

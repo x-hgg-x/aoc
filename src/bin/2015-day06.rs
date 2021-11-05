@@ -1,9 +1,8 @@
 use eyre::Result;
+use itertools::Itertools;
 use regex::Regex;
 
 use std::fs;
-
-type F = Box<dyn Fn(&str) -> Box<dyn Fn(i8) -> i8>>;
 
 fn parse_regex<'a>(re: &Regex, text: &'a str) -> (&'a str, usize, usize, usize, usize) {
     re.captures_iter(text)
@@ -12,7 +11,11 @@ fn parse_regex<'a>(re: &Regex, text: &'a str) -> (&'a str, usize, usize, usize, 
         .unwrap()
 }
 
-fn set_lights(input: &str, re: &Regex, grid: &mut [[i8; 1000]; 1000], f: F) {
+fn set_lights<'a, F, Func>(input: &'a str, re: &Regex, grid: &mut [[i8; 1000]; 1000], f: F)
+where
+    F: Fn(&'a str) -> Func,
+    Func: Fn(i8) -> i8,
+{
     for line in input.lines() {
         let (instruction, start_line, start_col, end_line, end_col) = parse_regex(re, line);
 
@@ -31,33 +34,29 @@ fn main() -> Result<()> {
 
     let re = Regex::new(r#"(.*?) (\d+),(\d+) through (\d+),(\d+)"#)?;
 
-    let f1: F = Box::new(|instruction| {
-        Box::new(match instruction {
-            "turn on" => |x: i8| x * x,
-            "turn off" => |x: i8| -x * x,
-            "toggle" => |x: i8| -x,
-            other => panic!("unknown instruction: {}", other),
-        })
-    });
+    let f1 = |instruction| match instruction {
+        "turn on" => |x: i8| x * x,
+        "turn off" => |x: i8| -x * x,
+        "toggle" => |x: i8| -x,
+        other => panic!("unknown instruction: {}", other),
+    };
 
-    let f2: F = Box::new(|instruction| {
-        Box::new(match instruction {
-            "turn on" => |x: i8| x + 1,
-            "turn off" => |x: i8| (x - 1).max(0),
-            "toggle" => |x: i8| x + 2,
-            other => panic!("unknown instruction: {}", other),
-        })
-    });
+    let f2 = |instruction| match instruction {
+        "turn on" => |x: i8| x + 1,
+        "turn off" => |x: i8| (x - 1).max(0),
+        "toggle" => |x: i8| x + 2,
+        other => panic!("unknown instruction: {}", other),
+    };
 
     let mut grid = [[-1_i8; 1000]; 1000];
     set_lights(&input, &re, &mut grid, f1);
 
-    let result1: usize = grid.iter().map(|x| x.iter().filter(|&&x| x == 1).count()).sum();
+    let result1 = grid.iter().map(|x| x.iter().filter(|&&x| x == 1).count()).sum::<usize>();
 
     grid = [[0_i8; 1000]; 1000];
     set_lights(&input, &re, &mut grid, f2);
 
-    let result2: i32 = grid.iter().map(|x| x.iter().map(|&x| -> i32 { x.into() }).sum::<i32>()).sum();
+    let result2 = grid.iter().map(|x| x.iter().copied().map_into::<i64>().sum::<i64>()).sum::<i64>();
 
     println!("{}", result1);
     println!("{}", result2);
