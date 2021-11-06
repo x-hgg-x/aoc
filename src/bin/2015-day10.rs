@@ -8,8 +8,8 @@ struct LookAndSay {
 }
 
 impl LookAndSay {
-    fn new(number: &str) -> Self {
-        Self { data: number.chars().map(|x| x.to_digit(10).unwrap() as u8).collect() }
+    fn new(number: &[u8]) -> Self {
+        Self { data: number.iter().map(|&x| x - b'0').collect() }
     }
 
     fn next(&mut self, n: u32) -> &[u8] {
@@ -23,7 +23,7 @@ impl LookAndSay {
 
 fn main() -> Result<()> {
     let input = fs::read_to_string("inputs/2015-day10.txt")?;
-    let input = input.trim();
+    let input = input.trim().as_bytes();
 
     let mut look_and_say = LookAndSay::new(input);
 

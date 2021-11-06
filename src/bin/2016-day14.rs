@@ -13,8 +13,8 @@ struct HashGenerator {
 }
 
 impl HashGenerator {
-    fn new(input: &str) -> Self {
-        let mut data = SmallVec::from_slice(input.as_bytes());
+    fn new(input: &[u8]) -> Self {
+        let mut data = SmallVec::from_slice(input);
         data.push(b'0');
 
         Self { data, input_len: input.len(), index: 0 }
@@ -65,7 +65,7 @@ struct Queue {
 }
 
 impl Queue {
-    fn new(input: &str, additional_hashs: usize) -> Self {
+    fn new(input: &[u8], additional_hashs: usize) -> Self {
         Self { additional_hashs, hash_generator: HashGenerator::new(input), hash_infos: VecDeque::new(), quintuples_count: [0; 16] }
     }
 
@@ -135,7 +135,7 @@ impl Queue {
 
 fn main() -> Result<()> {
     let input = fs::read_to_string("inputs/2016-day14.txt")?;
-    let input = input.trim();
+    let input = input.trim().as_bytes();
 
     let result1 = Queue::new(input, 0).compute_64th_key_index();
     let result2 = Queue::new(input, 2016).compute_64th_key_index();

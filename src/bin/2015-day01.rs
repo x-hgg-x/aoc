@@ -4,15 +4,14 @@ use itertools::Itertools;
 use std::fs;
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2015-day01.txt")?;
-    let input = input.trim();
+    let input = fs::read("inputs/2015-day01.txt")?;
 
     let floors = input
-        .chars()
-        .map(|c| match c {
-            '(' => 1,
-            ')' => -1,
-            _ => 0,
+        .iter()
+        .filter_map(|&x| match x {
+            b'(' => Some(1),
+            b')' => Some(-1),
+            _ => None,
         })
         .collect_vec();
 

@@ -27,7 +27,7 @@ fn main() -> Result<()> {
             (common_letters == cap[3]).then(|| {
                 let id = cap[2].parse::<u32>().unwrap();
                 let name = String::from_iter(cap[1].chars().map(|c| c.to_digit(36).and_then(|n| char::from_digit((n - 10 + id) % 26 + 10, 36)).unwrap_or('-')));
-                (name, id)
+                (name, id as u64)
             })
         })
         .collect_vec();

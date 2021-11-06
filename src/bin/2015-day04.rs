@@ -5,11 +5,11 @@ use smallvec::SmallVec;
 use std::fs;
 use std::iter::once;
 
-fn hash_generator(input: &str) -> impl Iterator<Item = (usize, Digest)> {
+fn hash_generator(input: &[u8]) -> impl Iterator<Item = (usize, Digest)> {
     let input_len = input.len();
     let mut n: usize = 1;
 
-    let mut data = SmallVec::<[u8; 24]>::from_slice(input.as_bytes());
+    let mut data = SmallVec::<[u8; 24]>::from_slice(input);
     data.push(b'1');
 
     once((n, md5::compute(&data))).chain(std::iter::from_fn(move || {
@@ -34,13 +34,13 @@ fn hash_generator(input: &str) -> impl Iterator<Item = (usize, Digest)> {
     }))
 }
 
-fn find_digest(input: &str, f: impl Fn(&Digest) -> bool) -> usize {
+fn find_digest(input: &[u8], f: impl Fn(&Digest) -> bool) -> usize {
     hash_generator(input).find(|(_, digest)| f(digest)).map(|(n, _)| n).unwrap()
 }
 
 fn main() -> Result<()> {
     let input = fs::read_to_string("inputs/2015-day04.txt")?;
-    let input = input.trim();
+    let input = input.trim().as_bytes();
 
     let result1 = find_digest(input, |digest| digest[..2] == [0, 0] && digest[2] <= 0x0F);
     let result2 = find_digest(input, |digest| digest[..3] == [0, 0, 0]);

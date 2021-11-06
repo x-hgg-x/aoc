@@ -9,7 +9,7 @@ struct State {
 
 fn main() -> Result<()> {
     let input = fs::read_to_string("inputs/2016-day17.txt")?;
-    let input = input.trim();
+    let input = input.trim().as_bytes();
 
     const UP: (u8, (i8, i8)) = (b'U', (0, -1));
     const DOWN: (u8, (i8, i8)) = (b'D', (0, 1));
@@ -17,7 +17,7 @@ fn main() -> Result<()> {
     const RIGHT: (u8, (i8, i8)) = (b'R', (1, 0));
     const UDLR: [(u8, (i8, i8)); 4] = [UP, DOWN, LEFT, RIGHT];
 
-    let mut buf = input.as_bytes().to_vec();
+    let mut buf = input.to_vec();
     let mut min_path = Option::<Vec<_>>::None;
     let mut max_path_len = 0;
     let mut states = vec![State::default()];

@@ -6,10 +6,10 @@ use std::fs;
 fn main() -> Result<()> {
     let input = fs::read_to_string("inputs/2015-day17.txt")?;
 
-    let set = <Vec<u32>>::from_iter(input.split_ascii_whitespace().flat_map(|x| x.parse().ok()));
-    let max: u32 = 1 << set.len();
+    let set = <Vec<u64>>::from_iter(input.split_ascii_whitespace().flat_map(|x| x.parse().ok()));
+    let max: u64 = 1 << set.len();
 
-    const SUM: u32 = 150;
+    const SUM: u64 = 150;
 
     let combinations = (1..max)
         .scan((0, 0), |state, index| {

@@ -5,16 +5,15 @@ use std::fs;
 use std::iter::once;
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2015-day03.txt")?;
-    let input = input.trim();
+    let input = fs::read("inputs/2015-day03.txt")?;
 
     let locations = once((0, 0))
-        .chain(input.chars().map(|c| match c {
-            '^' => (0, 1),
-            'v' => (0, -1),
-            '<' => (-1, 0),
-            '>' => (1, 0),
-            _ => (0, 0),
+        .chain(input.iter().filter_map(|x| match x {
+            b'^' => Some((0, 1)),
+            b'v' => Some((0, -1)),
+            b'<' => Some((-1, 0)),
+            b'>' => Some((1, 0)),
+            _ => None,
         }))
         .collect_vec();
 

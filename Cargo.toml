@@ -9,4 +9,4 @@ eyre = "0.6"
 itertools = "0.10"
 md5 = "0.7"
 regex = "1"
-smallvec = "1"
+smallvec = { version = "1", features = ["const_generics"] }

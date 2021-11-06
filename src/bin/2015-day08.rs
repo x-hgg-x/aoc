@@ -17,7 +17,7 @@ fn main() -> Result<()> {
         })
         .sum();
 
-    let result2: usize = input.lines().map(|line| 2 + line.chars().filter(|&c| c == '"' || c == '\\').count()).sum();
+    let result2: usize = input.lines().map(|line| 2 + line.bytes().filter(|&x| x == b'"' || x == b'\\').count()).sum();
 
     println!("{}", result1);
     println!("{}", result2);

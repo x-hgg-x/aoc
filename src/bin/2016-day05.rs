@@ -6,10 +6,10 @@ use smallvec::SmallVec;
 use std::fs;
 use std::iter::once;
 
-fn hash_generator(input: &str) -> impl Iterator<Item = Digest> {
+fn hash_generator(input: &[u8]) -> impl Iterator<Item = Digest> {
     let input_len = input.len();
 
-    let mut data = SmallVec::<[u8; 24]>::from_slice(input.as_bytes());
+    let mut data = SmallVec::<[u8; 24]>::from_slice(input);
     data.push(b'0');
 
     once(md5::compute(&data)).chain(std::iter::from_fn(move || {
@@ -35,7 +35,7 @@ fn hash_generator(input: &str) -> impl Iterator<Item = Digest> {
 
 fn main() -> Result<()> {
     let input = fs::read_to_string("inputs/2016-day05.txt")?;
-    let input = input.trim();
+    let input = input.trim().as_bytes();
 
     let sub_hashes = hash_generator(input)
         .filter(|digest| digest[..2] == [0, 0] && digest[2] <= 0x0F)

@@ -70,13 +70,13 @@ impl Grid {
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2015-day18.txt")?;
+    let input = fs::read("inputs/2015-day18.txt")?;
 
     let lights = input
-        .chars()
-        .filter_map(|c| match c {
-            '.' => Some(false),
-            '#' => Some(true),
+        .iter()
+        .filter_map(|&c| match c {
+            b'.' => Some(false),
+            b'#' => Some(true),
             _ => None,
         })
         .collect_vec();

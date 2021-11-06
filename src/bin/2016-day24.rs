@@ -1,10 +1,59 @@
 use eyre::{ensure, Result};
 use itertools::Itertools;
+use smallvec::SmallVec;
 
 use std::cmp::Ordering;
 use std::collections::{BinaryHeap, HashMap};
 use std::fs;
 use std::iter::once;
+
+struct Permutations<'a, T, const N: usize> {
+    data: &'a [T],
+    available: SmallVec<[T; N]>,
+    buf: SmallVec<[T; N]>,
+    factorials: Vec<i64>,
+    factorial_index: i64,
+}
+
+impl<'a, T, const N: usize> Permutations<'a, T, N> {
+    fn new(data: &'a [T]) -> Self {
+        Self { data, available: SmallVec::new(), buf: SmallVec::new(), factorials: Self::compute_factorials(data.len() as i64), factorial_index: 0 }
+    }
+
+    fn compute_factorials(num: i64) -> Vec<i64> {
+        once(1)
+            .chain((1..=num).scan(1, |state, x| {
+                *state *= x;
+                Some(*state)
+            }))
+            .collect_vec()
+    }
+}
+
+impl<'a, T: Clone, const N: usize> Iterator for Permutations<'a, T, N> {
+    type Item = SmallVec<[T; N]>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.factorial_index >= self.factorials[self.data.len()] {
+            return None;
+        }
+
+        let mut x = self.factorial_index;
+
+        self.buf.clear();
+        self.available = SmallVec::from(self.data);
+
+        self.buf.extend(self.factorials[..self.data.len()].iter().rev().map(|&place_value| {
+            let index = x / place_value;
+            x -= index * place_value;
+            self.available.remove(index.rem_euclid(self.available.len() as i64) as usize)
+        }));
+
+        self.factorial_index += 1;
+
+        Some(self.buf.clone())
+    }
+}
 
 struct Grid {
     width: usize,
@@ -132,7 +181,7 @@ fn compute_shortest_distance(grid: &Grid, initial_position: (usize, usize), goal
     }
 }
 
-fn compute_shortest_path<'a, I>(permutations: &'a [Vec<u8>], distances: &HashMap<(u8, u8), usize>, iter_func: impl Fn(&'a [u8]) -> I) -> usize
+fn compute_shortest_path<'a, I>(permutations: &'a [SmallVec<[u8; 8]>], distances: &HashMap<(u8, u8), usize>, iter_func: impl Fn(&'a [u8]) -> I) -> usize
 where
     I: Iterator<Item = u8> + 'a,
 {
@@ -174,12 +223,13 @@ fn main() -> Result<()> {
     let height = input.lines().count();
     let grid = Grid::new(width, height, tiles)?;
 
-    let locations = locations_indices.into_iter().map(|(n, index)| (n, grid.get_position(index))).collect_vec();
+    let locations_positions = locations_indices.into_iter().map(|(n, index)| (n, grid.get_position(index))).collect_vec();
 
-    let (first_location, _) = locations[0];
+    let (first_location, _) = locations_positions[0];
+    let other_locations = locations_positions[1..].iter().map(|&(location, _)| location).collect_vec();
     ensure!(first_location == 0, "unable to found first location");
 
-    let distances: HashMap<_, _> = locations
+    let distances: HashMap<_, _> = locations_positions
         .iter()
         .tuple_combinations()
         .map(|(&(initial_location, initial_position), &(goal_location, goal_position))| {
@@ -189,7 +239,7 @@ fn main() -> Result<()> {
         })
         .collect();
 
-    let permutations = locations.iter().map(|&(location, _)| location).skip(1).permutations(locations.len() - 1).collect_vec();
+    let permutations = Permutations::<_, 8>::new(&other_locations).collect_vec();
 
     let result1 = compute_shortest_path(&permutations, &distances, |path| once(first_location).chain(path.iter().copied()));
     let result2 = compute_shortest_path(&permutations, &distances, |path| once(first_location).chain(path.iter().copied()).chain(once(first_location)));
