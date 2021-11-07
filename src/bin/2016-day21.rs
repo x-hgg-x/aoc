@@ -1,6 +1,6 @@
 use eyre::{eyre, Result};
 use itertools::Itertools;
-use regex::Regex;
+use regex::{Regex, RegexSet};
 
 use std::fs;
 
@@ -69,6 +69,7 @@ impl Operation {
 }
 
 struct ParseRegex {
+    set: RegexSet,
     regex_swap_position: Regex,
     regex_swap_letter: Regex,
     regex_rotate_left: Regex,
@@ -79,23 +80,74 @@ struct ParseRegex {
 }
 
 impl ParseRegex {
+    const REGEX_SWAP_POSITION: usize = 0;
+    const REGEX_SWAP_LETTER: usize = 1;
+    const REGEX_ROTATE_LEFT: usize = 2;
+    const REGEX_ROTATE_RIGHT: usize = 3;
+    const REGEX_ROTATE_POSITION: usize = 4;
+    const REGEX_REVERSE_POSITION: usize = 5;
+    const REGEX_MOVE_POSITION: usize = 6;
+
+    fn new(
+        regex_swap_position: Regex,
+        regex_swap_letter: Regex,
+        regex_rotate_left: Regex,
+        regex_rotate_right: Regex,
+        regex_rotate_position: Regex,
+        regex_reverse_position: Regex,
+        regex_move_position: Regex,
+    ) -> Result<Self> {
+        Ok(Self {
+            set: RegexSet::new(&[
+                regex_swap_position.as_str(),
+                regex_swap_letter.as_str(),
+                regex_rotate_left.as_str(),
+                regex_rotate_right.as_str(),
+                regex_rotate_position.as_str(),
+                regex_reverse_position.as_str(),
+                regex_move_position.as_str(),
+            ])?,
+            regex_swap_position,
+            regex_swap_letter,
+            regex_rotate_left,
+            regex_rotate_right,
+            regex_rotate_position,
+            regex_reverse_position,
+            regex_move_position,
+        })
+    }
+
     fn parse(&self, line: &str) -> Result<Operation> {
-        if let Some(cap) = self.regex_swap_position.captures(line) {
-            Ok(Operation::SwapPosition(cap[1].parse()?, cap[2].parse()?))
-        } else if let Some(cap) = self.regex_swap_letter.captures(line) {
-            Ok(Operation::SwapLetter(cap[1].as_bytes()[0], cap[2].as_bytes()[0]))
-        } else if let Some(cap) = self.regex_rotate_left.captures(line) {
-            Ok(Operation::RotateLeft(cap[1].parse()?))
-        } else if let Some(cap) = self.regex_rotate_right.captures(line) {
-            Ok(Operation::RotateRight(cap[1].parse()?))
-        } else if let Some(cap) = self.regex_rotate_position.captures(line) {
-            Ok(Operation::RotatePosition(cap[1].as_bytes()[0]))
-        } else if let Some(cap) = self.regex_reverse_position.captures(line) {
-            Ok(Operation::ReversePosition(cap[1].parse()?, cap[2].parse()?))
-        } else if let Some(cap) = self.regex_move_position.captures(line) {
-            Ok(Operation::MovePosition(cap[1].parse()?, cap[2].parse()?))
-        } else {
-            Err(eyre!("unknown operation: {}", line))
+        match self.set.matches(line).iter().next() {
+            Some(Self::REGEX_SWAP_POSITION) => {
+                let cap = self.regex_swap_position.captures(line).unwrap();
+                Ok(Operation::SwapPosition(cap[1].parse()?, cap[2].parse()?))
+            }
+            Some(Self::REGEX_SWAP_LETTER) => {
+                let cap = self.regex_swap_letter.captures(line).unwrap();
+                Ok(Operation::SwapLetter(cap[1].as_bytes()[0], cap[2].as_bytes()[0]))
+            }
+            Some(Self::REGEX_ROTATE_LEFT) => {
+                let cap = self.regex_rotate_left.captures(line).unwrap();
+                Ok(Operation::RotateLeft(cap[1].parse()?))
+            }
+            Some(Self::REGEX_ROTATE_RIGHT) => {
+                let cap = self.regex_rotate_right.captures(line).unwrap();
+                Ok(Operation::RotateRight(cap[1].parse()?))
+            }
+            Some(Self::REGEX_ROTATE_POSITION) => {
+                let cap = self.regex_rotate_position.captures(line).unwrap();
+                Ok(Operation::RotatePosition(cap[1].as_bytes()[0]))
+            }
+            Some(Self::REGEX_REVERSE_POSITION) => {
+                let cap = self.regex_reverse_position.captures(line).unwrap();
+                Ok(Operation::ReversePosition(cap[1].parse()?, cap[2].parse()?))
+            }
+            Some(Self::REGEX_MOVE_POSITION) => {
+                let cap = self.regex_move_position.captures(line).unwrap();
+                Ok(Operation::MovePosition(cap[1].parse()?, cap[2].parse()?))
+            }
+            _ => Err(eyre!("unknown operation: {}", line)),
         }
     }
 }
@@ -103,15 +155,15 @@ impl ParseRegex {
 fn main() -> Result<()> {
     let input = fs::read_to_string("inputs/2016-day21.txt")?;
 
-    let parse_regex = ParseRegex {
-        regex_swap_position: Regex::new(r#"^swap position (\d+) with position (\d+)$"#)?,
-        regex_swap_letter: Regex::new(r#"^swap letter (\w) with letter (\w)$"#)?,
-        regex_rotate_left: Regex::new(r#"^rotate left (\d+) steps?$"#)?,
-        regex_rotate_right: Regex::new(r#"^rotate right (\d+) steps?$"#)?,
-        regex_rotate_position: Regex::new(r#"^rotate based on position of letter (\w)$"#)?,
-        regex_reverse_position: Regex::new(r#"^reverse positions (\d+) through (\d+)$"#)?,
-        regex_move_position: Regex::new(r#"^move position (\d+) to position (\d+)$"#)?,
-    };
+    let parse_regex = ParseRegex::new(
+        Regex::new(r#"^swap position (\d+) with position (\d+)$"#)?,
+        Regex::new(r#"^swap letter (\w) with letter (\w)$"#)?,
+        Regex::new(r#"^rotate left (\d+) steps?$"#)?,
+        Regex::new(r#"^rotate right (\d+) steps?$"#)?,
+        Regex::new(r#"^rotate based on position of letter (\w)$"#)?,
+        Regex::new(r#"^reverse positions (\d+) through (\d+)$"#)?,
+        Regex::new(r#"^move position (\d+) to position (\d+)$"#)?,
+    )?;
 
     let operations = input.lines().map(|line| parse_regex.parse(line).unwrap()).collect_vec();
 

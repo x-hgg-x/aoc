@@ -1,5 +1,5 @@
 use eyre::Result;
-use regex::Regex;
+use regex::{Regex, RegexSet};
 
 use std::cell::Cell;
 use std::collections::HashMap;
@@ -84,6 +84,7 @@ impl<'a> Variable<'a> {
 }
 
 struct ParseRegex {
+    set: RegexSet,
     regex_identity: Regex,
     regex_and: Regex,
     regex_or: Regex,
@@ -93,52 +94,90 @@ struct ParseRegex {
 }
 
 impl ParseRegex {
+    const REGEX_IDENTITY: usize = 0;
+    const REGEX_AND: usize = 1;
+    const REGEX_OR: usize = 2;
+    const REGEX_NOT: usize = 3;
+    const REGEX_LSHIFT: usize = 4;
+    const REGEX_RSHIFT: usize = 5;
+
+    fn new(regex_identity: Regex, regex_and: Regex, regex_or: Regex, regex_not: Regex, regex_lshift: Regex, regex_rshift: Regex) -> Result<Self> {
+        Ok(Self {
+            set: RegexSet::new(&[
+                regex_identity.as_str(),
+                regex_and.as_str(),
+                regex_or.as_str(),
+                regex_not.as_str(),
+                regex_lshift.as_str(),
+                regex_rshift.as_str(),
+            ])?,
+            regex_identity,
+            regex_and,
+            regex_or,
+            regex_not,
+            regex_lshift,
+            regex_rshift,
+        })
+    }
+
     fn parse<'a>(&self, map: &mut GlobalMap<'a>, line: &'a str) {
-        if let Some(cap) = self.regex_identity.captures(line) {
-            let name = cap.name("name").unwrap().as_str();
-            let op = cap.name("op").unwrap().as_str();
-            map.0.insert(name, Variable::new(Operation::Identity(Operand::parse_new(op))));
-        } else if let Some(cap) = self.regex_and.captures(line) {
-            let name = cap.name("name").unwrap().as_str();
-            let op1 = cap.name("op1").unwrap().as_str();
-            let op2 = cap.name("op2").unwrap().as_str();
-            map.0.insert(name, Variable::new(Operation::And(Operand::parse_new(op1), Operand::parse_new(op2))));
-        } else if let Some(cap) = self.regex_or.captures(line) {
-            let name = cap.name("name").unwrap().as_str();
-            let op1 = cap.name("op1").unwrap().as_str();
-            let op2 = cap.name("op2").unwrap().as_str();
-            map.0.insert(name, Variable::new(Operation::Or(Operand::parse_new(op1), Operand::parse_new(op2))));
-        } else if let Some(cap) = self.regex_not.captures(line) {
-            let name = cap.name("name").unwrap().as_str();
-            let op = cap.name("op").unwrap().as_str();
-            map.0.insert(name, Variable::new(Operation::Not(Operand::parse_new(op))));
-        } else if let Some(cap) = self.regex_lshift.captures(line) {
-            let name = cap.name("name").unwrap().as_str();
-            let op1 = cap.name("op1").unwrap().as_str();
-            let op2 = cap.name("op2").unwrap().as_str();
-            map.0.insert(name, Variable::new(Operation::LShift(Operand::parse_new(op1), Operand::parse_new(op2))));
-        } else if let Some(cap) = self.regex_rshift.captures(line) {
-            let name = cap.name("name").unwrap().as_str();
-            let op1 = cap.name("op1").unwrap().as_str();
-            let op2 = cap.name("op2").unwrap().as_str();
-            map.0.insert(name, Variable::new(Operation::RShift(Operand::parse_new(op1), Operand::parse_new(op2))));
-        } else {
-            panic!("unknown instruction: {}", line);
-        }
+        match self.set.matches(line).iter().next() {
+            Some(Self::REGEX_IDENTITY) => {
+                let cap = self.regex_identity.captures(line).unwrap();
+                let name = cap.name("name").unwrap().as_str();
+                let op = cap.name("op").unwrap().as_str();
+                map.0.insert(name, Variable::new(Operation::Identity(Operand::parse_new(op))));
+            }
+            Some(Self::REGEX_AND) => {
+                let cap = self.regex_and.captures(line).unwrap();
+                let name = cap.name("name").unwrap().as_str();
+                let op1 = cap.name("op1").unwrap().as_str();
+                let op2 = cap.name("op2").unwrap().as_str();
+                map.0.insert(name, Variable::new(Operation::And(Operand::parse_new(op1), Operand::parse_new(op2))));
+            }
+            Some(Self::REGEX_OR) => {
+                let cap = self.regex_or.captures(line).unwrap();
+                let name = cap.name("name").unwrap().as_str();
+                let op1 = cap.name("op1").unwrap().as_str();
+                let op2 = cap.name("op2").unwrap().as_str();
+                map.0.insert(name, Variable::new(Operation::Or(Operand::parse_new(op1), Operand::parse_new(op2))));
+            }
+            Some(Self::REGEX_NOT) => {
+                let cap = self.regex_not.captures(line).unwrap();
+                let name = cap.name("name").unwrap().as_str();
+                let op = cap.name("op").unwrap().as_str();
+                map.0.insert(name, Variable::new(Operation::Not(Operand::parse_new(op))));
+            }
+            Some(Self::REGEX_LSHIFT) => {
+                let cap = self.regex_lshift.captures(line).unwrap();
+                let name = cap.name("name").unwrap().as_str();
+                let op1 = cap.name("op1").unwrap().as_str();
+                let op2 = cap.name("op2").unwrap().as_str();
+                map.0.insert(name, Variable::new(Operation::LShift(Operand::parse_new(op1), Operand::parse_new(op2))));
+            }
+            Some(Self::REGEX_RSHIFT) => {
+                let cap = self.regex_rshift.captures(line).unwrap();
+                let name = cap.name("name").unwrap().as_str();
+                let op1 = cap.name("op1").unwrap().as_str();
+                let op2 = cap.name("op2").unwrap().as_str();
+                map.0.insert(name, Variable::new(Operation::RShift(Operand::parse_new(op1), Operand::parse_new(op2))));
+            }
+            _ => panic!("unknown instruction: {}", line),
+        };
     }
 }
 
 fn main() -> Result<()> {
     let input = fs::read_to_string("inputs/2015-day07.txt")?;
 
-    let parse_regex = ParseRegex {
-        regex_identity: Regex::new(r#"^(?P<op>\w+) -> (?P<name>\w+)$"#)?,
-        regex_and: Regex::new(r#"^(?P<op1>\w+) AND (?P<op2>\w+) -> (?P<name>\w+)$"#)?,
-        regex_or: Regex::new(r#"^(?P<op1>\w+) OR (?P<op2>\w+) -> (?P<name>\w+)$"#)?,
-        regex_not: Regex::new(r#"^NOT (?P<op>\w+) -> (?P<name>\w+)$"#)?,
-        regex_lshift: Regex::new(r#"^(?P<op1>\w+) LSHIFT (?P<op2>\w+) -> (?P<name>\w+)$"#)?,
-        regex_rshift: Regex::new(r#"^(?P<op1>\w+) RSHIFT (?P<op2>\w+) -> (?P<name>\w+)$"#)?,
-    };
+    let parse_regex = ParseRegex::new(
+        Regex::new(r#"^(?P<op>\w+) -> (?P<name>\w+)$"#)?,
+        Regex::new(r#"^(?P<op1>\w+) AND (?P<op2>\w+) -> (?P<name>\w+)$"#)?,
+        Regex::new(r#"^(?P<op1>\w+) OR (?P<op2>\w+) -> (?P<name>\w+)$"#)?,
+        Regex::new(r#"^NOT (?P<op>\w+) -> (?P<name>\w+)$"#)?,
+        Regex::new(r#"^(?P<op1>\w+) LSHIFT (?P<op2>\w+) -> (?P<name>\w+)$"#)?,
+        Regex::new(r#"^(?P<op1>\w+) RSHIFT (?P<op2>\w+) -> (?P<name>\w+)$"#)?,
+    )?;
 
     let mut map = GlobalMap::new();
     for line in input.lines() {
