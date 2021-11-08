@@ -47,9 +47,11 @@ fn get_input(input: &str) -> Input {
     }
 }
 
-fn run(instructions: &[Instruction], mut registers: [i64; 4]) -> [i64; 4] {
+fn run(instructions: &[Instruction], mut registers: [i64; 4]) -> Result<[i64; 4]> {
     let mut ip = 0;
-    while (0..instructions.len()).contains(&(ip as usize)) {
+    let range = 0..instructions.len().try_into()?;
+
+    while range.contains(&ip) {
         match instructions[ip as usize] {
             Instruction::Copy(input, r) => registers[r] = input.get_value(&registers),
             Instruction::Increment(r) => registers[r] += 1,
@@ -63,7 +65,7 @@ fn run(instructions: &[Instruction], mut registers: [i64; 4]) -> [i64; 4] {
         };
         ip += 1;
     }
-    registers
+    Ok(registers)
 }
 
 fn main() -> Result<()> {
@@ -84,8 +86,8 @@ fn main() -> Result<()> {
         })
         .collect_vec();
 
-    let result1 = run(&instructions, [0, 0, 0, 0])[0];
-    let result2 = run(&instructions, [0, 0, 1, 0])[0];
+    let result1 = run(&instructions, [0, 0, 0, 0])?[0];
+    let result2 = run(&instructions, [0, 0, 1, 0])?[0];
 
     println!("{}", result1);
     println!("{}", result2);

@@ -47,7 +47,9 @@ fn get_input(input: &str) -> Input {
 
 fn run(mut instructions: Vec<Instruction>, mut registers: [i64; 4]) -> Result<[i64; 4]> {
     let mut ip = 0;
-    while (0..instructions.len()).contains(&(ip as usize)) {
+    let range = 0..instructions.len().try_into()?;
+
+    while range.contains(&ip) {
         match instructions[ip as usize] {
             Instruction::Copy(input, Input::Register(r)) => registers[r] = input.get_value(&registers),
             Instruction::Increment(Input::Register(r)) => registers[r] += 1,

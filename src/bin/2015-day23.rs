@@ -21,9 +21,11 @@ fn get_register(register: &str) -> usize {
     }
 }
 
-fn run(instructions: &[Instruction], mut registers: [i64; 2]) -> [i64; 2] {
+fn run(instructions: &[Instruction], mut registers: [i64; 2]) -> Result<[i64; 2]> {
     let mut ip = 0;
-    while (0..instructions.len()).contains(&(ip as usize)) {
+    let range = 0..instructions.len().try_into()?;
+
+    while range.contains(&ip) {
         match instructions[ip as usize] {
             Instruction::Half(r) => registers[r] /= 2,
             Instruction::Triple(r) => registers[r] *= 3,
@@ -47,7 +49,7 @@ fn run(instructions: &[Instruction], mut registers: [i64; 2]) -> [i64; 2] {
         };
         ip += 1;
     }
-    registers
+    Ok(registers)
 }
 
 fn main() -> Result<()> {
@@ -70,8 +72,8 @@ fn main() -> Result<()> {
         })
         .collect_vec();
 
-    let result1 = run(&instructions, [0, 0])[1];
-    let result2 = run(&instructions, [1, 0])[1];
+    let result1 = run(&instructions, [0, 0])?[1];
+    let result2 = run(&instructions, [1, 0])?[1];
 
     println!("{}", result1);
     println!("{}", result2);

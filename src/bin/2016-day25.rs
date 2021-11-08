@@ -48,9 +48,10 @@ fn get_input(input: &str) -> Input {
 
 fn run(instructions: &mut [Instruction], mut registers: [i64; 4]) -> Result<SmallVec<[i64; 10]>> {
     let mut clock = SmallVec::new();
-
     let mut ip = 0;
-    while (0..instructions.len()).contains(&(ip as usize)) && clock.len() < clock.capacity() {
+    let range = 0..instructions.len().try_into()?;
+
+    while range.contains(&ip) && clock.len() < clock.capacity() {
         match instructions[ip as usize] {
             Instruction::Copy(input, Input::Register(r)) => registers[r] = input.get_value(&registers),
             Instruction::Increment(Input::Register(r)) => registers[r] += 1,
