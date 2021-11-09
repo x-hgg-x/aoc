@@ -12,7 +12,7 @@ impl<'a> GlobalMap<'a> {
         GlobalMap(HashMap::new())
     }
 
-    fn value(&self, variable: &str) -> u16 {
+    fn value(&self, variable: &str) -> u64 {
         self.0[variable].value(self)
     }
 
@@ -24,19 +24,19 @@ impl<'a> GlobalMap<'a> {
 }
 
 enum Operand<'a> {
-    Constant(u16),
+    Constant(u64),
     Variable(&'a str),
 }
 
 impl<'a> Operand<'a> {
     fn parse_new(op: &'a str) -> Self {
-        match op.parse::<u16>() {
+        match op.parse::<u64>() {
             Ok(val) => Operand::Constant(val),
             Err(_) => Operand::Variable(op),
         }
     }
 
-    fn value(&self, map: &GlobalMap) -> u16 {
+    fn value(&self, map: &GlobalMap) -> u64 {
         match self {
             &Operand::Constant(x) => x,
             Operand::Variable(variable) => map.value(variable),
@@ -55,7 +55,7 @@ enum Operation<'a> {
 
 struct Variable<'a> {
     operation: Operation<'a>,
-    value: Cell<Option<u16>>,
+    value: Cell<Option<u64>>,
 }
 
 impl<'a> Variable<'a> {
@@ -63,7 +63,7 @@ impl<'a> Variable<'a> {
         Variable { operation, value: Cell::new(None) }
     }
 
-    fn value(&self, map: &GlobalMap) -> u16 {
+    fn value(&self, map: &GlobalMap) -> u64 {
         self.value.get().unwrap_or_else(|| {
             let value = match &self.operation {
                 Operation::Identity(op) => op.value(map),

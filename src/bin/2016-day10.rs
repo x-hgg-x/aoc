@@ -25,12 +25,12 @@ impl Default for Node {
 
 #[derive(Clone, Default)]
 struct Bot {
-    values: SmallVec<[i32; 2]>,
+    values: SmallVec<[i64; 2]>,
     outputs: SmallVec<[Node; 2]>,
 }
 
 impl Bot {
-    fn get_value(&self, value_type: ValueType) -> i32 {
+    fn get_value(&self, value_type: ValueType) -> i64 {
         *match value_type {
             ValueType::Min => self.values.iter().min().unwrap(),
             ValueType::Max => self.values.iter().max().unwrap(),
