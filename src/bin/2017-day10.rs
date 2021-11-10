@@ -7,10 +7,11 @@ fn knot_hash_round(list: &mut [u8], lengths: &[usize], current_position: &mut us
     let size = list.len();
 
     for &len in lengths {
-        let range = *current_position..*current_position + len;
-
-        for (i, j) in range.clone().zip(range.rev()).take(len / 2) {
-            list.swap(i % size, j % size);
+        if len >= 2 {
+            let offset = *current_position % size;
+            list.rotate_left(offset);
+            list[..len].reverse();
+            list.rotate_right(offset);
         }
 
         *current_position += len + *skip;
