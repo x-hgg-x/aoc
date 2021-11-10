@@ -5,7 +5,6 @@ use std::fs;
 
 fn main() -> Result<()> {
     let input = fs::read_to_string("inputs/2017-day04.txt")?;
-    let input = input.trim();
 
     let mut sum1 = 0;
     let mut sum2 = 0;
