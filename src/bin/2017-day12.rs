@@ -1,23 +1,8 @@
 use eyre::Result;
 use itertools::Itertools;
 
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::collections::HashMap;
 use std::fs;
-
-fn visit(graph: &HashMap<u64, Vec<u64>>, id: u64) -> HashSet<u64> {
-    let mut visited = HashSet::new();
-
-    let mut queue = VecDeque::new();
-    queue.push_back(id);
-
-    while let Some(id) = queue.pop_front() {
-        if visited.insert(id) {
-            queue.extend(&graph[&id]);
-        }
-    }
-
-    visited
-}
 
 fn main() -> Result<()> {
     let input = fs::read_to_string("inputs/2017-day12.txt")?;
@@ -25,27 +10,44 @@ fn main() -> Result<()> {
     let graph: HashMap<_, _> = input
         .lines()
         .map(|line| {
-            let mut iter = line.split(|c: char| !c.is_ascii_digit()).filter(|x| !x.is_empty()).map(|x| x.parse::<u64>().unwrap());
+            let mut iter = line.split(|c: char| !c.is_ascii_digit()).filter(|x| !x.is_empty()).map(|x| x.parse::<usize>().unwrap());
             (iter.next().unwrap(), iter.collect_vec())
         })
         .collect();
 
-    let result1 = visit(&graph, 0).len();
+    let mut group_0_size = 0usize;
+    let mut visited = vec![false; graph.len()];
+    let mut queue = vec![0];
 
-    let mut groups = 0usize;
-    let mut ids: HashSet<_> = graph.keys().copied().collect();
-
-    while let Some(&id) = ids.iter().next() {
-        ids.remove(&id);
-
-        for linked_id in visit(&graph, id) {
-            ids.remove(&linked_id);
+    while let Some(id) = queue.pop() {
+        if !visited[id] {
+            visited[id] = true;
+            queue.extend(&graph[&id]);
+            group_0_size += 1;
         }
-
-        groups += 1;
     }
 
-    let result2 = groups;
+    let result1 = group_0_size;
+
+    let mut groups_count = 0usize;
+    visited.fill(false);
+
+    for index in 0..visited.len() {
+        if !visited[index] {
+            queue.clear();
+            queue.push(index);
+
+            while let Some(id) = queue.pop() {
+                if !visited[id] {
+                    visited[id] = true;
+                    queue.extend(&graph[&id]);
+                }
+            }
+            groups_count += 1;
+        }
+    }
+
+    let result2 = groups_count;
 
     println!("{}", result1);
     println!("{}", result2);
