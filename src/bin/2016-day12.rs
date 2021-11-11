@@ -74,7 +74,7 @@ fn main() -> Result<()> {
     let instructions = input
         .lines()
         .map(|line| {
-            let args: SmallVec<[_; 3]> = line.split(|c: char| c.is_ascii_whitespace() || c == ',').filter(|s| !s.is_empty()).collect();
+            let args: SmallVec<[_; 3]> = line.split_ascii_whitespace().collect();
 
             match args[0] {
                 "cpy" => Instruction::Copy(get_input(args[1]), get_register(args[2])),

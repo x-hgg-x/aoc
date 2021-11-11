@@ -16,7 +16,7 @@ fn compute_checksum(input: &[u8], disk_size: usize) -> String {
         let right = &mut disk[(len + 1)..];
         right.reverse();
         for x in right {
-            *x = (*x == 0) as u8;
+            *x ^= 1;
         }
     }
     disk.truncate(disk_size);
