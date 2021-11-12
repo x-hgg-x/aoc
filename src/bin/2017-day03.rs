@@ -8,7 +8,7 @@ struct Memory {
     size: usize,
     values: Vec<i64>,
     current_position: Complex<usize>,
-    line_direction: Complex<usize>,
+    line_direction: Complex<i64>,
     remaining_line_count: usize,
     line_len: usize,
 }
@@ -27,8 +27,9 @@ impl Memory {
         row * self.size + column
     }
 
-    fn next_index(&mut self) -> usize {
-        self.current_position += self.line_direction;
+    fn next_index(&mut self) -> Result<usize> {
+        self.current_position.re = usize::try_from(i64::try_from(self.current_position.re)? + self.line_direction.re)?;
+        self.current_position.im = usize::try_from(i64::try_from(self.current_position.im)? + self.line_direction.im)?;
         self.remaining_line_count -= 1;
 
         if self.remaining_line_count == 0 {
@@ -39,7 +40,7 @@ impl Memory {
             self.remaining_line_count = self.line_len;
         }
 
-        self.get_index(self.current_position.re, self.current_position.im)
+        Ok(self.get_index(self.current_position.re, self.current_position.im))
     }
 
     fn neighbors_sum(&self) -> i64 {
@@ -82,7 +83,7 @@ fn main() -> Result<()> {
     let mut memory = Memory::new(half_size);
 
     let result2 = loop {
-        let index = memory.next_index();
+        let index = memory.next_index()?;
         let value = memory.neighbors_sum();
         memory.values[index] = value;
 

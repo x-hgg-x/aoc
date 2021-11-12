@@ -18,13 +18,11 @@ fn main() -> Result<()> {
     }
     let result1 = buffer[(current_position + 1) % buffer.len()];
 
-    let position_of_0 = buffer.iter().position(|&x| x == 0).unwrap() % buffer.len();
-    let mut after_0 = buffer[(position_of_0 + 1) % buffer.len()];
-
+    let mut after_0 = buffer[1];
     for i in 2018..=50_000_000 {
         let len = buffer.len() + i - 2018;
         current_position = (current_position + steps) % len + 1;
-        if current_position == position_of_0 + 1 {
+        if current_position == 1 {
             after_0 = i;
         }
     }
