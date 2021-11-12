@@ -15,9 +15,7 @@ fn main() -> Result<()> {
     let layers = input
         .lines()
         .map(|line| {
-            let mut iter = line.split(": ");
-            let depth = iter.next().unwrap().parse().unwrap();
-            let range = iter.next().unwrap().parse().unwrap();
+            let (depth, range) = line.split(": ").map(|x| x.parse().unwrap()).next_tuple().unwrap();
             let period = if range == 0 { 0 } else { (range - 1) * 2 };
             Layer { depth, range, period }
         })

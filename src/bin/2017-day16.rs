@@ -35,15 +35,11 @@ fn main() -> Result<()> {
             match dance_move {
                 "s" => DanceMove::Spin(args.parse().unwrap()),
                 "x" => {
-                    let mut iter = args.split('/');
-                    let arg1 = iter.next().unwrap().parse().unwrap();
-                    let arg2 = iter.next().unwrap().parse().unwrap();
+                    let (arg1, arg2) = args.split('/').map(|x| x.parse().unwrap()).next_tuple().unwrap();
                     DanceMove::Exchange(arg1, arg2)
                 }
                 "p" => {
-                    let mut iter = args.split('/');
-                    let arg1 = iter.next().unwrap().as_bytes()[0];
-                    let arg2 = iter.next().unwrap().as_bytes()[0];
+                    let (arg1, arg2) = args.split('/').map(|x| x.as_bytes()[0]).next_tuple().unwrap();
                     DanceMove::Partner(arg1, arg2)
                 }
                 other => panic!("unknown dance move: {}", other),
