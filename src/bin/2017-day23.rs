@@ -4,7 +4,7 @@ use smallvec::SmallVec;
 
 use std::fs;
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone)]
 enum Input {
     Register(usize),
     Value(i64),
@@ -19,7 +19,6 @@ impl Input {
     }
 }
 
-#[derive(Debug)]
 enum Instruction {
     Set(usize, Input),
     Substraction(usize, Input),
