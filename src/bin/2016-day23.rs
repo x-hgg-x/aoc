@@ -29,11 +29,8 @@ enum Instruction {
 }
 
 fn parse_register(register: &str) -> Option<usize> {
-    match register {
-        "a" => Some(0),
-        "b" => Some(1),
-        "c" => Some(2),
-        "d" => Some(3),
+    match register.bytes().next() {
+        Some(x @ b'a'..=b'd') => Some((x - b'a').into()),
         _ => None,
     }
 }

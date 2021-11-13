@@ -14,10 +14,9 @@ enum Instruction {
 }
 
 fn get_register(register: &str) -> usize {
-    match register {
-        "a" => 0,
-        "b" => 1,
-        other => panic!("unknown register: {}", other),
+    match register.bytes().next() {
+        Some(x @ b'a'..=b'b') => (x - b'a').into(),
+        other => panic!("unknown register: {:?}", other.map(char::from)),
     }
 }
 
