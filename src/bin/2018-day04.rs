@@ -51,7 +51,7 @@ fn main() -> Result<()> {
             let mut minutes_count = [0u64; 60];
             for minutes_asleep in v {
                 for (minute_bit, count) in minutes_count.iter_mut().enumerate() {
-                    *count += (minutes_asleep & (1 << minute_bit)) >> minute_bit;
+                    *count += (minutes_asleep >> minute_bit) & 1;
                 }
             }
             let (minute, count) = minutes_count.into_iter().enumerate().max_by_key(|&(_, count)| count).unwrap();

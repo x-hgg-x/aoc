@@ -33,7 +33,7 @@ fn knot_hash(input: &[u8]) -> String {
     list.chunks_exact(16)
         .flat_map(|elem| {
             let out = elem.iter().fold(0, |acc, x| acc ^ x);
-            let char1 = char::from_digit(((out & 0xF0) >> 4) as u32, 16).unwrap();
+            let char1 = char::from_digit((out >> 4) as u32, 16).unwrap();
             let char2 = char::from_digit((out & 0x0F) as u32, 16).unwrap();
             [char1, char2]
         })

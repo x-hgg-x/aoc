@@ -57,7 +57,7 @@ fn knot_hash(input: &[u8]) -> SmallVec<[bool; 128]> {
     list.chunks_exact(16)
         .flat_map(|elem| {
             let out = elem.iter().fold(0, |acc, x| acc ^ x);
-            (0..8).rev().map(move |bit| ((out & (1 << bit)) >> bit) != 0)
+            (0..8).rev().map(move |bit| (out >> bit) & 1 != 0)
         })
         .collect()
 }

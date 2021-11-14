@@ -74,13 +74,13 @@ impl Queue {
     }
 
     fn compute_next_hash(&mut self) {
-        let mut hex: SmallVec<[u8; 32]> = self.hash_generator.next().as_deref().into_iter().flatten().flat_map(|x| [(x & 0xF0) >> 4, x & 0x0F]).collect();
+        let mut hex: SmallVec<[u8; 32]> = self.hash_generator.next().as_deref().into_iter().flatten().flat_map(|x| [x >> 4, x & 0x0F]).collect();
 
         for _ in 0..self.additional_hashs {
             for byte in &mut hex {
                 *byte = char::from_digit(*byte as u32, 16).unwrap() as u8;
             }
-            hex = md5::compute(hex).iter().flat_map(|x| [(x & 0xF0) >> 4, x & 0x0F]).collect();
+            hex = md5::compute(hex).iter().flat_map(|x| [x >> 4, x & 0x0F]).collect();
         }
 
         if let Some(triple) = hex.windows(3).find(|x| x.iter().all_equal()).map(|x| x[0]) {

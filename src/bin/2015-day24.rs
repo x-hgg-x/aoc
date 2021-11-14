@@ -24,7 +24,7 @@ fn get_subset_sum_iter(set: &[u64], goal_sum: u64) -> impl Iterator<Item = u64> 
 
 fn get_partition<'a>(iter: impl Iterator<Item = u64> + 'a, set: &'a [u64]) -> impl Iterator<Item = (Vec<u64>, Vec<u64>)> + 'a {
     iter.map(move |bitset| -> (Vec<_>, Vec<_>) {
-        (0..set.len()).partition_map(|n| if bitset & (1 << n) != 0 { Either::Left(set[n as usize]) } else { Either::Right(set[n as usize]) })
+        (0..set.len()).partition_map(|n| if (bitset >> n) & 1 != 0 { Either::Left(set[n as usize]) } else { Either::Right(set[n as usize]) })
     })
 }
 
