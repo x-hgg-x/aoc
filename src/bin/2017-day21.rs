@@ -9,7 +9,7 @@ type Mat2x2 = SmallVec<[bool; 4]>;
 type Mat3x3 = SmallVec<[bool; 9]>;
 type Mat4x4 = SmallVec<[bool; 16]>;
 
-trait SmallVecBool: Deref<Target = [bool]> {
+trait SmallVecBool: Deref<Target = [bool]> + FromIterator<bool> {
     fn new() -> Self;
     fn extend_from_slice(&mut self, slice: &[bool]);
 }
@@ -75,9 +75,6 @@ fn transformations(array: &mut [bool], size: usize) -> [usize; 8] {
 }
 
 fn apply_rules<Src: SmallVecBool, Dst: SmallVecBool>(grid: &mut Grid, buf: &mut Vec<bool>, rules: &[Option<Dst>], block_size: usize, new_block_size: usize) {
-    let block_size_sq = block_size.pow(2);
-    let new_block_size_sq = new_block_size.pow(2);
-
     let block_count = grid.size / block_size;
     let new_grid_size = new_block_size * block_count;
 
@@ -86,22 +83,20 @@ fn apply_rules<Src: SmallVecBool, Dst: SmallVecBool>(grid: &mut Grid, buf: &mut 
 
     for i_block in 0..block_count {
         for j_block in 0..block_count {
-            let mut array = Src::new();
-
-            let start = i_block * block_size_sq * block_count + j_block * block_size;
-            for i in 0..block_size {
-                let start_i = start + i * grid.size;
-                array.extend_from_slice(&grid.tiles[start_i..start_i + block_size]);
-            }
+            let array: Src = grid
+                .tiles
+                .chunks_exact(grid.size)
+                .skip(i_block * block_size)
+                .take(block_size)
+                .flat_map(|line| line.iter().skip(j_block * block_size).take(block_size))
+                .copied()
+                .collect();
 
             let new_array = rules[reduce(&array)].as_deref().unwrap();
 
-            let new_start = i_block * new_block_size_sq * block_count + j_block * new_block_size;
-            for i in 0..new_block_size {
-                let new_start_i = new_start + i * new_grid_size;
-                let src_range_i = i * new_block_size..(i + 1) * new_block_size;
-                buf[new_start_i..new_start_i + new_block_size].copy_from_slice(&new_array[src_range_i]);
-            }
+            buf.chunks_exact_mut(new_grid_size).skip(i_block * new_block_size).take(new_block_size).zip(new_array.chunks_exact(new_block_size)).for_each(
+                |(buf_line, new_array_line)| buf_line[j_block * new_block_size..j_block * new_block_size + new_block_size].copy_from_slice(new_array_line),
+            );
         }
     }
 
