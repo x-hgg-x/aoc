@@ -8,13 +8,13 @@ use std::iter::{once, Sum};
 
 #[derive(Default)]
 struct Equipment {
-    cost: i32,
-    damage: i32,
-    armor: i32,
+    cost: i64,
+    damage: i64,
+    armor: i64,
 }
 
 impl Equipment {
-    fn new(cost: i32, damage: i32, armor: i32) -> Self {
+    fn new(cost: i64, damage: i64, armor: i64) -> Self {
         Self { cost, damage, armor }
     }
 }
@@ -30,10 +30,10 @@ fn main() -> Result<()> {
 
     let re = Regex::new(r#"Hit Points: (\d+)\s+Damage: (\d+)\s+Armor: (\d+)"#)?;
 
-    let (boss_hp, boss_damage, boss_armor): (i32, i32, i32) =
+    let (boss_hp, boss_damage, boss_armor): (i64, i64, i64) =
         re.captures(&input).map(|cap| (cap[1].parse().unwrap(), cap[2].parse().unwrap(), cap[3].parse().unwrap())).unwrap();
 
-    const HP: i32 = 100;
+    const HP: i64 = 100;
 
     let weapons = vec![Equipment::new(8, 4, 0), Equipment::new(10, 5, 0), Equipment::new(25, 6, 0), Equipment::new(40, 7, 0), Equipment::new(74, 8, 0)];
 
@@ -81,13 +81,13 @@ fn main() -> Result<()> {
 
     let (result1, result2) = battles
         .iter()
-        .scan((i32::MAX, i32::MIN), |state, &(cost, win)| {
+        .scan((i64::MAX, i64::MIN), |(min_cost, max_cost), &(cost, win)| {
             if win {
-                state.0 = state.0.min(cost);
+                *min_cost = cost.min(*min_cost);
             } else {
-                state.1 = state.1.max(cost);
+                *max_cost = cost.max(*max_cost);
             }
-            Some(*state)
+            Some((*min_cost, *max_cost))
         })
         .last()
         .unwrap();

@@ -15,13 +15,13 @@ fn main() -> Result<()> {
         })
         .collect_vec();
 
-    let result1: i32 = floors.iter().sum();
+    let result1 = floors.iter().sum::<i64>();
 
     let result2 = 1 + floors
         .iter()
-        .scan(0, |state, x| {
-            *state += x;
-            Some(*state)
+        .scan(0, |position, x| {
+            *position += x;
+            Some(*position)
         })
         .position(|x| x == -1)
         .unwrap();

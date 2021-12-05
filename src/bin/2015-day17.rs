@@ -12,18 +12,18 @@ fn main() -> Result<()> {
     const SUM: u64 = 150;
 
     let combinations = (1..max)
-        .scan((0, 0), |state, index| {
+        .scan((0, 0), |(sum, gray), index| {
             let new_gray = index ^ (index >> 1);
-            let bit_changed = state.1 ^ new_gray;
+            let bit_changed = *gray ^ new_gray;
             let diff = set[bit_changed.trailing_zeros() as usize];
             if new_gray & bit_changed == 0 {
-                state.0 -= diff;
+                *sum -= diff;
             } else {
-                state.0 += diff;
+                *sum += diff;
             }
-            state.1 = new_gray;
+            *gray = new_gray;
 
-            Some((state.0, new_gray.count_ones()))
+            Some((*sum, new_gray.count_ones()))
         })
         .filter(|&(sum, _)| sum == SUM)
         .map(|(_, size)| size)

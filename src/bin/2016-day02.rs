@@ -9,20 +9,20 @@ fn get_code(input: &[u8], keypad: &[&[u32]], start_pos: (usize, usize)) -> Strin
 
     input
         .iter()
-        .scan(start_pos, |state, &x| {
-            if x == b'U' && state.0 != 0 && keypad[state.0 - 1][state.1] != 0 {
-                state.0 -= 1;
+        .scan(start_pos, |(x, y), &direction| {
+            if direction == b'U' && *x != 0 && keypad[*x - 1][*y] != 0 {
+                *x -= 1;
             }
-            if x == b'D' && state.0 != height - 1 && keypad[state.0 + 1][state.1] != 0 {
-                state.0 += 1;
+            if direction == b'D' && *x != height - 1 && keypad[*x + 1][*y] != 0 {
+                *x += 1;
             }
-            if x == b'L' && state.1 != 0 && keypad[state.0][state.1 - 1] != 0 {
-                state.1 -= 1;
+            if direction == b'L' && *y != 0 && keypad[*x][*y - 1] != 0 {
+                *y -= 1;
             }
-            if x == b'R' && state.1 != width - 1 && keypad[state.0][state.1 + 1] != 0 {
-                state.1 += 1;
+            if direction == b'R' && *y != width - 1 && keypad[*x][*y + 1] != 0 {
+                *y += 1;
             }
-            Some((x == b'\n').then(|| char::from_digit(keypad[state.0][state.1], 16).unwrap()))
+            Some((direction == b'\n').then(|| char::from_digit(keypad[*x][*y], 16).unwrap()))
         })
         .filter_map(|x| x.map(|c| c.to_ascii_uppercase()))
         .collect()

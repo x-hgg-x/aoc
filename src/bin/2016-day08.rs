@@ -1,4 +1,5 @@
 use eyre::Result;
+use itertools::Itertools;
 use regex::Regex;
 use smallvec::SmallVec;
 
@@ -8,18 +9,18 @@ use std::iter::once;
 const WIDTH: usize = 50;
 const HEIGHT: usize = 6;
 
-fn turn_on_rect(pixels: &mut [char], width: usize, height: usize) {
+fn turn_on_rect(pixels: &mut [u8], width: usize, height: usize) {
     for row in 0..height {
-        pixels[row * WIDTH..row * WIDTH + width].fill('#');
+        pixels[row * WIDTH..row * WIDTH + width].fill(b'#');
     }
 }
 
-fn rotate_row(pixels: &mut [char], row: usize, shift: usize) {
+fn rotate_row(pixels: &mut [u8], row: usize, shift: usize) {
     pixels[row * WIDTH..(row + 1) * WIDTH].rotate_right(shift);
 }
 
-fn rotate_column(pixels: &mut [char], column: usize, shift: usize) {
-    let mut column_pixels = <SmallVec<[char; HEIGHT]>>::from_iter(pixels.iter().copied().skip(column).step_by(WIDTH));
+fn rotate_column(pixels: &mut [u8], column: usize, shift: usize) {
+    let mut column_pixels = <SmallVec<[u8; HEIGHT]>>::from_iter(pixels.iter().copied().skip(column).step_by(WIDTH));
 
     column_pixels.rotate_right(shift);
 
@@ -33,7 +34,7 @@ fn main() -> Result<()> {
 
     let re = Regex::new(r#"(?m)^(rect |rotate row y=|rotate column x=)(\d+)(?:x| by )(\d+)$"#)?;
 
-    let mut pixels = vec![' '; WIDTH * HEIGHT];
+    let mut pixels = vec![b' '; WIDTH * HEIGHT];
 
     for cap in re.captures_iter(&input) {
         let i: usize = cap[2].parse().unwrap();
@@ -47,8 +48,11 @@ fn main() -> Result<()> {
         }
     }
 
-    let result1 = pixels.iter().filter(|&&x| x == '#').count();
-    let result2 = String::from_iter((0..HEIGHT).flat_map(|row| pixels[row * WIDTH..(row + 1) * WIDTH].iter().chain(once(&'\n'))));
+    let count = pixels.iter().filter(|&&x| x == b'#').count();
+    let message = pixels.chunks_exact(WIDTH).flat_map(|row| row.iter().copied().chain(once(b'\n'))).collect_vec();
+
+    let result1 = count;
+    let result2 = String::from_utf8_lossy(&message);
 
     println!("{}", result1);
     println!("{}", result2);

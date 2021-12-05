@@ -40,19 +40,16 @@ fn main() -> Result<()> {
     let sub_hashes = hash_generator(input)
         .filter(|digest| digest[..2] == [0, 0] && digest[2] <= 0x0F)
         .map(|digest| ((digest[2] & 0x0F) as usize, (digest[3] >> 4) as usize))
-        .scan((true, [false; 8]), |state, (fifth, sixth)| {
-            if state.1.iter().all(|&x| x) {
-                state.0 = false;
+        .scan([false; 8], |state, (fifth, sixth)| {
+            if !state.iter().all(|&x| x) {
+                if fifth < 8 && !state[fifth] {
+                    state[fifth] = true;
+                }
+                Some((fifth, sixth))
+            } else {
+                None
             }
-
-            if fifth < 8 && !state.1[fifth] {
-                state.1[fifth] = true;
-            }
-
-            Some((state.0, fifth, sixth))
         })
-        .take_while(|&(flag, _, _)| flag)
-        .map(|(_, fifth, sixth)| (fifth, sixth))
         .collect_vec();
 
     let result1 = String::from_iter(sub_hashes.iter().map(|&(fifth, _)| char::from_digit(fifth as u32, 16).unwrap()).take(8));
