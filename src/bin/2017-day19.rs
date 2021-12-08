@@ -38,7 +38,7 @@ fn main() -> Result<()> {
 
     let tiles = input
         .lines()
-        .flat_map(|line| line.bytes().chain(repeat(b' ').take(width - line.len())))
+        .flat_map(|line| line.bytes().chain(repeat(b' ')).take(width))
         .filter_map(|x| match x {
             b' ' => Some(Tile::Empty),
             x @ b'A'..=b'Z' => Some(Tile::Letter(x)),
@@ -71,7 +71,7 @@ fn main() -> Result<()> {
             Tile::Empty => break,
             Tile::Letter(c) => letters.push(c),
             Tile::Intersection => {
-                if column_direction == 0 {
+                if row_direction != 0 {
                     if column > 0 && matches!(grid.tiles[grid.get_index(row, column - 1)], Tile::HorizontalLine | Tile::Letter(_)) {
                         row_direction = 0;
                         column_direction = -1;
@@ -84,7 +84,7 @@ fn main() -> Result<()> {
                     }
                 }
 
-                if row_direction == 0 {
+                if column_direction != 0 {
                     if row > 0 && matches!(grid.tiles[grid.get_index(row - 1, column)], Tile::VerticalLine | Tile::Letter(_)) {
                         row_direction = -1;
                         column_direction = 0;
