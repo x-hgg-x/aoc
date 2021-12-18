@@ -1,8 +1,9 @@
-use eyre::{bail, Result};
+use aoc::*;
+
+use eyre::bail;
 use itertools::Itertools;
 use regex::Regex;
 
-use std::fs;
 use std::ops::RangeInclusive;
 
 #[derive(Copy, Clone)]
@@ -37,13 +38,14 @@ where
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2015-day06.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
     let re = Regex::new(r#"(?m)^(.*?) (\d+),(\d+) through (\d+),(\d+)$"#)?;
 
     let instructions: Vec<_> = re
         .captures_iter(&input)
-        .map(|x| -> Result<_> {
+        .map(|x| {
             let command = match &x[1] {
                 "turn on" => Command::TurnOn,
                 "turn off" => Command::TurnOff,

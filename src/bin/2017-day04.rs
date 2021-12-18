@@ -1,10 +1,10 @@
-use eyre::Result;
+use aoc::*;
+
 use itertools::Itertools;
 
-use std::fs;
-
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2017-day04.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
     let mut sum1 = 0;
     let mut sum2 = 0;

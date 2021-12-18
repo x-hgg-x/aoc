@@ -1,8 +1,9 @@
-use eyre::Result;
+use aoc::*;
+
+use eyre::bail;
 use itertools::Itertools;
 
 use std::collections::HashSet;
-use std::fs;
 
 enum DanceMove {
     Spin(usize),
@@ -11,47 +12,51 @@ enum DanceMove {
 }
 
 impl DanceMove {
-    fn execute(&self, programs: &mut [u8]) {
+    fn execute(&self, programs: &mut [u8]) -> Result<()> {
         match *self {
             DanceMove::Spin(count) => programs.rotate_right(count),
             DanceMove::Exchange(pos1, pos2) => programs.swap(pos1, pos2),
             DanceMove::Partner(c1, c2) => {
-                let pos1 = programs.iter().position(|&x| x == c1).unwrap();
-                let pos2 = programs.iter().position(|&x| x == c2).unwrap();
+                let pos1 = programs.iter().position(|&x| x == c1).value()?;
+                let pos2 = programs.iter().position(|&x| x == c2).value()?;
                 programs.swap(pos1, pos2);
             }
         }
+
+        Ok(())
     }
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2017-day16.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
     let input = input.trim();
 
-    let dance_moves = input
+    let dance_moves: Vec<_> = input
         .split(',')
         .map(|x| {
             let (dance_move, args) = x.split_at(1);
-            match dance_move {
-                "s" => DanceMove::Spin(args.parse().unwrap()),
+
+            Ok(match dance_move {
+                "s" => DanceMove::Spin(args.parse()?),
                 "x" => {
-                    let (arg1, arg2) = args.split('/').map(|x| x.parse().unwrap()).next_tuple().unwrap();
-                    DanceMove::Exchange(arg1, arg2)
+                    let (arg1, arg2) = args.split('/').next_tuple().value()?;
+                    DanceMove::Exchange(arg1.parse()?, arg2.parse()?)
                 }
                 "p" => {
-                    let (arg1, arg2) = args.split('/').map(|x| x.as_bytes()[0]).next_tuple().unwrap();
+                    let (arg1, arg2) = args.split('/').map(|x| x.as_bytes()[0]).next_tuple().value()?;
                     DanceMove::Partner(arg1, arg2)
                 }
-                other => panic!("unknown dance move: {}", other),
-            }
+                other => bail!("unknown dance move: {}", other),
+            })
         })
-        .collect_vec();
+        .try_collect()?;
 
     let start_programs = b"abcdefghijklmnop";
 
     let mut programs = *start_programs;
     for dance_move in &dance_moves {
-        dance_move.execute(&mut programs);
+        dance_move.execute(&mut programs)?;
     }
 
     let result1 = String::from_utf8_lossy(&programs).into_owned();
@@ -63,7 +68,7 @@ fn main() -> Result<()> {
         uniques_states.push(programs);
 
         for dance_move in &dance_moves {
-            dance_move.execute(&mut programs);
+            dance_move.execute(&mut programs)?;
         }
     }
 

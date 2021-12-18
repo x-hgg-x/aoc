@@ -1,7 +1,6 @@
-use eyre::Result;
-use itertools::Itertools;
+use aoc::*;
 
-use std::fs;
+use itertools::Itertools;
 
 struct LookAndSay {
     data: Vec<u8>,
@@ -22,7 +21,8 @@ impl LookAndSay {
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2015-day10.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
     let input = input.trim().as_bytes();
 
     let mut look_and_say = LookAndSay::new(input);

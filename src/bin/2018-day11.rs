@@ -1,7 +1,6 @@
-use eyre::Result;
-use itertools::iproduct;
+use aoc::*;
 
-use std::fs;
+use itertools::iproduct;
 
 const SIZE: usize = 300;
 const SIZE_P_1: usize = 1 + SIZE;
@@ -36,7 +35,7 @@ fn compute_power_partial_sums(serial_number: i64) -> Vec<i64> {
     power_partial_sums
 }
 
-fn compute_max_square_sum(power_partial_sums: &[i64], square_size: usize) -> Option<(i64, usize, usize)> {
+fn compute_max_square_sum(power_partial_sums: &[i64], square_size: usize) -> Result<(i64, usize, usize)> {
     iproduct!(square_size..SIZE_P_1, square_size..SIZE_P_1)
         .map(|(row, column)| {
             let prev_row = row - square_size;
@@ -50,26 +49,28 @@ fn compute_max_square_sum(power_partial_sums: &[i64], square_size: usize) -> Opt
             (ul + dr - ur - dl, column - square_size, row - square_size)
         })
         .max_by_key(|&(sum, _, _)| sum)
+        .value()
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2018-day11.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
     let serial_number = input.trim().parse::<i64>()?;
 
     let power_partial_sums = compute_power_partial_sums(serial_number);
 
-    let (_, x1, y1) = compute_max_square_sum(&power_partial_sums, 3).unwrap();
+    let (_, x1, y1) = compute_max_square_sum(&power_partial_sums, 3)?;
     let result1 = format!("{},{}", x1, y1);
 
     let (x2, y2, best_square_size) = (1..=300)
         .map(|square_size| {
-            let max = compute_max_square_sum(&power_partial_sums, square_size).unwrap();
-            (max, square_size)
+            let max = compute_max_square_sum(&power_partial_sums, square_size)?;
+            Ok((max, square_size))
         })
-        .max_by_key(|&((sum, _, _), _)| sum)
+        .try_process(|iter| iter.max_by_key(|&((sum, _, _), _)| sum))?
         .map(|((_, x, y), square_size)| (x, y, square_size))
-        .unwrap();
+        .value()?;
 
     let result2 = format!("{},{},{}", x2, y2, best_square_size);
 

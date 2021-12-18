@@ -1,8 +1,9 @@
-use eyre::{bail, Result};
+use aoc::*;
+
+use eyre::bail;
 use itertools::Itertools;
 use smallvec::{Array, SmallVec};
 
-use std::fs;
 use std::ops::Deref;
 
 type Mat2x2 = SmallVec<[bool; 4]>;
@@ -74,7 +75,13 @@ fn transformations(array: &mut [bool], size: usize) -> [usize; 8] {
     ]
 }
 
-fn apply_rules<Src: SmallVecBool, Dst: SmallVecBool>(grid: &mut Grid, buf: &mut Vec<bool>, rules: &[Option<Dst>], block_size: usize, new_block_size: usize) {
+fn apply_rules<Src: SmallVecBool, Dst: SmallVecBool>(
+    grid: &mut Grid,
+    buf: &mut Vec<bool>,
+    rules: &[Option<Dst>],
+    block_size: usize,
+    new_block_size: usize,
+) -> Result<()> {
     let block_count = grid.size / block_size;
     let new_grid_size = new_block_size * block_count;
 
@@ -92,7 +99,7 @@ fn apply_rules<Src: SmallVecBool, Dst: SmallVecBool>(grid: &mut Grid, buf: &mut 
                 .copied()
                 .collect();
 
-            let new_array = rules[reduce(&array)].as_deref().unwrap();
+            let new_array = rules[reduce(&array)].as_deref().value()?;
 
             buf.chunks_exact_mut(new_grid_size).skip(i_block * new_block_size).take(new_block_size).zip(new_array.chunks_exact(new_block_size)).for_each(
                 |(buf_line, new_array_line)| buf_line[j_block * new_block_size..j_block * new_block_size + new_block_size].copy_from_slice(new_array_line),
@@ -102,24 +109,29 @@ fn apply_rules<Src: SmallVecBool, Dst: SmallVecBool>(grid: &mut Grid, buf: &mut 
 
     grid.size = new_grid_size;
     std::mem::swap(buf, &mut grid.tiles);
+
+    Ok(())
 }
 
-fn run(grid: &mut Grid, buf: &mut Vec<bool>, rules_2x2: &[Option<Mat3x3>], rules_3x3: &[Option<Mat4x4>]) {
+fn run(grid: &mut Grid, buf: &mut Vec<bool>, rules_2x2: &[Option<Mat3x3>], rules_3x3: &[Option<Mat4x4>]) -> Result<()> {
     if grid.size % 2 == 0 {
-        apply_rules::<Mat2x2, _>(grid, buf, rules_2x2, 2, 3);
+        apply_rules::<Mat2x2, _>(grid, buf, rules_2x2, 2, 3)?;
     } else {
-        apply_rules::<Mat3x3, _>(grid, buf, rules_3x3, 3, 4);
+        apply_rules::<Mat3x3, _>(grid, buf, rules_3x3, 3, 4)?;
     }
+
+    Ok(())
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2017-day21.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
     let mut rules_2x2 = vec![None; 1 << 4];
     let mut rules_3x3 = vec![None; 1 << 9];
 
     for line in input.lines() {
-        let (before, after) = line.split(" => ").next_tuple().unwrap();
+        let (before, after) = line.split(" => ").next_tuple().value()?;
 
         if before.len() == 5 {
             let v = parse::<Mat3x3>(after);
@@ -146,12 +158,12 @@ fn main() -> Result<()> {
     let mut buf = Vec::new();
 
     for _ in 0..5 {
-        run(&mut grid, &mut buf, &rules_2x2, &rules_3x3);
+        run(&mut grid, &mut buf, &rules_2x2, &rules_3x3)?;
     }
     let result1 = grid.tiles.iter().filter(|&&x| x).count();
 
     for _ in 0..13 {
-        run(&mut grid, &mut buf, &rules_2x2, &rules_3x3);
+        run(&mut grid, &mut buf, &rules_2x2, &rules_3x3)?;
     }
     let result2 = grid.tiles.iter().filter(|&&x| x).count();
 

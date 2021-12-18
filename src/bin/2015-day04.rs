@@ -1,8 +1,8 @@
-use eyre::Result;
+use aoc::*;
+
 use md5::Digest;
 use smallvec::SmallVec;
 
-use std::fs;
 use std::iter::once;
 
 fn hash_generator(input: &[u8]) -> impl Iterator<Item = (usize, Digest)> {
@@ -34,16 +34,17 @@ fn hash_generator(input: &[u8]) -> impl Iterator<Item = (usize, Digest)> {
     }))
 }
 
-fn find_digest(input: &[u8], f: impl Fn(&Digest) -> bool) -> usize {
-    hash_generator(input).find(|(_, digest)| f(digest)).map(|(n, _)| n).unwrap()
+fn find_digest(input: &[u8], f: impl Fn(&Digest) -> bool) -> Result<usize> {
+    hash_generator(input).find(|(_, digest)| f(digest)).map(|(n, _)| n).value()
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2015-day04.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
     let input = input.trim().as_bytes();
 
-    let result1 = find_digest(input, |digest| digest[..2] == [0, 0] && digest[2] <= 0x0F);
-    let result2 = find_digest(input, |digest| digest[..3] == [0, 0, 0]);
+    let result1 = find_digest(input, |digest| digest[..2] == [0, 0] && digest[2] <= 0x0F)?;
+    let result2 = find_digest(input, |digest| digest[..3] == [0, 0, 0])?;
 
     println!("{}", result1);
     println!("{}", result2);

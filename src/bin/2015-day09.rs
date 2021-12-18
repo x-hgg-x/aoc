@@ -1,10 +1,10 @@
-use eyre::Result;
+use aoc::*;
+
 use itertools::Itertools;
 use regex::Regex;
 use smallvec::SmallVec;
 
 use std::collections::HashMap;
-use std::fs;
 use std::iter::once;
 
 struct Permutations<'a, T, const N: usize> {
@@ -56,23 +56,31 @@ impl<'a, T: Clone, const N: usize> Iterator for Permutations<'a, T, N> {
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2015-day09.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
     let re = Regex::new(r#"(?m)^(\w+) to (\w+) = (\d+)$"#)?;
 
-    let nodes = re.captures_iter(&input).flat_map(|cap| [cap.get(1).unwrap().as_str(), cap.get(2).unwrap().as_str()]).sorted_unstable().dedup().collect_vec();
+    let mut nodes: Vec<_> = re.captures_iter(&input).flat_map(|cap| [cap.get(1), cap.get(2)]).map(|m| Result::Ok(m.value()?.as_str())).try_collect()?;
+    nodes.sort_unstable();
+    nodes.dedup();
 
-    let edges = HashMap::<_, _>::from_iter(re.captures_iter(&input).flat_map(|cap| {
-        let location1 = cap.get(1).unwrap().as_str();
-        let location2 = cap.get(2).unwrap().as_str();
-        let distance: u32 = cap[3].parse().unwrap();
-        [((location1, location2), distance), ((location2, location1), distance)]
-    }));
+    let edges: HashMap<_, _> = re
+        .captures_iter(&input)
+        .map(|cap| {
+            let location1 = cap.get(1).value()?.as_str();
+            let location2 = cap.get(2).value()?.as_str();
+            let distance: u64 = cap[3].parse()?;
+            Ok((location1, location2, distance))
+        })
+        .try_process(|iter| {
+            iter.flat_map(|(location1, location2, distance)| [((location1, location2), distance), ((location2, location1), distance)]).collect()
+        })?;
 
-    let distances = Permutations::<_, 8>::new(&nodes).map(|x| x.windows(2).map(|x| edges[&(x[0], x[1])]).sum::<u32>()).collect_vec();
+    let distances = Permutations::<_, 8>::new(&nodes).map(|x| x.windows(2).map(|x| edges[&(x[0], x[1])]).sum::<u64>()).collect_vec();
 
-    let result1 = *distances.iter().min().unwrap();
-    let result2 = *distances.iter().max().unwrap();
+    let result1 = *distances.iter().min().value()?;
+    let result2 = *distances.iter().max().value()?;
 
     println!("{}", result1);
     println!("{}", result2);

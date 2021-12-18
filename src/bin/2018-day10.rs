@@ -1,8 +1,9 @@
-use eyre::{ensure, Result};
+use aoc::*;
+
+use eyre::ensure;
 use itertools::Itertools;
 use regex::Regex;
 
-use std::fs;
 use std::iter::once;
 
 struct Grid {
@@ -34,21 +35,22 @@ fn compute_bounds(positions: &[(i64, i64)], velocities: &[(i64, i64)], time: i64
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2018-day10.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
     let re = Regex::new(r#"(?m)^position=<(.+?), (.+?)> velocity=<(.+?), (.+?)>$"#)?;
 
     let (mut positions, velocities): (Vec<_>, Vec<_>) = re
         .captures_iter(&input)
         .map(|cap| {
-            let position_x = cap[1].trim().parse().unwrap();
-            let position_y = cap[2].trim().parse().unwrap();
-            let velocity_x = cap[3].trim().parse().unwrap();
-            let velocity_y = cap[4].trim().parse().unwrap();
+            let position_x = cap[1].trim().parse()?;
+            let position_y = cap[2].trim().parse()?;
+            let velocity_x = cap[3].trim().parse()?;
+            let velocity_y = cap[4].trim().parse()?;
 
-            ((position_x, position_y), (velocity_x, velocity_y))
+            Ok(((position_x, position_y), (velocity_x, velocity_y)))
         })
-        .unzip();
+        .try_process(|iter| iter.unzip())?;
 
     let message_time = (0..)
         .scan((i64::MAX, i64::MAX), |(x_bounds_size, y_bounds_size), time| {
@@ -64,7 +66,7 @@ fn main() -> Result<()> {
             }
         })
         .last()
-        .unwrap();
+        .value()?;
 
     let (xmin, ymin, xmax, ymax) = compute_bounds(&positions, &velocities, message_time);
     for ((position_x, position_y), &(velocity_x, velocity_y)) in positions.iter_mut().zip(&velocities) {

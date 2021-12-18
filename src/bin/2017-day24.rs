@@ -1,7 +1,6 @@
-use eyre::Result;
-use itertools::Itertools;
+use aoc::*;
 
-use std::fs;
+use itertools::Itertools;
 
 struct State {
     last: u64,
@@ -10,15 +9,16 @@ struct State {
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2017-day24.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
-    let components = input
+    let components: Vec<_> = input
         .lines()
         .map(|line| {
-            let (left, right) = line.split('/').map(|x| x.parse::<u64>().unwrap()).next_tuple().unwrap();
-            [left, right]
+            let (left, right) = line.split('/').map(|x| Ok(x.parse::<u64>()?)).try_process(|mut iter| iter.next_tuple())?.value()?;
+            Result::Ok([left, right])
         })
-        .collect_vec();
+        .try_collect()?;
 
     let mut queue = components
         .iter()

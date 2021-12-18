@@ -1,7 +1,8 @@
-use eyre::{bail, ensure, Result};
+use aoc::*;
+
+use eyre::{bail, ensure};
 use num_complex::Complex;
 
-use std::fs;
 use std::iter::repeat;
 
 const TURN_LEFT: Complex<i64> = Complex::new(0, 1);
@@ -46,9 +47,10 @@ impl Grid {
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2018-day13.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
-    let width = input.lines().map(|line| line.len()).max().unwrap();
+    let width = input.lines().map(|line| line.len()).max().value()?;
     let height = input.lines().count();
 
     let mut tiles = Vec::with_capacity(width * height);
@@ -155,7 +157,7 @@ fn main() -> Result<()> {
             Tile::LeftCurve(x) => x.is_some(),
             Tile::RightCurve(x) => x.is_some(),
             Tile::Intersection(x) => x.is_some(),
-            Tile::Empty => panic!("empty tile at {:?}", grid.get_position(cart_index)),
+            Tile::Empty => false,
         });
 
         if cart_indices.len() == 1 {
@@ -163,7 +165,7 @@ fn main() -> Result<()> {
         }
     };
 
-    let (x1, y1) = first_crash_position.map(|(row, column)| (column, row)).unwrap();
+    let (x1, y1) = first_crash_position.map(|(row, column)| (column, row)).value()?;
     let (x2, y2) = (last_position.1, last_position.0);
 
     let result1 = format!("{},{}", x1, y1);

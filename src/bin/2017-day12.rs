@@ -1,19 +1,20 @@
-use eyre::Result;
+use aoc::*;
+
 use itertools::Itertools;
 
 use std::collections::HashMap;
-use std::fs;
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2017-day12.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
-    let graph: HashMap<_, _> = input
+    let graph: HashMap<_, Vec<_>> = input
         .lines()
         .map(|line| {
-            let mut iter = line.split(|c: char| !c.is_ascii_digit()).filter(|x| !x.is_empty()).map(|x| x.parse::<usize>().unwrap());
-            (iter.next().unwrap(), iter.collect_vec())
+            let mut iter = line.split(|c: char| !c.is_ascii_digit()).filter(|x| !x.is_empty()).map(|x| x.parse::<usize>());
+            Result::Ok((iter.next().transpose()?.value()?, iter.try_collect()?))
         })
-        .collect();
+        .try_collect()?;
 
     let mut group_0_size = 0usize;
     let mut visited = vec![false; graph.len()];

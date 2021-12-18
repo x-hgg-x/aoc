@@ -1,5 +1,4 @@
-use eyre::Result;
-use std::fs;
+use aoc::*;
 
 struct Password<'a> {
     data: &'a mut [u8],
@@ -39,7 +38,7 @@ impl<'a> Password<'a> {
 }
 
 fn main() -> Result<()> {
-    let mut input = fs::read_to_string("inputs/2015-day11.txt")?.trim().as_bytes().to_vec();
+    let mut input = String::from_utf8_lossy(&setup(file!())?).trim().as_bytes().to_vec();
 
     let mut password_generator = Password { data: &mut input };
 

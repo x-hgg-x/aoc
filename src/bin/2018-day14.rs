@@ -1,8 +1,7 @@
-use eyre::Result;
+use aoc::*;
+
 use itertools::Itertools;
 use regex::bytes::Regex;
-
-use std::fs;
 
 fn compute_new_recipes(scoreboard: &mut Vec<u8>, current_recipes: &mut [usize; 2]) {
     let scores = [scoreboard[current_recipes[0]], scoreboard[current_recipes[1]]];
@@ -19,7 +18,8 @@ fn compute_new_recipes(scoreboard: &mut Vec<u8>, current_recipes: &mut [usize; 2
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2018-day14.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
     let input = input.trim();
 
     let recipes_count = input.parse::<usize>()?;

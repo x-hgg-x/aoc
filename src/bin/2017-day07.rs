@@ -1,11 +1,12 @@
-use eyre::{bail, Result};
+use aoc::*;
+
+use eyre::bail;
 use itertools::Itertools;
 use regex::Regex;
 use smallvec::SmallVec;
 
 use std::cell::Cell;
 use std::collections::HashMap;
-use std::fs;
 
 #[derive(Default)]
 struct Node<'a> {
@@ -18,11 +19,15 @@ struct Node<'a> {
 
 fn compute_total_weight(map: &HashMap<&str, Node>, node_name: &str) -> u64 {
     let node = &map[node_name];
-    node.total_weight.get().unwrap_or_else(|| {
-        let total_weight = node.children_names.iter().fold(node.weight, |acc, &child_name| acc + compute_total_weight(map, child_name));
-        node.total_weight.set(Some(total_weight));
-        total_weight
-    })
+
+    match node.total_weight.get() {
+        Some(total_weight) => total_weight,
+        None => {
+            let total_weight = node.children_names.iter().fold(node.weight, |acc, &child_name| acc + compute_total_weight(map, child_name));
+            node.total_weight.set(Some(total_weight));
+            total_weight
+        }
+    }
 }
 
 fn compute_unbalanced_node_corrected_weight(map: &HashMap<&str, Node>, bottom_node: &Node) -> Result<u64> {
@@ -30,11 +35,11 @@ fn compute_unbalanced_node_corrected_weight(map: &HashMap<&str, Node>, bottom_no
     let mut balanced_weight = bottom_node.weight;
 
     loop {
-        let mut children_total_weights = map[unbalanced_node_name]
+        let mut children_total_weights: SmallVec<[_; 8]> = map[unbalanced_node_name]
             .children_names
             .iter()
-            .map(|&child_name| (child_name, map[child_name].total_weight.get().unwrap()))
-            .collect::<SmallVec<[_; 8]>>();
+            .map(|&child_name| Result::Ok((child_name, map[child_name].total_weight.get().value()?)))
+            .try_collect()?;
 
         children_total_weights.sort_unstable_by_key(|&(_, weight)| weight);
 
@@ -51,11 +56,12 @@ fn compute_unbalanced_node_corrected_weight(map: &HashMap<&str, Node>, bottom_no
     }
 
     let unbalanced_node = &map[unbalanced_node_name];
-    Ok(unbalanced_node.weight + balanced_weight - unbalanced_node.total_weight.get().unwrap())
+    Ok(unbalanced_node.weight + balanced_weight - unbalanced_node.total_weight.get().value()?)
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2017-day07.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
     let regex_line = Regex::new(r#"(?m)^(\w+)\s+\((\d+)\)((?:\s+->.*)?)$"#)?;
     let regex_children = Regex::new(r#"\w+"#)?;
@@ -63,9 +69,9 @@ fn main() -> Result<()> {
     let mut map = HashMap::<_, Node>::new();
 
     for cap in regex_line.captures_iter(&input) {
-        let node_name = cap.get(1).unwrap().as_str();
+        let node_name = cap.get(1).value()?.as_str();
         let node_weight = cap[2].parse()?;
-        let children_names = regex_children.find_iter(cap.get(3).unwrap().as_str()).map(|x| x.as_str()).collect();
+        let children_names = regex_children.find_iter(cap.get(3).value()?.as_str()).map(|x| x.as_str()).collect();
 
         for &child_name in &children_names {
             map.entry(child_name).or_default().parent = Some(node_name);
@@ -77,7 +83,7 @@ fn main() -> Result<()> {
         node.children_names = children_names;
     }
 
-    let bottom_node = map.values().find(|&node| node.parent.is_none()).unwrap();
+    let bottom_node = map.values().find(|&node| node.parent.is_none()).value()?;
     compute_total_weight(&map, bottom_node.name);
 
     let result1 = bottom_node.name;

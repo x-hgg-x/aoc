@@ -1,7 +1,6 @@
-use eyre::Result;
-use itertools::Itertools;
+use aoc::*;
 
-use std::fs;
+use itertools::Itertools;
 
 fn compute_checksum(input: &[u8], disk_size: usize) -> String {
     let mut disk = Vec::with_capacity(disk_size);
@@ -37,7 +36,8 @@ fn compute_checksum(input: &[u8], disk_size: usize) -> String {
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2016-day16.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
     let input = input.trim().as_bytes();
 
     let result1 = compute_checksum(input, 272);

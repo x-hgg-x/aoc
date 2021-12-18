@@ -1,7 +1,6 @@
-use eyre::Result;
-use itertools::{Either, Itertools};
+use aoc::*;
 
-use std::fs;
+use itertools::{Either, Itertools};
 
 fn get_subset_sum_iter(set: &[u64], goal_sum: u64) -> impl Iterator<Item = u64> + '_ {
     (1..(1u64 << set.len()))
@@ -28,28 +27,29 @@ fn get_partition<'a>(iter: impl Iterator<Item = u64> + 'a, set: &'a [u64]) -> im
     })
 }
 
-fn get_optimal_qe(weights: &[u64], goal_weight: u64, func: impl Fn(&[u64]) -> bool) -> u64 {
+fn get_optimal_qe(weights: &[u64], goal_weight: u64, func: impl Fn(&[u64]) -> bool) -> Result<u64> {
     let valid_subsets = get_subset_sum_iter(weights, goal_weight).collect_vec();
-    let min_length = valid_subsets.iter().map(|bitset| bitset.count_ones()).min().unwrap();
+    let min_length = valid_subsets.iter().map(|bitset| bitset.count_ones()).min().value()?;
     let filtered_set_iter = valid_subsets.into_iter().filter(move |bitset| bitset.count_ones() == min_length);
 
-    get_partition(filtered_set_iter, weights).filter(|(_, remaining)| func(remaining)).map(|(first_group, _)| first_group.iter().product()).min().unwrap()
+    get_partition(filtered_set_iter, weights).filter(|(_, remaining)| func(remaining)).map(|(first_group, _)| first_group.iter().product()).min().value()
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2015-day24.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
-    let weights = input.split_ascii_whitespace().map(|x| x.parse::<u64>().unwrap()).collect_vec();
+    let weights: Vec<_> = input.split_ascii_whitespace().map(|x| x.parse::<u64>()).try_collect()?;
     let total_weight: u64 = weights.iter().sum();
 
     let goal_weight1 = total_weight / 3;
-    let result1 = get_optimal_qe(&weights, goal_weight1, |remaining| get_subset_sum_iter(remaining, goal_weight1).next().is_some());
+    let result1 = get_optimal_qe(&weights, goal_weight1, |remaining| get_subset_sum_iter(remaining, goal_weight1).next().is_some())?;
 
     let goal_weight2 = total_weight / 4;
     let result2 = get_optimal_qe(&weights, goal_weight2, |second_group| {
         get_partition(get_subset_sum_iter(second_group, goal_weight2), second_group)
             .any(|(_, third_group)| get_subset_sum_iter(&third_group, goal_weight2).next().is_some())
-    });
+    })?;
 
     println!("{}", result1);
     println!("{}", result2);

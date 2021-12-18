@@ -1,8 +1,8 @@
-use eyre::Result;
+use aoc::*;
+
+use eyre::bail;
 use itertools::Itertools;
 use smallvec::SmallVec;
-
-use std::fs;
 
 enum Instruction {
     Half(usize),
@@ -13,10 +13,10 @@ enum Instruction {
     JumpIfOne(usize, i64),
 }
 
-fn get_register(register: &str) -> usize {
-    match register.bytes().next() {
-        Some(x @ b'a'..=b'b') => (x - b'a').into(),
-        other => panic!("unknown register: {:?}", other.map(char::from)),
+fn get_register(register: &str) -> Result<usize> {
+    match register.as_bytes()[0] {
+        x @ b'a'..=b'b' => Ok((x - b'a').into()),
+        other => bail!("unknown register: {:?}", char::from(other)),
     }
 }
 
@@ -52,24 +52,25 @@ fn run(instructions: &[Instruction], mut registers: [i64; 2]) -> Result<[i64; 2]
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2015-day23.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
-    let instructions = input
+    let instructions: Vec<_> = input
         .lines()
         .map(|line| {
             let args = <SmallVec<[_; 3]>>::from_iter(line.split(|c: char| c.is_ascii_whitespace() || c == ',').filter(|s| !s.is_empty()));
 
-            match args[0] {
-                "hlf" => Instruction::Half(get_register(args[1])),
-                "tpl" => Instruction::Triple(get_register(args[1])),
-                "inc" => Instruction::Increment(get_register(args[1])),
-                "jmp" => Instruction::Jump(args[1].parse().unwrap()),
-                "jie" => Instruction::JumpIfEven(get_register(args[1]), args[2].parse().unwrap()),
-                "jio" => Instruction::JumpIfOne(get_register(args[1]), args[2].parse().unwrap()),
-                other => panic!("unknown instruction: {}", other),
-            }
+            Ok(match args[0] {
+                "hlf" => Instruction::Half(get_register(args[1])?),
+                "tpl" => Instruction::Triple(get_register(args[1])?),
+                "inc" => Instruction::Increment(get_register(args[1])?),
+                "jmp" => Instruction::Jump(args[1].parse()?),
+                "jie" => Instruction::JumpIfEven(get_register(args[1])?, args[2].parse()?),
+                "jio" => Instruction::JumpIfOne(get_register(args[1])?, args[2].parse()?),
+                other => bail!("unknown instruction: {}", other),
+            })
         })
-        .collect_vec();
+        .try_collect()?;
 
     let result1 = run(&instructions, [0, 0])?[1];
     let result2 = run(&instructions, [1, 0])?[1];

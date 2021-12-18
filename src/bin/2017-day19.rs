@@ -1,7 +1,8 @@
-use eyre::{bail, ensure, Result};
+use aoc::*;
+
+use eyre::{bail, ensure};
 use itertools::Itertools;
 
-use std::fs;
 use std::iter::repeat;
 
 enum Tile {
@@ -30,10 +31,11 @@ impl Grid {
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2017-day19.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
-    let start_index = i64::try_from(input.bytes().position(|x| x == b'|').unwrap())?;
-    let width = input.lines().map(|line| line.len()).max().unwrap();
+    let start_index = i64::try_from(input.bytes().position(|x| x == b'|').value()?)?;
+    let width = input.lines().map(|line| line.len()).max().value()?;
     let height = input.lines().count();
 
     let tiles = input

@@ -1,9 +1,9 @@
-use eyre::Result;
+use aoc::*;
+
 use itertools::Itertools;
 use regex::Regex;
 use smallvec::SmallVec;
 
-use std::fs;
 use std::iter::once;
 
 const WIDTH: usize = 50;
@@ -30,15 +30,16 @@ fn rotate_column(pixels: &mut [u8], column: usize, shift: usize) {
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2016-day08.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
     let re = Regex::new(r#"(?m)^(rect |rotate row y=|rotate column x=)(\d+)(?:x| by )(\d+)$"#)?;
 
     let mut pixels = vec![b' '; WIDTH * HEIGHT];
 
     for cap in re.captures_iter(&input) {
-        let i: usize = cap[2].parse().unwrap();
-        let j: usize = cap[3].parse().unwrap();
+        let i: usize = cap[2].parse()?;
+        let j: usize = cap[3].parse()?;
 
         match &cap[1] {
             "rect " => turn_on_rect(&mut pixels, i, j),

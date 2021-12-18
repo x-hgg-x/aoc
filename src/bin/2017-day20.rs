@@ -1,8 +1,7 @@
-use eyre::Result;
+use aoc::*;
+
 use itertools::Itertools;
 use regex::Regex;
-
-use std::fs;
 
 #[derive(Clone)]
 struct Particle {
@@ -13,21 +12,26 @@ struct Particle {
     destroyed: bool,
 }
 
+fn parse_vec3(s: &str) -> Result<(i64, i64, i64)> {
+    s.split(',').map(|x| Ok(x.trim().parse()?)).try_process(|mut iter| iter.next_tuple().value())?
+}
+
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2017-day20.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
     let re = Regex::new(r#"(?m)^p=<(.+?)>, v=<(.+?)>, a=<(.+?)>$"#)?;
 
-    let mut particles = re
+    let mut particles: Vec<_> = re
         .captures_iter(&input)
         .enumerate()
         .map(|(index, cap)| {
-            let position = cap[1].split(',').map(|x| x.trim().parse().unwrap()).next_tuple().unwrap();
-            let velocity = cap[2].split(',').map(|x| x.trim().parse().unwrap()).next_tuple().unwrap();
-            let acceleration = cap[3].split(',').map(|x| x.trim().parse().unwrap()).next_tuple().unwrap();
-            Particle { index, position, velocity, acceleration, destroyed: false }
+            let position = parse_vec3(&cap[1])?;
+            let velocity = parse_vec3(&cap[2])?;
+            let acceleration = parse_vec3(&cap[3])?;
+            Result::Ok(Particle { index, position, velocity, acceleration, destroyed: false })
         })
-        .collect_vec();
+        .try_collect()?;
 
     let mut destroyed = Vec::new();
 
@@ -54,7 +58,7 @@ fn main() -> Result<()> {
         particles.retain(|x| !x.destroyed);
     }
 
-    let result1 = particles.iter().chain(&destroyed).min_by_key(|x| x.position.0.abs() + x.position.1.abs() + x.position.2.abs()).map(|x| x.index).unwrap();
+    let result1 = particles.iter().chain(&destroyed).min_by_key(|x| x.position.0.abs() + x.position.1.abs() + x.position.2.abs()).map(|x| x.index).value()?;
     let result2 = particles.len();
 
     println!("{}", result1);

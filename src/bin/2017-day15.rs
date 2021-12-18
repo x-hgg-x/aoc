@@ -1,12 +1,13 @@
-use eyre::Result;
+use aoc::*;
+
 use itertools::Itertools;
 
-use std::fs;
-
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2017-day15.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
-    let (start_a, start_b) = input.lines().map(|line| line.split_ascii_whitespace().last().unwrap().parse::<u64>().unwrap()).next_tuple().unwrap();
+    let iter = input.lines().map(|line| Ok(line.split_ascii_whitespace().last().value()?.parse::<u64>()?));
+    let (start_a, start_b) = iter.try_process(|mut iter| iter.next_tuple())?.value()?;
 
     let generator_a = std::iter::successors(Some(start_a), |a| Some((a * 16807) % 2147483647)).skip(1);
     let generator_b = std::iter::successors(Some(start_b), |b| Some((b * 48271) % 2147483647)).skip(1);

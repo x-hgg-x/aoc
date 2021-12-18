@@ -1,10 +1,10 @@
-use eyre::Result;
+use aoc::*;
+
 use itertools::Itertools;
 
-use std::fs;
 use std::iter::once;
 
-fn get_code(input: &[u8], keypad: &[&[u32]], start_pos: (usize, usize)) -> String {
+fn get_code(input: &[u8], keypad: &[&[u32]], start_pos: (usize, usize)) -> Result<String> {
     let (height, width) = (keypad.len(), keypad[0].len());
 
     input
@@ -22,21 +22,22 @@ fn get_code(input: &[u8], keypad: &[&[u32]], start_pos: (usize, usize)) -> Strin
             if direction == b'R' && *y != width - 1 && keypad[*x][*y + 1] != 0 {
                 *y += 1;
             }
-            Some((direction == b'\n').then(|| char::from_digit(keypad[*x][*y], 16).unwrap()))
+            Some((direction == b'\n').then(|| keypad[*x][*y]))
         })
-        .filter_map(|x| x.map(|c| c.to_ascii_uppercase()))
-        .collect()
+        .flatten()
+        .map(|x| Ok(char::from_digit(x, 16).value()?.to_ascii_uppercase()))
+        .try_collect()
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2016-day02.txt")?.lines().chain(once("")).join("\n");
+    let input = String::from_utf8_lossy(&setup(file!())?).lines().chain(once("")).join("\n");
     let input = input.as_bytes();
 
     let keypad1 = [&[1, 2, 3][..], &[4, 5, 6][..], &[7, 8, 9][..]];
     let keypad2 = [&[0, 0, 1, 0, 0][..], &[0, 2, 3, 4, 0][..], &[5, 6, 7, 8, 9][..], &[0, 10, 11, 12, 0][..], &[0, 0, 13, 0, 0][..]];
 
-    let result1 = get_code(input, &keypad1, (1, 1));
-    let result2 = get_code(input, &keypad2, (2, 0));
+    let result1 = get_code(input, &keypad1, (1, 1))?;
+    let result2 = get_code(input, &keypad2, (2, 0))?;
 
     println!("{}", result1);
     println!("{}", result2);

@@ -1,8 +1,8 @@
-use eyre::Result;
+use aoc::*;
+
 use itertools::{iproduct, Itertools};
 use regex::bytes::Regex;
 
-use std::fs;
 use std::iter::once;
 
 fn has_abba(bytes_list: &[&[u8]]) -> bool {
@@ -14,7 +14,8 @@ fn get_aba<'a>(bytes_list: &'a [&[u8]]) -> impl Iterator<Item = &'a [u8]> + Clon
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2016-day07.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
     let re = Regex::new(r#"\[\w+\]"#)?;
 

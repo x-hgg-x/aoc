@@ -1,8 +1,8 @@
-use eyre::Result;
+use aoc::*;
+
+use eyre::{bail, eyre, WrapErr};
 use itertools::Itertools;
 use smallvec::SmallVec;
-
-use std::fs;
 
 #[derive(Copy, Clone)]
 enum Input {
@@ -27,20 +27,20 @@ enum Instruction {
 }
 
 fn parse_register(register: &str) -> Option<usize> {
-    match register.bytes().next() {
-        Some(x @ b'a'..=b'h') => Some((x - b'a').into()),
+    match register.as_bytes()[0] {
+        x @ b'a'..=b'h' => Some((x - b'a').into()),
         _ => None,
     }
 }
 
-fn get_register(register: &str) -> usize {
-    parse_register(register).unwrap_or_else(|| panic!("unknown register: {}", register))
+fn get_register(register: &str) -> Result<usize> {
+    parse_register(register).ok_or_else(|| eyre!("unknown register: {}", register))
 }
 
-fn get_input(input: &str) -> Input {
+fn get_input(input: &str) -> Result<Input> {
     match parse_register(input) {
-        Some(r) => Input::Register(r),
-        None => input.parse().map(Input::Value).unwrap_or_else(|_| panic!("unknown register or value: {}", input)),
+        Some(r) => Ok(Input::Register(r)),
+        None => input.parse().map(Input::Value).wrap_err_with(|| eyre!("unknown register or value: {}", input)),
     }
 }
 
@@ -70,22 +70,23 @@ fn run(instructions: &[Instruction], mut registers: [i64; 8]) -> Result<([i64; 8
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2017-day23.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
-    let instructions = input
+    let instructions: Vec<_> = input
         .lines()
         .map(|line| {
             let args: SmallVec<[_; 3]> = line.split_ascii_whitespace().collect();
 
-            match args[0] {
-                "set" => Instruction::Set(get_register(args[1]), get_input(args[2])),
-                "sub" => Instruction::Substraction(get_register(args[1]), get_input(args[2])),
-                "mul" => Instruction::Multiplication(get_register(args[1]), get_input(args[2])),
-                "jnz" => Instruction::JumpIfNotZero(get_input(args[1]), get_input(args[2])),
-                other => panic!("unknown instruction: {}", other),
-            }
+            Ok(match args[0] {
+                "set" => Instruction::Set(get_register(args[1])?, get_input(args[2])?),
+                "sub" => Instruction::Substraction(get_register(args[1])?, get_input(args[2])?),
+                "mul" => Instruction::Multiplication(get_register(args[1])?, get_input(args[2])?),
+                "jnz" => Instruction::JumpIfNotZero(get_input(args[1])?, get_input(args[2])?),
+                other => bail!("unknown instruction: {}", other),
+            })
         })
-        .collect_vec();
+        .try_collect()?;
 
     let (_, mul_count) = run(&instructions, [0, 0, 0, 0, 0, 0, 0, 0])?;
 

@@ -1,8 +1,8 @@
-use eyre::{eyre, Result};
+use aoc::*;
+
+use eyre::eyre;
 use itertools::Itertools;
 use regex::{Regex, RegexSet};
-
-use std::fs;
 
 enum Operation {
     SwapPosition(usize, usize),
@@ -15,18 +15,18 @@ enum Operation {
 }
 
 impl Operation {
-    fn execute(&self, password: &mut [u8]) {
+    fn execute(&self, password: &mut [u8]) -> Result<()> {
         match *self {
             Operation::SwapPosition(pos1, pos2) => password.swap(pos1, pos2),
             Operation::SwapLetter(c1, c2) => {
-                let pos1 = password.iter().position(|&x| x == c1).unwrap();
-                let pos2 = password.iter().position(|&x| x == c2).unwrap();
+                let pos1 = password.iter().position(|&x| x == c1).value()?;
+                let pos2 = password.iter().position(|&x| x == c2).value()?;
                 password.swap(pos1, pos2);
             }
             Operation::RotateLeft(count) => password.rotate_left(count),
             Operation::RotateRight(count) => password.rotate_right(count),
             Operation::RotatePosition(c) => {
-                let pos = password.iter().position(|&x| x == c).unwrap();
+                let pos = password.iter().position(|&x| x == c).value()?;
                 let count = [1, 2, 3, 4, 6, 7, 0, 1];
                 password.rotate_right(count[pos]);
             }
@@ -39,20 +39,22 @@ impl Operation {
                 }
             }
         }
+
+        Ok(())
     }
 
-    fn cancel(&self, password: &mut [u8]) {
+    fn cancel(&self, password: &mut [u8]) -> Result<()> {
         match *self {
             Operation::SwapPosition(pos1, pos2) => password.swap(pos1, pos2),
             Operation::SwapLetter(c1, c2) => {
-                let pos1 = password.iter().position(|&x| x == c1).unwrap();
-                let pos2 = password.iter().position(|&x| x == c2).unwrap();
+                let pos1 = password.iter().position(|&x| x == c1).value()?;
+                let pos2 = password.iter().position(|&x| x == c2).value()?;
                 password.swap(pos1, pos2);
             }
             Operation::RotateLeft(count) => password.rotate_right(count),
             Operation::RotateRight(count) => password.rotate_left(count),
             Operation::RotatePosition(c) => {
-                let pos = password.iter().position(|&x| x == c).unwrap();
+                let pos = password.iter().position(|&x| x == c).value()?;
                 let count = [7, 7, 2, 6, 1, 5, 0, 4];
                 password.rotate_right(count[pos]);
             }
@@ -65,6 +67,8 @@ impl Operation {
                 }
             }
         }
+
+        Ok(())
     }
 }
 
@@ -120,31 +124,31 @@ impl ParseRegex {
     fn parse(&self, line: &str) -> Result<Operation> {
         match self.set.matches(line).iter().next() {
             Some(Self::REGEX_SWAP_POSITION) => {
-                let cap = self.regex_swap_position.captures(line).unwrap();
+                let cap = self.regex_swap_position.captures(line).value()?;
                 Ok(Operation::SwapPosition(cap[1].parse()?, cap[2].parse()?))
             }
             Some(Self::REGEX_SWAP_LETTER) => {
-                let cap = self.regex_swap_letter.captures(line).unwrap();
+                let cap = self.regex_swap_letter.captures(line).value()?;
                 Ok(Operation::SwapLetter(cap[1].as_bytes()[0], cap[2].as_bytes()[0]))
             }
             Some(Self::REGEX_ROTATE_LEFT) => {
-                let cap = self.regex_rotate_left.captures(line).unwrap();
+                let cap = self.regex_rotate_left.captures(line).value()?;
                 Ok(Operation::RotateLeft(cap[1].parse()?))
             }
             Some(Self::REGEX_ROTATE_RIGHT) => {
-                let cap = self.regex_rotate_right.captures(line).unwrap();
+                let cap = self.regex_rotate_right.captures(line).value()?;
                 Ok(Operation::RotateRight(cap[1].parse()?))
             }
             Some(Self::REGEX_ROTATE_POSITION) => {
-                let cap = self.regex_rotate_position.captures(line).unwrap();
+                let cap = self.regex_rotate_position.captures(line).value()?;
                 Ok(Operation::RotatePosition(cap[1].as_bytes()[0]))
             }
             Some(Self::REGEX_REVERSE_POSITION) => {
-                let cap = self.regex_reverse_position.captures(line).unwrap();
+                let cap = self.regex_reverse_position.captures(line).value()?;
                 Ok(Operation::ReversePosition(cap[1].parse()?, cap[2].parse()?))
             }
             Some(Self::REGEX_MOVE_POSITION) => {
-                let cap = self.regex_move_position.captures(line).unwrap();
+                let cap = self.regex_move_position.captures(line).value()?;
                 Ok(Operation::MovePosition(cap[1].parse()?, cap[2].parse()?))
             }
             _ => Err(eyre!("unknown operation: {}", line)),
@@ -153,7 +157,8 @@ impl ParseRegex {
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2016-day21.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
     let parse_regex = ParseRegex::new(
         Regex::new(r#"^swap position (\d+) with position (\d+)$"#)?,
@@ -165,17 +170,17 @@ fn main() -> Result<()> {
         Regex::new(r#"^move position (\d+) to position (\d+)$"#)?,
     )?;
 
-    let operations = input.lines().map(|line| parse_regex.parse(line).unwrap()).collect_vec();
+    let operations: Vec<_> = input.lines().map(|line| parse_regex.parse(line)).try_collect()?;
 
     let mut password = *b"abcdefgh";
     for operation in &operations {
-        operation.execute(&mut password);
+        operation.execute(&mut password)?;
     }
     let result1 = String::from_utf8_lossy(&password);
 
     let mut password = *b"fbgdceah";
     for operation in operations.iter().rev() {
-        operation.cancel(&mut password);
+        operation.cancel(&mut password)?;
     }
     let result2 = String::from_utf8_lossy(&password);
 

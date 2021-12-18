@@ -1,7 +1,6 @@
-use eyre::Result;
-use itertools::Itertools;
+use aoc::*;
 
-use std::fs;
+use itertools::Itertools;
 
 fn run(mut jumps: Vec<i64>, part2: bool) -> Result<usize> {
     let mut steps = 0;
@@ -22,9 +21,10 @@ fn run(mut jumps: Vec<i64>, part2: bool) -> Result<usize> {
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2017-day05.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
-    let jumps = input.split_ascii_whitespace().map(|x| x.parse::<i64>().unwrap()).collect_vec();
+    let jumps: Vec<_> = input.split_ascii_whitespace().map(|x| x.parse::<i64>()).try_collect()?;
 
     let result1 = run(jumps.clone(), false)?;
     let result2 = run(jumps, true)?;

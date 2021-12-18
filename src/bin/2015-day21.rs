@@ -1,10 +1,12 @@
-use eyre::Result;
+use aoc::*;
+
 use itertools::{iproduct, Itertools};
 use regex::Regex;
 use smallvec::{smallvec, SmallVec};
 
-use std::fs;
 use std::iter::{once, Sum};
+
+const HP: i64 = 100;
 
 #[derive(Default)]
 struct Equipment {
@@ -26,14 +28,15 @@ impl<'a> Sum<&'a Self> for Equipment {
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2015-day21.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
     let re = Regex::new(r#"Hit Points: (\d+)\s+Damage: (\d+)\s+Armor: (\d+)"#)?;
 
-    let (boss_hp, boss_damage, boss_armor): (i64, i64, i64) =
-        re.captures(&input).map(|cap| (cap[1].parse().unwrap(), cap[2].parse().unwrap(), cap[3].parse().unwrap())).unwrap();
-
-    const HP: i64 = 100;
+    let cap = re.captures(&input).value()?;
+    let boss_hp: i64 = cap[1].parse()?;
+    let boss_damage: i64 = cap[2].parse()?;
+    let boss_armor: i64 = cap[3].parse()?;
 
     let weapons = vec![Equipment::new(8, 4, 0), Equipment::new(10, 5, 0), Equipment::new(25, 6, 0), Equipment::new(40, 7, 0), Equipment::new(74, 8, 0)];
 
@@ -79,18 +82,16 @@ fn main() -> Result<()> {
         })
         .collect_vec();
 
-    let (result1, result2) = battles
-        .iter()
-        .scan((i64::MAX, i64::MIN), |(min_cost, max_cost), &(cost, win)| {
+    let (result1, result2) = battles.iter().fold(
+        (i64::MAX, i64::MIN),
+        |(min_cost, max_cost), &(cost, win)| {
             if win {
-                *min_cost = cost.min(*min_cost);
+                (cost.min(min_cost), max_cost)
             } else {
-                *max_cost = cost.max(*max_cost);
+                (min_cost, cost.max(max_cost))
             }
-            Some((*min_cost, *max_cost))
-        })
-        .last()
-        .unwrap();
+        },
+    );
 
     println!("{}", result1);
     println!("{}", result2);

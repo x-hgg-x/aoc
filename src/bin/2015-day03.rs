@@ -1,11 +1,11 @@
-use eyre::Result;
+use aoc::*;
+
 use itertools::Itertools;
 
-use std::fs;
 use std::iter::once;
 
 fn main() -> Result<()> {
-    let input = fs::read("inputs/2015-day03.txt")?;
+    let input = setup(file!())?;
 
     let locations = once((0i64, 0i64))
         .chain(input.iter().filter_map(|x| match x {
@@ -31,19 +31,14 @@ fn main() -> Result<()> {
     let result2 = locations
         .chunks(2)
         .scan([(0, 0); 2], |[(x1, y1), (x2, y2)], directions| {
-            match directions {
-                [(direction_1_x, direction_1_y), (direction_2_x, direction_2_y)] => {
-                    *x1 += direction_1_x;
-                    *y1 += direction_1_y;
-                    *x2 += direction_2_x;
-                    *y2 += direction_2_y;
-                }
-                [(direction_x, direction_y)] => {
-                    *x1 += direction_x;
-                    *y1 += direction_y;
-                }
-                _ => unreachable!(),
-            };
+            let (direction_1_x, direction_1_y) = directions[0];
+            *x1 += direction_1_x;
+            *y1 += direction_1_y;
+
+            if let Some((direction_2_x, direction_2_y)) = directions.get(1) {
+                *x2 += direction_2_x;
+                *y2 += direction_2_y;
+            }
 
             Some([(*x1, *y1), (*x2, *y2)])
         })

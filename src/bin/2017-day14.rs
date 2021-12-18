@@ -1,8 +1,8 @@
-use eyre::{ensure, Result};
+use aoc::*;
+
+use eyre::ensure;
 use itertools::Itertools;
 use smallvec::SmallVec;
-
-use std::fs;
 
 struct Grid {
     width: usize,
@@ -81,7 +81,8 @@ fn next_hash_input(hash_input: &mut SmallVec<[u8; 12]>, len: usize) {
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2017-day14.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
     let input = input.trim().as_bytes();
 
     let mut tiles = Vec::with_capacity(128 * 128);

@@ -1,5 +1,10 @@
-use eyre::Result;
-use std::fs;
+use aoc::*;
+
+const UP: (u8, (i8, i8)) = (b'U', (0, -1));
+const DOWN: (u8, (i8, i8)) = (b'D', (0, 1));
+const LEFT: (u8, (i8, i8)) = (b'L', (-1, 0));
+const RIGHT: (u8, (i8, i8)) = (b'R', (1, 0));
+const UDLR: [(u8, (i8, i8)); 4] = [UP, DOWN, LEFT, RIGHT];
 
 #[derive(Clone, Default)]
 struct State {
@@ -8,14 +13,9 @@ struct State {
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2016-day17.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
     let input = input.trim().as_bytes();
-
-    const UP: (u8, (i8, i8)) = (b'U', (0, -1));
-    const DOWN: (u8, (i8, i8)) = (b'D', (0, 1));
-    const LEFT: (u8, (i8, i8)) = (b'L', (-1, 0));
-    const RIGHT: (u8, (i8, i8)) = (b'R', (1, 0));
-    const UDLR: [(u8, (i8, i8)); 4] = [UP, DOWN, LEFT, RIGHT];
 
     let mut buf = input.to_vec();
     let mut min_path = Option::<Vec<_>>::None;
@@ -61,7 +61,7 @@ fn main() -> Result<()> {
         });
     }
 
-    let result1 = String::from_utf8_lossy(min_path.as_ref().unwrap());
+    let result1 = String::from_utf8_lossy(min_path.as_ref().value()?);
     let result2 = max_path_len;
 
     println!("{}", result1);

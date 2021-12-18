@@ -1,9 +1,10 @@
-use eyre::{bail, Result};
+use aoc::*;
 
-use std::fs;
+use eyre::bail;
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2017-day11.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
     let input = input.trim();
 
     let mut q = 0i64;

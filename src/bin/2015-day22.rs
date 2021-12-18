@@ -1,15 +1,15 @@
-use eyre::Result;
+use aoc::*;
+
 use regex::Regex;
 
 use std::cmp::Ordering;
 use std::collections::BinaryHeap;
-use std::fs;
 
 trait Spell {
-    fn mana() -> i32;
-    fn max_timer() -> i32;
-    fn current_timer(&self) -> i32;
-    fn current_timer_mut(&mut self) -> &mut i32;
+    fn mana() -> i64;
+    fn max_timer() -> i64;
+    fn current_timer(&self) -> i64;
+    fn current_timer_mut(&mut self) -> &mut i64;
     fn get(spells: &Spells) -> &Self;
     fn get_mut(spells: &mut Spells) -> &mut Self;
 
@@ -30,23 +30,23 @@ macro_rules! spell {
     ($name:ident) => {
         #[derive(Default, Clone)]
         struct $name {
-            timer: i32,
+            timer: i64,
         }
     };
 }
 
 macro_rules! impl_spell {
     ($mana:expr, $max_timer:expr, $field_name:ident) => {
-        fn mana() -> i32 {
+        fn mana() -> i64 {
             $mana
         }
-        fn max_timer() -> i32 {
+        fn max_timer() -> i64 {
             $max_timer
         }
-        fn current_timer(&self) -> i32 {
+        fn current_timer(&self) -> i64 {
             self.timer
         }
-        fn current_timer_mut(&mut self) -> &mut i32 {
+        fn current_timer_mut(&mut self) -> &mut i64 {
             &mut self.timer
         }
         fn get(spells: &Spells) -> &Self {
@@ -143,12 +143,12 @@ impl Spells {
 
 #[derive(Clone)]
 struct Status {
-    mana_spent: i32,
-    player_hp: i32,
-    player_armor: i32,
-    player_mana: i32,
-    boss_hp: i32,
-    boss_damage: i32,
+    mana_spent: i64,
+    player_hp: i64,
+    player_armor: i64,
+    player_mana: i64,
+    boss_hp: i64,
+    boss_damage: i64,
 }
 
 #[derive(Clone)]
@@ -159,7 +159,7 @@ struct GameState {
 }
 
 impl GameState {
-    fn new(hard_mode: bool, player_hp: i32, player_mana: i32, boss_hp: i32, boss_damage: i32) -> Self {
+    fn new(hard_mode: bool, player_hp: i64, player_mana: i64, boss_hp: i64, boss_damage: i64) -> Self {
         Self { hard_mode, status: Status { player_hp, mana_spent: 0, player_armor: 0, player_mana, boss_hp, boss_damage }, spells: Default::default() }
     }
 
@@ -220,12 +220,12 @@ impl PartialOrd for GameState {
 }
 
 enum GameResult {
-    GameWon(i32),
+    GameWon(i64),
     GameLost,
     Unknown(GameState),
 }
 
-fn process_result(heap: &mut BinaryHeap<GameState>, min_mana: &mut i32, current_state: &GameState, spell: &impl Spell) {
+fn process_result(heap: &mut BinaryHeap<GameState>, min_mana: &mut i64, current_state: &GameState, spell: &impl Spell) {
     if let Some(game_result) = current_state.try_cast(spell) {
         match game_result {
             GameResult::GameWon(mana_spent) => {
@@ -246,11 +246,11 @@ fn process_result(heap: &mut BinaryHeap<GameState>, min_mana: &mut i32, current_
     }
 }
 
-fn solve(hard_mode: bool, boss_hp: i32, boss_damage: i32) -> i32 {
+fn solve(hard_mode: bool, boss_hp: i64, boss_damage: i64) -> i64 {
     let mut heap = BinaryHeap::new();
     heap.push(GameState::new(hard_mode, 50, 500, boss_hp, boss_damage));
 
-    let mut min_mana = i32::MAX;
+    let mut min_mana = i64::MAX;
     while let Some(state) = heap.pop() {
         let spells = &state.spells;
         process_result(&mut heap, &mut min_mana, &state, &spells.magic_missile);
@@ -263,11 +263,14 @@ fn solve(hard_mode: bool, boss_hp: i32, boss_damage: i32) -> i32 {
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2015-day22.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
     let re = Regex::new(r#"Hit Points: (\d+)\s+Damage: (\d+)"#)?;
 
-    let (boss_hp, boss_damage): (i32, i32) = re.captures(&input).map(|cap| (cap[1].parse().unwrap(), cap[2].parse().unwrap())).unwrap();
+    let cap = re.captures(&input).value()?;
+    let boss_hp: i64 = cap[1].parse()?;
+    let boss_damage: i64 = cap[2].parse()?;
 
     let result1 = solve(false, boss_hp, boss_damage);
     let result2 = solve(true, boss_hp, boss_damage);

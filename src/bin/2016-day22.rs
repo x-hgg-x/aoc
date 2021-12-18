@@ -1,10 +1,11 @@
-use eyre::{ensure, Result};
+use aoc::*;
+
+use eyre::ensure;
 use itertools::Itertools;
 use regex::Regex;
 
 use std::cmp::Ordering;
 use std::collections::{BinaryHeap, HashMap};
-use std::fs;
 
 struct Node {
     size: u64,
@@ -82,18 +83,17 @@ fn check_grid(grid: &Grid) -> Result<()> {
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2016-day22.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
     let regex_grid_size = Regex::new(r#"/dev/grid/node-x(\d+)-y(\d+)"#)?;
     let regex_node = Regex::new(r#"(?m)^\S+\s+(\d+)T\s+(\d+)T\s+\d+T\s+\d+%$"#)?;
 
-    let (width, height) = (|| {
-        let cap = regex_grid_size.captures(input.lines().last()?)?;
-        Some((cap.get(1)?.as_str().parse::<usize>().unwrap() + 1, cap.get(2)?.as_str().parse::<usize>().unwrap() + 1))
-    })()
-    .unwrap();
+    let cap = regex_grid_size.captures(input.lines().last().value()?).value()?;
+    let width = cap[1].parse::<usize>()? + 1;
+    let height = cap[2].parse::<usize>()? + 1;
 
-    let nodes = regex_node.captures_iter(&input).map(|cap| Node { size: cap[1].parse().unwrap(), used: cap[2].parse().unwrap() }).collect_vec();
+    let nodes = regex_node.captures_iter(&input).map(|cap| Result::Ok(Node { size: cap[1].parse()?, used: cap[2].parse()? })).try_collect()?;
     let grid = Grid::new(width, height, nodes)?;
 
     let result1 = grid
@@ -108,7 +108,7 @@ fn main() -> Result<()> {
 
     check_grid(&grid)?;
 
-    let initial_hole_index = grid.nodes.iter().position(|node| node.used == 0).unwrap();
+    let initial_hole_index = grid.nodes.iter().position(|node| node.used == 0).value()?;
     let initial_hole_row = initial_hole_index % grid.height;
     let initial_hole_column = initial_hole_index / grid.height;
     let initial_position = (initial_hole_row, initial_hole_column);

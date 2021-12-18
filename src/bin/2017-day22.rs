@@ -1,8 +1,8 @@
-use eyre::Result;
+use aoc::*;
+
 use num_complex::Complex;
 
 use std::collections::HashMap;
-use std::fs;
 
 #[derive(Copy, Clone)]
 enum Node {
@@ -75,11 +75,12 @@ fn run2(mut grid: HashMap<Complex<i64>, Node>) -> usize {
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2017-day22.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
     let mut grid = HashMap::new();
 
-    let width = input.lines().next().unwrap().len() as i64;
+    let width = input.lines().next().value()?.len() as i64;
     let height = input.lines().count() as i64;
 
     for (row, line) in input.lines().enumerate() {

@@ -1,7 +1,6 @@
-use eyre::Result;
-use itertools::Itertools;
+use aoc::*;
 
-use std::fs;
+use itertools::Itertools;
 
 struct Layer {
     depth: usize,
@@ -10,16 +9,17 @@ struct Layer {
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2017-day13.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
-    let layers = input
+    let layers: Vec<_> = input
         .lines()
         .map(|line| {
-            let (depth, range) = line.split(": ").map(|x| x.parse().unwrap()).next_tuple().unwrap();
+            let (depth, range) = line.split(": ").map(|x| Ok(x.parse()?)).try_process(|mut iter| iter.next_tuple())?.value()?;
             let period = if range == 0 { 0 } else { (range - 1) * 2 };
-            Layer { depth, range, period }
+            Result::Ok(Layer { depth, range, period })
         })
-        .collect_vec();
+        .try_collect()?;
 
     let result1 = layers.iter().filter(|x| x.depth % x.period == 0).map(|x| x.depth * x.range).sum::<usize>();
 

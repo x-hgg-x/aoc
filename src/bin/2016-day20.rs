@@ -1,7 +1,6 @@
-use eyre::Result;
-use itertools::Itertools;
+use aoc::*;
 
-use std::fs;
+use itertools::Itertools;
 
 fn merge((start1, end1): (u32, u32), (start2, end2): (u32, u32)) -> Option<(u32, u32)> {
     if end1 + 1 < start2 {
@@ -12,18 +11,20 @@ fn merge((start1, end1): (u32, u32), (start2, end2): (u32, u32)) -> Option<(u32,
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2016-day20.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
-    let ranges = input
+    let mut ranges: Vec<_> = input
         .lines()
         .map(|line| {
-            let (left, right) = line.split_at(line.find('-').unwrap());
-            let start = left.parse::<u32>().unwrap();
-            let end = right[1..].parse::<u32>().unwrap();
-            (start, end)
+            let (left, right) = line.split_at(line.find('-').value()?);
+            let start = left.parse::<u32>()?;
+            let end = right[1..].parse::<u32>()?;
+            Result::Ok((start, end))
         })
-        .sorted_unstable()
-        .collect_vec();
+        .try_collect()?;
+
+    ranges.sort_unstable();
 
     let mut forbidden_ranges = Vec::new();
     let mut current_forbidden_range = ranges[0];

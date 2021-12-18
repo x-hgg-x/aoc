@@ -1,10 +1,12 @@
-use eyre::Result;
+use aoc::*;
+
 use itertools::Itertools;
 use md5::Digest;
 use smallvec::SmallVec;
 
 use std::collections::VecDeque;
-use std::fs;
+
+const INTERVAL_LENGTH: usize = 1000;
 
 struct HashGenerator {
     data: SmallVec<[u8; 24]>,
@@ -73,12 +75,12 @@ impl Queue {
         self.hash_infos.is_empty()
     }
 
-    fn compute_next_hash(&mut self) {
+    fn compute_next_hash(&mut self) -> Result<()> {
         let mut hex: SmallVec<[u8; 32]> = self.hash_generator.next().as_deref().into_iter().flatten().flat_map(|x| [x >> 4, x & 0x0F]).collect();
 
         for _ in 0..self.additional_hashs {
             for byte in &mut hex {
-                *byte = char::from_digit(*byte as u32, 16).unwrap() as u8;
+                *byte = char::from_digit(*byte as u32, 16).value()? as u8;
             }
             hex = md5::compute(hex).iter().flat_map(|x| [x >> 4, x & 0x0F]).collect();
         }
@@ -96,30 +98,30 @@ impl Queue {
 
             self.hash_infos.push_back(HashInfo { index: self.hash_generator.index - 1, triple, quintuples });
         }
+
+        Ok(())
     }
 
-    fn pop_front(&mut self) -> HashInfo {
-        let hash_info = self.hash_infos.pop_front().unwrap();
+    fn pop_front(&mut self) -> Result<HashInfo> {
+        let hash_info = self.hash_infos.pop_front().value()?;
         for (count, flag) in self.quintuples_count.iter_mut().zip(hash_info.quintuples) {
             *count -= flag as u16;
         }
-        hash_info
+        Ok(hash_info)
     }
 
-    fn compute_64th_key_index(&mut self) -> usize {
-        const INTERVAL_LENGTH: usize = 1000;
-
+    fn compute_64th_key_index(&mut self) -> Result<usize> {
         let mut key_count = 0;
 
         while self.is_empty() {
-            self.compute_next_hash();
+            self.compute_next_hash()?;
         }
 
         loop {
-            let hash_info = self.pop_front();
+            let hash_info = self.pop_front()?;
 
             while self.hash_generator.index < hash_info.index + INTERVAL_LENGTH + 1 {
-                self.compute_next_hash();
+                self.compute_next_hash()?;
             }
 
             if self.quintuples_count[hash_info.triple as usize] != 0 {
@@ -127,18 +129,19 @@ impl Queue {
             }
 
             if key_count == 64 {
-                break hash_info.index;
+                break Ok(hash_info.index);
             }
         }
     }
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2016-day14.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
     let input = input.trim().as_bytes();
 
-    let result1 = Queue::new(input, 0).compute_64th_key_index();
-    let result2 = Queue::new(input, 2016).compute_64th_key_index();
+    let result1 = Queue::new(input, 0).compute_64th_key_index()?;
+    let result2 = Queue::new(input, 2016).compute_64th_key_index()?;
 
     println!("{}", result1);
     println!("{}", result2);

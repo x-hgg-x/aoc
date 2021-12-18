@@ -1,10 +1,10 @@
-use eyre::Result;
+use aoc::*;
+
 use itertools::Itertools;
 
-use std::fs;
-
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2015-day05.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
     let result1 = input
         .lines()

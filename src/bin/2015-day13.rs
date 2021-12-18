@@ -1,10 +1,10 @@
-use eyre::Result;
+use aoc::*;
+
 use itertools::Itertools;
 use regex::Regex;
 use smallvec::SmallVec;
 
 use std::collections::HashMap;
-use std::fs;
 use std::iter::once;
 
 struct Permutations<'a, T, const N: usize> {
@@ -55,38 +55,45 @@ impl<'a, T: Clone, const N: usize> Iterator for Permutations<'a, T, N> {
     }
 }
 
-fn max_hapiness(nodes: &[&str], edges: &HashMap<(&str, &str), i32>) -> i32 {
+fn max_hapiness(nodes: &[&str], edges: &HashMap<(&str, &str), i64>) -> Result<i64> {
     Permutations::<_, 9>::new(nodes)
         .map(|mut x| {
             x.push(x[0]);
-            x.windows(2).map(|x| edges.get(&(x[0], x[1])).unwrap() + edges.get(&(x[1], x[0])).unwrap()).sum::<i32>()
+            x.windows(2).map(|x| Ok(edges.get(&(x[0], x[1])).value()? + edges.get(&(x[1], x[0])).value()?)).try_process(|iter| iter.sum())
         })
-        .max()
-        .unwrap()
+        .try_process(|iter| iter.max())?
+        .value()
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2015-day13.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
     let re = Regex::new(r#"(?m)^(\w+) would (lose|gain) (\d+).*?(\w+).$"#)?;
 
-    let mut nodes =
-        re.captures_iter(&input).flat_map(|cap| [cap.get(1).unwrap().as_str(), cap.get(4).unwrap().as_str()]).sorted_unstable().dedup().collect_vec();
+    let mut nodes: Vec<_> = re.captures_iter(&input).flat_map(|cap| [cap.get(1), cap.get(4)]).map(|m| Result::Ok(m.value()?.as_str())).try_collect()?;
+    nodes.sort_unstable();
+    nodes.dedup();
 
     let mut edges = re
         .captures_iter(&input)
         .map(|cap| {
-            let happiness: i32 = cap[3].parse::<i32>().unwrap()
-                * match &cap[2] {
-                    "lose" => -1,
-                    "gain" => 1,
-                    _ => 0,
-                };
-            ((cap.get(1).unwrap().as_str(), cap.get(4).unwrap().as_str()), happiness)
-        })
-        .collect();
+            let node1 = cap.get(1).value()?.as_str();
+            let node2 = cap.get(4).value()?.as_str();
 
-    let result1 = max_hapiness(&nodes, &edges);
+            let action = match &cap[2] {
+                "lose" => -1,
+                "gain" => 1,
+                _ => 0,
+            };
+            let amount = cap[3].parse::<i64>()?;
+            let happiness = action * amount;
+
+            Result::Ok(((node1, node2), happiness))
+        })
+        .try_collect()?;
+
+    let result1 = max_hapiness(&nodes, &edges)?;
 
     for &node in &nodes {
         edges.insert(("Me", node), 0);
@@ -94,7 +101,7 @@ fn main() -> Result<()> {
     }
     nodes.push("Me");
 
-    let result2 = max_hapiness(&nodes, &edges);
+    let result2 = max_hapiness(&nodes, &edges)?;
 
     println!("{}", result1);
     println!("{}", result2);

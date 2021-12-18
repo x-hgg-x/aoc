@@ -1,10 +1,9 @@
-use eyre::Result;
+use aoc::*;
+
 use itertools::Itertools;
 
-use std::fs;
-
 fn main() -> Result<()> {
-    let input = fs::read("inputs/2015-day01.txt")?;
+    let input = setup(file!())?;
 
     let floors = input
         .iter()
@@ -24,7 +23,7 @@ fn main() -> Result<()> {
             Some(*position)
         })
         .position(|x| x == -1)
-        .unwrap();
+        .value()?;
 
     println!("{}", result1);
     println!("{}", result2);

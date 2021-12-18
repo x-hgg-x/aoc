@@ -1,8 +1,8 @@
-use eyre::{bail, eyre, Result};
+use aoc::*;
+
+use eyre::{bail, eyre};
 use regex::Regex;
 use smallvec::SmallVec;
-
-use std::fs;
 
 #[derive(Clone)]
 enum ValueType {
@@ -30,10 +30,10 @@ struct Bot {
 }
 
 impl Bot {
-    fn get_value(&self, value_type: ValueType) -> i64 {
-        *match value_type {
-            ValueType::Min => self.values.iter().min().unwrap(),
-            ValueType::Max => self.values.iter().max().unwrap(),
+    fn get_value(&self, value_type: ValueType) -> Result<i64> {
+        match value_type {
+            ValueType::Min => self.values.iter().min().copied().value(),
+            ValueType::Max => self.values.iter().max().copied().value(),
         }
     }
 }
@@ -47,7 +47,8 @@ fn parse_node(node_type: &str, node_number: &str, value_type: ValueType) -> Resu
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2016-day10.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
     let regex_bot = Regex::new(r#"(?m)^bot (\d+).*?(bot|output) (\d+).*?(bot|output) (\d+)$"#)?;
     let regex_value = Regex::new(r#"(?m)^value (\d+) goes to bot (\d+)$"#)?;
@@ -91,7 +92,7 @@ fn main() -> Result<()> {
         for output in bots[bot_number].outputs.clone() {
             match output {
                 Node::Bot(output_bot_number, value_type) => {
-                    let value = bots[bot_number].get_value(value_type);
+                    let value = bots[bot_number].get_value(value_type)?;
                     let output_bot = &mut bots[output_bot_number];
                     output_bot.values.push(value);
                     if output_bot.values.len() == 2 {
@@ -99,7 +100,7 @@ fn main() -> Result<()> {
                     }
                 }
                 Node::Output(0..=2, value_type) => {
-                    output_0_1_2 *= bots[bot_number].get_value(value_type);
+                    output_0_1_2 *= bots[bot_number].get_value(value_type)?;
                 }
                 _ => {}
             }
@@ -112,7 +113,7 @@ fn main() -> Result<()> {
         }
     }
 
-    let result1 = bot_61_17.unwrap();
+    let result1 = bot_61_17.value()?;
     let result2 = output_0_1_2;
 
     println!("{}", result1);

@@ -1,9 +1,8 @@
-use eyre::Result;
-
-use std::fs;
+use aoc::*;
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2017-day17.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
     let steps = input.trim().parse::<usize>()?;
 

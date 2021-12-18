@@ -1,10 +1,11 @@
-use eyre::{ensure, Result};
+use aoc::*;
+
+use eyre::ensure;
 use itertools::Itertools;
 use smallvec::SmallVec;
 
 use std::cmp::Ordering;
 use std::collections::{BinaryHeap, HashMap};
-use std::fs;
 use std::iter::once;
 
 struct Permutations<'a, T, const N: usize> {
@@ -181,7 +182,7 @@ fn compute_shortest_distance(grid: &Grid, initial_position: (usize, usize), goal
     }
 }
 
-fn compute_shortest_path<'a, I>(permutations: &'a [SmallVec<[u8; 8]>], distances: &HashMap<(u8, u8), usize>, iter_func: impl Fn(&'a [u8]) -> I) -> usize
+fn compute_shortest_path<'a, I>(permutations: &'a [SmallVec<[u8; 8]>], distances: &HashMap<(u8, u8), usize>, iter_func: impl Fn(&'a [u8]) -> I) -> Result<usize>
 where
     I: Iterator<Item = u8> + 'a,
 {
@@ -196,11 +197,12 @@ where
                 .sum::<usize>()
         })
         .min()
-        .unwrap()
+        .value()
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2016-day24.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
     let mut locations_indices = Vec::new();
     let mut tiles = Vec::with_capacity(input.len());
@@ -219,7 +221,7 @@ fn main() -> Result<()> {
     }
     locations_indices.sort_unstable();
 
-    let width = input.lines().next().unwrap().len();
+    let width = input.lines().next().value()?.len();
     let height = input.lines().count();
     let grid = Grid::new(width, height, tiles)?;
 
@@ -241,8 +243,8 @@ fn main() -> Result<()> {
 
     let permutations = Permutations::<_, 8>::new(&other_locations).collect_vec();
 
-    let result1 = compute_shortest_path(&permutations, &distances, |path| once(first_location).chain(path.iter().copied()));
-    let result2 = compute_shortest_path(&permutations, &distances, |path| once(first_location).chain(path.iter().copied()).chain(once(first_location)));
+    let result1 = compute_shortest_path(&permutations, &distances, |path| once(first_location).chain(path.iter().copied()))?;
+    let result2 = compute_shortest_path(&permutations, &distances, |path| once(first_location).chain(path.iter().copied()).chain(once(first_location)))?;
 
     println!("{}", result1);
     println!("{}", result2);

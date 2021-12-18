@@ -1,8 +1,8 @@
-use eyre::Result;
+use aoc::*;
+
+use eyre::{bail, eyre, WrapErr};
 use itertools::Itertools;
 use smallvec::SmallVec;
-
-use std::fs;
 
 #[derive(Copy, Clone)]
 enum Input {
@@ -30,16 +30,16 @@ enum Instruction {
 }
 
 fn parse_register(register: &str) -> Option<usize> {
-    match register.bytes().next() {
-        Some(x @ b'a'..=b'd') => Some((x - b'a').into()),
+    match register.as_bytes()[0] {
+        x @ b'a'..=b'd' => Some((x - b'a').into()),
         _ => None,
     }
 }
 
-fn get_input(input: &str) -> Input {
+fn get_input(input: &str) -> Result<Input> {
     match parse_register(input) {
-        Some(r) => Input::Register(r),
-        None => input.parse().map(Input::Value).unwrap_or_else(|_| panic!("unknown register or value: {}", input)),
+        Some(r) => Ok(Input::Register(r)),
+        None => input.parse().map(Input::Value).wrap_err_with(|| eyre!("unknown register or value: {}", input)),
     }
 }
 
@@ -82,33 +82,33 @@ fn run(instructions: &mut [Instruction], mut registers: [i64; 4]) -> Result<Smal
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2016-day25.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
-    let instructions = input
+    let instructions: Vec<_> = input
         .lines()
         .map(|line| {
             let args: SmallVec<[_; 3]> = line.split_ascii_whitespace().collect();
 
-            match args[0] {
-                "cpy" => Instruction::Copy(get_input(args[1]), get_input(args[2])),
-                "inc" => Instruction::Increment(get_input(args[1])),
-                "dec" => Instruction::Decrement(get_input(args[1])),
-                "jnz" => Instruction::JumpIfNotZero(get_input(args[1]), get_input(args[2])),
-                "tgl" => Instruction::Toogle(get_input(args[1])),
-                "out" => Instruction::Transmit(get_input(args[1])),
-                other => panic!("unknown instruction: {}", other),
-            }
+            Ok(match args[0] {
+                "cpy" => Instruction::Copy(get_input(args[1])?, get_input(args[2])?),
+                "inc" => Instruction::Increment(get_input(args[1])?),
+                "dec" => Instruction::Decrement(get_input(args[1])?),
+                "jnz" => Instruction::JumpIfNotZero(get_input(args[1])?, get_input(args[2])?),
+                "tgl" => Instruction::Toogle(get_input(args[1])?),
+                "out" => Instruction::Transmit(get_input(args[1])?),
+                other => bail!("unknown instruction: {}", other),
+            })
         })
-        .collect_vec();
+        .try_collect()?;
 
     let mut buf = Vec::with_capacity(instructions.len());
 
-    let result = (0..)
-        .find(|&a| {
-            buf.clone_from(&instructions);
-            run(&mut buf, [a, 0, 0, 0]).unwrap().into_iter().zip([0, 1].into_iter().cycle()).all(|(x, y)| x == y)
-        })
-        .unwrap();
+    let result = IteratorExt::try_find(&mut (0..), |&a| {
+        buf.clone_from(&instructions);
+        Ok(run(&mut buf, [a, 0, 0, 0])?.into_iter().zip([0, 1].into_iter().cycle()).all(|(x, y)| x == y))
+    })?
+    .value()?;
 
     println!("{}", result);
     Ok(())

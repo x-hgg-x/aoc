@@ -1,15 +1,15 @@
-use eyre::Result;
+use aoc::*;
+
 use itertools::Itertools;
 
-use std::fs;
+const SUM: u64 = 150;
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2015-day17.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
     let set = <Vec<u64>>::from_iter(input.split_ascii_whitespace().flat_map(|x| x.parse().ok()));
     let max: u64 = 1 << set.len();
-
-    const SUM: u64 = 150;
 
     let combinations = (1..max)
         .scan((0, 0), |(sum, gray), index| {
@@ -31,7 +31,7 @@ fn main() -> Result<()> {
 
     let result1 = combinations.len();
 
-    let min = combinations.iter().min().unwrap();
+    let min = combinations.iter().min().value()?;
     let result2 = combinations.iter().filter(|&x| x == min).count();
 
     println!("{}", result1);

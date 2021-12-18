@@ -1,9 +1,8 @@
-use eyre::Result;
-
-use std::fs;
+use aoc::*;
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2016-day19.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
     let n = input.trim().parse::<u64>()?;
 

@@ -1,12 +1,13 @@
-use eyre::Result;
+use aoc::*;
+
 use itertools::Itertools;
 use smallvec::SmallVec;
 
 use std::collections::HashMap;
-use std::fs;
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2017-day06.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
     let mut banks: SmallVec<[_; 16]> = input.split_ascii_whitespace().map(|x| x.parse::<usize>()).try_collect()?;
     let size = banks.len() as usize;
@@ -20,7 +21,7 @@ fn main() -> Result<()> {
             std::collections::hash_map::Entry::Vacant(entry) => entry.insert(count),
         };
 
-        let (index_max, &max) = banks.iter().enumerate().rev().max_by_key(|(_, &x)| x).unwrap();
+        let (index_max, &max) = banks.iter().enumerate().rev().max_by_key(|(_, &x)| x).value()?;
 
         let q = max / size;
         let r = max % size;

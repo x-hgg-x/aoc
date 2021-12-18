@@ -1,9 +1,9 @@
-use eyre::Result;
+use aoc::*;
+
 use itertools::Itertools;
 use regex::bytes::Regex;
 
 use std::cmp::Reverse;
-use std::fs;
 
 struct Node {
     index: usize,
@@ -90,18 +90,18 @@ fn compute_total_time(nodes: &[Node]) -> u64 {
 }
 
 fn main() -> Result<()> {
-    let input = fs::read("inputs/2018-day07.txt")?;
+    let input = setup(file!())?;
 
     let re = Regex::new(r#"(?m)^Step (\w) must be finished before step (\w) can begin.$"#)?;
 
-    let edges = re.captures_iter(&input).map(|cap| [cap[1][0] - b'A', cap[2][0] - b'A']).collect_vec();
+    let edges = re.captures_iter(&input).map(|cap| [(cap[1][0] - b'A') as usize, (cap[2][0] - b'A') as usize]).collect_vec();
 
-    let size = 1 + edges.iter().copied().flatten().max().unwrap() as usize;
+    let size = 1 + edges.iter().copied().flatten().max().value()?;
 
     let mut nodes = (0..size).map(|index| Node { index, children: 0, parents: 0 }).collect_vec();
     for &edge in &edges {
-        nodes[edge[0] as usize].children |= 1 << edge[1];
-        nodes[edge[1] as usize].parents |= 1 << edge[0];
+        nodes[edge[0]].children |= 1 << edge[1];
+        nodes[edge[1]].parents |= 1 << edge[0];
     }
 
     let result1 = compute_step_list(&nodes);

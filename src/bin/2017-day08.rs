@@ -1,11 +1,13 @@
-use eyre::{bail, Result};
+use aoc::*;
+
+use eyre::bail;
 use regex::Regex;
 
 use std::collections::HashMap;
-use std::fs;
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2017-day08.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
     let re = Regex::new(r#"(?m)^(\w+) (inc|dec) (-?\d+) if (\w+) ([<>!=]+) (-?\d+)$"#)?;
 
@@ -13,7 +15,7 @@ fn main() -> Result<()> {
     let mut max_value = 0;
 
     for cap in re.captures_iter(&input) {
-        let condition_register = *registers.entry(cap.get(4).unwrap().as_str()).or_default();
+        let condition_register = *registers.entry(cap.get(4).value()?.as_str()).or_default();
         let condition_value = cap[6].parse::<i64>()?;
 
         if match &cap[5] {
@@ -25,7 +27,7 @@ fn main() -> Result<()> {
             "!=" => condition_register != condition_value,
             other => bail!("unknown instruction: {}", other),
         } {
-            let lvalue = registers.entry(cap.get(1).unwrap().as_str()).or_default();
+            let lvalue = registers.entry(cap.get(1).value()?.as_str()).or_default();
             let increment = cap[3].parse::<i64>()?;
             let multiplier = match &cap[2] {
                 "inc" => 1,
@@ -41,7 +43,7 @@ fn main() -> Result<()> {
         }
     }
 
-    let result1 = *registers.values().max().unwrap();
+    let result1 = *registers.values().max().value()?;
     let result2 = max_value;
 
     println!("{}", result1);

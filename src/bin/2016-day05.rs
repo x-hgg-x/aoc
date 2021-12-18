@@ -1,9 +1,9 @@
-use eyre::Result;
+use aoc::*;
+
 use itertools::Itertools;
 use md5::Digest;
 use smallvec::SmallVec;
 
-use std::fs;
 use std::iter::once;
 
 fn hash_generator(input: &[u8]) -> impl Iterator<Item = Digest> {
@@ -34,7 +34,8 @@ fn hash_generator(input: &[u8]) -> impl Iterator<Item = Digest> {
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2016-day05.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
     let input = input.trim().as_bytes();
 
     let sub_hashes = hash_generator(input)
@@ -52,12 +53,12 @@ fn main() -> Result<()> {
         })
         .collect_vec();
 
-    let result1 = String::from_iter(sub_hashes.iter().map(|&(fifth, _)| char::from_digit(fifth as u32, 16).unwrap()).take(8));
+    let result1: String = sub_hashes.iter().map(|&(fifth, _)| char::from_digit(fifth as u32, 16).value()).take(8).try_collect()?;
 
     let mut password = ['_'; 8];
     for &(fifth, sixth) in sub_hashes.iter().rev() {
         if fifth < 8 {
-            password[fifth as usize] = char::from_digit(sixth as u32, 16).unwrap();
+            password[fifth as usize] = char::from_digit(sixth as u32, 16).value()?;
         }
     }
     let result2 = String::from_iter(password);

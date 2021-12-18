@@ -1,8 +1,9 @@
-use eyre::Result;
+use aoc::*;
+
 use itertools::Itertools;
 use regex::Regex;
 
-use std::fs;
+const SIZE: usize = 1000;
 
 struct Area {
     id: usize,
@@ -13,22 +14,17 @@ struct Area {
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2018-day03.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
     let re = Regex::new(r#"(?m)^#(\d+) @ (\d+),(\d+): (\d+)x(\d+)$"#)?;
 
-    let areas = re
+    let areas: Vec<_> = re
         .captures_iter(&input)
-        .map(|cap| Area {
-            id: cap[1].parse().unwrap(),
-            x_offset: cap[2].parse().unwrap(),
-            y_offset: cap[3].parse().unwrap(),
-            x_size: cap[4].parse().unwrap(),
-            y_size: cap[5].parse().unwrap(),
+        .map(|cap| {
+            Result::Ok(Area { id: cap[1].parse()?, x_offset: cap[2].parse()?, y_offset: cap[3].parse()?, x_size: cap[4].parse()?, y_size: cap[5].parse()? })
         })
-        .collect_vec();
-
-    const SIZE: usize = 1000;
+        .try_collect()?;
 
     let mut grid = vec![0usize; SIZE * SIZE];
 
@@ -46,7 +42,7 @@ fn main() -> Result<()> {
             grid.chunks_exact(SIZE).skip(area.y_offset).take(area.y_size).all(|line| line.iter().skip(area.x_offset).take(area.x_size).all(|&x| x == 1))
         })
         .map(|x| x.id)
-        .unwrap();
+        .value()?;
 
     println!("{}", result1);
     println!("{}", result2);

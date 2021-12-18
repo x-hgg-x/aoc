@@ -1,7 +1,8 @@
-use eyre::Result;
+use aoc::*;
+
+use eyre::ensure;
 use itertools::Itertools;
 
-use std::fs;
 use std::iter::once;
 
 fn count_safe_tiles(input: &[u8], row_count: usize) -> usize {
@@ -19,10 +20,11 @@ fn count_safe_tiles(input: &[u8], row_count: usize) -> usize {
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2016-day18.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
     let input = input.trim().as_bytes();
 
-    assert!(input.len() >= 2, "invalid input");
+    ensure!(input.len() >= 2, "invalid input");
 
     let result1 = count_safe_tiles(input, 40);
     let result2 = count_safe_tiles(input, 400000);

@@ -1,6 +1,4 @@
-use eyre::Result;
-
-use std::fs;
+use aoc::*;
 
 fn react(input: &[u8], output: &mut Vec<u8>, removed_char: Option<u8>) -> usize {
     output.clear();
@@ -24,13 +22,14 @@ fn react(input: &[u8], output: &mut Vec<u8>, removed_char: Option<u8>) -> usize 
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2018-day05.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
     let input = input.trim().as_bytes();
 
     let mut output = Vec::with_capacity(input.len());
 
     let result1 = react(input, &mut output, None);
-    let result2 = (b'a'..=b'z').map(|c| react(input, &mut output, Some(c))).min().unwrap();
+    let result2 = (b'a'..=b'z').map(|c| react(input, &mut output, Some(c))).min().value()?;
 
     println!("{}", result1);
     println!("{}", result2);

@@ -1,31 +1,29 @@
-use eyre::Result;
+use aoc::*;
+
 use itertools::Itertools;
 use regex::bytes::Regex;
 
-use std::fs;
-
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2015-day19.txt")?;
-    let input = input.trim().as_bytes().to_vec();
+    let input = setup(file!())?;
 
     let regex_replacements = Regex::new(r#"(?m)^(\w+) => (\w+)$"#)?;
-    let regex_molecule = Regex::new(r#"(\w+)$"#)?;
+    let regex_molecule = Regex::new(r#"(?m)^(\w+)$"#)?;
 
-    let replacements = regex_replacements.captures_iter(&input).map(|cap| (cap.get(1).unwrap().as_bytes(), cap.get(2).unwrap().as_bytes())).collect_vec();
-    let molecule = regex_molecule.find(&input).map(|x| x.as_bytes()).unwrap();
+    let replacements: Vec<_> = regex_replacements
+        .captures_iter(&input)
+        .map(|cap| {
+            let regex_old = Regex::new(&String::from_utf8_lossy(&cap[1]))?;
+            let new = cap.get(2).value()?.as_bytes();
+            Result::Ok((regex_old, new))
+        })
+        .try_collect()?;
+
+    let molecule = regex_molecule.find(&input).map(|x| x.as_bytes()).value()?;
 
     let result1 = replacements
         .iter()
-        .flat_map(|&(old, new)| {
-            Regex::new(&String::from_utf8_lossy(old))
-                .unwrap()
-                .find_iter(molecule)
-                .map(|x| {
-                    let mut molecule = molecule.to_vec();
-                    molecule.splice(x.range(), new.iter().copied()).last();
-                    molecule
-                })
-                .collect_vec()
+        .flat_map(|(regex_old, &ref new)| {
+            regex_old.find_iter(molecule).map(move |m| molecule[..m.start()].iter().chain(new).chain(&molecule[m.end()..]).copied().collect_vec())
         })
         .sorted_unstable()
         .dedup()

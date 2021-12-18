@@ -1,13 +1,14 @@
-use eyre::Result;
+use aoc::*;
+
 use itertools::Itertools;
 
 use std::collections::HashSet;
-use std::fs;
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2018-day01.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
-    let list = input.split_ascii_whitespace().map(|x| x.parse::<i64>().unwrap()).collect_vec();
+    let list: Vec<_> = input.split_ascii_whitespace().map(|x| x.parse::<i64>()).try_collect()?;
     let result1 = list.iter().sum::<i64>();
 
     let mut previous_sums = HashSet::new();

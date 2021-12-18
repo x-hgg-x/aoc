@@ -1,24 +1,24 @@
-use eyre::Result;
+use aoc::*;
+
 use std::collections::HashSet;
-use std::fs;
-use std::mem::swap;
 
 #[derive(Clone, Eq, PartialEq, Hash)]
 struct Point {
-    x: i32,
-    y: i32,
+    x: i64,
+    y: i64,
 }
 
 impl Point {
-    fn new(x: i32, y: i32) -> Self {
+    fn new(x: i64, y: i64) -> Self {
         Point { x, y }
     }
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2016-day13.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
-    let favorite_number: i32 = input.trim().parse()?;
+    let favorite_number: i64 = input.trim().parse()?;
 
     let is_valid = |&Point { x, y }: &Point| {
         let is_pos = x >= 0 && y >= 0;
@@ -63,7 +63,7 @@ fn main() -> Result<()> {
             }
         }
 
-        swap(&mut current_points, &mut next_points);
+        std::mem::swap(&mut current_points, &mut next_points);
         next_points.clear();
 
         if steps == 50 {

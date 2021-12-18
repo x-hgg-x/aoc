@@ -1,9 +1,7 @@
-use eyre::Result;
-
-use std::fs;
+use aoc::*;
 
 fn main() -> Result<()> {
-    let input = fs::read("inputs/2017-day09.txt")?;
+    let input = setup(file!())?;
 
     let mut group_score = 1u64;
     let mut cancelled = false;

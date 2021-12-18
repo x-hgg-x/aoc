@@ -1,7 +1,6 @@
-use eyre::Result;
-use itertools::Itertools;
+use aoc::*;
 
-use std::fs;
+use itertools::Itertools;
 
 fn parse_tree(mut data: &[usize]) -> Result<(usize, usize, &[usize])> {
     let (header, remaining) = data.split_at(2);
@@ -28,9 +27,10 @@ fn parse_tree(mut data: &[usize]) -> Result<(usize, usize, &[usize])> {
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2018-day08.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
-    let data = input.split_ascii_whitespace().map(|x| x.parse::<usize>().unwrap()).collect_vec();
+    let data: Vec<_> = input.split_ascii_whitespace().map(|x| x.parse::<usize>()).try_collect()?;
 
     let (result1, result2, _) = parse_tree(&data)?;
 

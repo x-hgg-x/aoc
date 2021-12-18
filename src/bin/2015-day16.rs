@@ -1,21 +1,35 @@
-use eyre::Result;
+use aoc::*;
+
 use regex::Regex;
 
 use std::collections::HashMap;
-use std::fs;
 use std::ops::RangeInclusive;
 
-fn get_aunt(input: &str, gift: &HashMap<&str, RangeInclusive<u32>>, regex_compounds: &Regex, regex_num: &Regex) -> u32 {
+fn get_aunt(input: &str, gift: &HashMap<&str, RangeInclusive<u32>>, regex_compounds: &Regex, regex_num: &Regex) -> Result<u32> {
     input
         .lines()
-        .filter(|&line| regex_compounds.captures_iter(line).all(|cap| gift[&cap[1]].contains(&cap[2].parse().unwrap())))
-        .map(|line| regex_num.captures(line).and_then(|cap| cap[1].parse().ok()).unwrap())
-        .next()
-        .unwrap()
+        .find_map(|line| {
+            (|| {
+                let condition = regex_compounds
+                    .captures_iter(line)
+                    .map(|cap| Ok((cap.get(1).value()?.as_str(), cap[2].parse()?)))
+                    .try_process(|mut iter| iter.all(|(item, count)| gift[item].contains(&count)))?;
+
+                if condition {
+                    Result::Ok(Some(regex_num.captures(line).value()?[1].parse()?))
+                } else {
+                    Result::Ok(None)
+                }
+            })()
+            .transpose()
+        })
+        .transpose()?
+        .value()
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2015-day16.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
     let regex_compounds = Regex::new(r#"(children|cats|samoyeds|pomeranians|akitas|vizslas|goldfish|trees|cars|perfumes): (\d+)(?:, )?"#)?;
     let regex_num = Regex::new(r#"^Sue (\d+): "#)?;
@@ -33,14 +47,14 @@ fn main() -> Result<()> {
         ("perfumes", 1..=1),
     ]);
 
-    let result1 = get_aunt(&input, &gift, &regex_compounds, &regex_num);
+    let result1 = get_aunt(&input, &gift, &regex_compounds, &regex_num)?;
 
-    *gift.get_mut("cats").unwrap() = (gift["cats"].start() + 1)..=u32::MAX;
-    *gift.get_mut("trees").unwrap() = (gift["trees"].start() + 1)..=u32::MAX;
-    *gift.get_mut("pomeranians").unwrap() = 0..=(gift["pomeranians"].end() - 1);
-    *gift.get_mut("goldfish").unwrap() = 0..=(gift["goldfish"].end() - 1);
+    *gift.get_mut("cats").value()? = (gift["cats"].start() + 1)..=u32::MAX;
+    *gift.get_mut("trees").value()? = (gift["trees"].start() + 1)..=u32::MAX;
+    *gift.get_mut("pomeranians").value()? = 0..=(gift["pomeranians"].end() - 1);
+    *gift.get_mut("goldfish").value()? = 0..=(gift["goldfish"].end() - 1);
 
-    let result2 = get_aunt(&input, &gift, &regex_compounds, &regex_num);
+    let result2 = get_aunt(&input, &gift, &regex_compounds, &regex_num)?;
 
     println!("{}", result1);
     println!("{}", result2);

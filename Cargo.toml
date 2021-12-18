@@ -5,9 +5,13 @@ authors = ["x-hgg-x <39058530+x-hgg-x@users.noreply.github.com>"]
 edition = "2021"
 
 [dependencies]
-eyre = "0.6"
-itertools = "0.10"
-md5 = "0.7"
-num-complex = "0.4"
-regex = "1"
-smallvec = { version = "1", features = ["const_generics"] }
+color-eyre = { version = "*", default-features = false }
+eyre = "*"
+itertools = "*"
+md5 = "*"
+num-complex = "*"
+regex = "*"
+smallvec = { version = "*", features = ["const_generics"] }
+
+[profile.release]
+debug = true

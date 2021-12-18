@@ -1,12 +1,12 @@
-use eyre::{bail, Result};
+use aoc::*;
+
+use eyre::bail;
 use itertools::Itertools;
 use regex::Regex;
 use smallvec::{smallvec, SmallVec};
 
 use std::collections::{HashMap, HashSet};
-use std::fs;
 use std::hash::{Hash, Hasher};
-use std::mem::swap;
 
 type IndicesVec = Option<SmallVec<[usize; 2]>>;
 
@@ -146,13 +146,14 @@ fn solve(state: &State) -> usize {
             }
         }
 
-        swap(&mut current_states, &mut next_states);
+        std::mem::swap(&mut current_states, &mut next_states);
         next_states.clear();
     }
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2016-day11.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
     let regex_floor = Regex::new(r#"(\w+) floor"#)?;
     let regex_gen_chip = Regex::new(r#"a (\w+)( generator|-compatible microchip)"#)?;
@@ -161,7 +162,7 @@ fn main() -> Result<()> {
     let mut generators = HashMap::new();
 
     for line in input.lines() {
-        let floor: i8 = match &regex_floor.captures(line).unwrap()[1] {
+        let floor: i8 = match &regex_floor.captures(line).value()?[1] {
             "first" => 0,
             "second" => 1,
             "third" => 2,
@@ -170,7 +171,7 @@ fn main() -> Result<()> {
         };
 
         for cap in regex_gen_chip.captures_iter(line) {
-            let element_type = cap.get(1).unwrap().as_str();
+            let element_type = cap.get(1).value()?.as_str();
             match &cap[2] {
                 "-compatible microchip" => chips.insert(element_type, floor),
                 " generator" => generators.insert(element_type, floor),

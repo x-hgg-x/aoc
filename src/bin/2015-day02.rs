@@ -1,36 +1,36 @@
-use eyre::Result;
+use aoc::*;
+
 use itertools::Itertools;
 
-use std::fs;
-
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2015-day02.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
-    let edges =
-        input.lines().flat_map(|line| line.split('x').next_tuple()).map(|(x, y, z)| [x.parse().unwrap(), y.parse().unwrap(), z.parse().unwrap()]).collect_vec();
+    let edges: Vec<_> =
+        input.lines().flat_map(|line| line.split('x').next_tuple()).map(|(x, y, z)| Result::Ok([x.parse()?, y.parse()?, z.parse()?])).try_collect()?;
 
-    let result1: i32 = edges
+    let result1: i64 = edges
         .iter()
         .map(|edge| {
             let surfaces = edge.iter().tuple_combinations().map(|(side1, side2)| side1 * side2).collect_vec();
 
-            let sum: i32 = surfaces.iter().sum();
-            let min: i32 = surfaces.into_iter().min().unwrap();
+            let sum: i64 = surfaces.iter().sum();
+            let min: i64 = surfaces.into_iter().min().value()?;
 
-            2 * sum + min
+            Ok(2 * sum + min)
         })
-        .sum();
+        .try_process(|iter| iter.sum())?;
 
-    let result2: i32 = edges
+    let result2: i64 = edges
         .iter()
         .map(|edge| {
-            let sum: i32 = edge.iter().sum();
-            let product: i32 = edge.iter().product();
-            let max = edge.iter().max().unwrap();
+            let sum: i64 = edge.iter().sum();
+            let product: i64 = edge.iter().product();
+            let max = edge.iter().max().value()?;
 
-            2 * (sum - max) + product
+            Ok(2 * (sum - max) + product)
         })
-        .sum();
+        .try_process(|iter| iter.sum())?;
 
     println!("{}", result1);
     println!("{}", result2);

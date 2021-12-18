@@ -1,8 +1,8 @@
-use eyre::Result;
+use aoc::*;
+
 use itertools::Itertools;
 
 use std::cmp::Ordering;
-use std::fs;
 use std::ops::RangeInclusive;
 
 struct Grid {
@@ -28,9 +28,11 @@ impl Grid {
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2018-day06.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
-    let coordinates: Vec<(i64, i64)> = input.lines().map(|line| line.split(',').map(|x| x.trim().parse().unwrap()).next_tuple().unwrap()).collect();
+    let coordinates: Vec<(i64, i64)> =
+        input.lines().map(|line| line.split(',').map(|x| Ok(x.trim().parse()?)).try_process(|mut iter| iter.next_tuple())?.value()).try_collect()?;
 
     let (min_x, min_y, max_x, max_y) =
         coordinates.iter().fold((i64::MAX, i64::MAX, i64::MIN, i64::MIN), |(acc_min_x, acc_min_y, acc_max_x, acc_max_y), &(x, y)| {
@@ -74,7 +76,7 @@ fn main() -> Result<()> {
     let iter3 = grid.tiles.chunks_exact(grid.width).flat_map(|row| [row[0].0, row[grid.width - 1].0]);
     iter1.chain(iter2).chain(iter3).flatten().for_each(|side_value| area_counts[side_value] = 0);
 
-    let result1 = area_counts.iter().max().unwrap();
+    let result1 = area_counts.iter().max().value()?;
     let result2 = grid.tiles.iter().filter(|&&(_, x)| x < 10000).count();
 
     println!("{}", result1);

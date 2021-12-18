@@ -1,7 +1,7 @@
-use eyre::{ensure, Result};
-use itertools::{iproduct, Itertools};
+use aoc::*;
 
-use std::fs;
+use eyre::ensure;
+use itertools::{iproduct, Itertools};
 
 struct Grid {
     width: usize,
@@ -70,7 +70,7 @@ impl Grid {
 }
 
 fn main() -> Result<()> {
-    let input = fs::read("inputs/2015-day18.txt")?;
+    let input = setup(file!())?;
 
     let lights = input
         .iter()

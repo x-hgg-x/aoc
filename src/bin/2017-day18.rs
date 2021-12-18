@@ -1,9 +1,10 @@
-use eyre::{bail, eyre, Result};
+use aoc::*;
+
+use eyre::{bail, eyre};
 use itertools::{izip, Itertools};
 use smallvec::SmallVec;
 
 use std::collections::{HashMap, VecDeque};
-use std::fs;
 
 #[derive(Copy, Clone)]
 enum Input {
@@ -111,7 +112,7 @@ fn run2(instructions: &[Instruction2]) -> Result<usize> {
             let (self_queue, other_queue, other_program_id) = match program_id {
                 0 => (&mut queue_0, &mut queue_1, (program_id ^ 1) as usize),
                 1 => (&mut queue_1, &mut queue_0, (program_id ^ 1) as usize),
-                other => panic!("unknown program id: {}", other),
+                other => bail!("unknown program id: {}", other),
             };
 
             loop {
@@ -158,14 +159,15 @@ fn run2(instructions: &[Instruction2]) -> Result<usize> {
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2017-day18.txt")?;
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
-    let instructions_1 = input
+    let instructions_1: Vec<_> = input
         .lines()
         .map(|line| {
             let args: SmallVec<[_; 3]> = line.split_ascii_whitespace().collect();
 
-            match args[0] {
+            Ok(match args[0] {
                 "snd" => Instruction1::Sound(get_input(args[1])),
                 "set" => Instruction1::Set(args[1].as_bytes()[0], get_input(args[2])),
                 "add" => Instruction1::Addition(args[1].as_bytes()[0], get_input(args[2])),
@@ -173,14 +175,14 @@ fn main() -> Result<()> {
                 "mod" => Instruction1::Modulo(args[1].as_bytes()[0], get_input(args[2])),
                 "rcv" => Instruction1::RecoverIfNotZero(get_input(args[1])),
                 "jgz" => Instruction1::JumpIfGreaterThanZero(get_input(args[1]), get_input(args[2])),
-                other => panic!("unknown instruction: {}", other),
-            }
+                other => bail!("unknown instruction: {}", other),
+            })
         })
-        .collect_vec();
+        .try_collect()?;
 
     let result1 = run1(&instructions_1)?;
 
-    let instructions_2 = instructions_1.iter().map(|x| convert_instruction(x).unwrap()).collect_vec();
+    let instructions_2: Vec<_> = instructions_1.iter().map(convert_instruction).try_collect()?;
     let result2 = run2(&instructions_2)?;
 
     println!("{}", result1);

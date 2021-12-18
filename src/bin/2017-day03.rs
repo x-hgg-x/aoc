@@ -1,8 +1,7 @@
-use eyre::Result;
+use aoc::*;
+
 use itertools::iproduct;
 use num_complex::Complex;
-
-use std::fs;
 
 struct Memory {
     size: usize,
@@ -74,8 +73,7 @@ fn compute_steps(port: i64) -> i64 {
 }
 
 fn main() -> Result<()> {
-    let input = fs::read_to_string("inputs/2017-day03.txt")?;
-    let input = input.trim().parse()?;
+    let input = String::from_utf8_lossy(&setup(file!())?).trim().parse()?;
 
     let result1 = compute_steps(input);
 

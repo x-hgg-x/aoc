@@ -1,20 +1,21 @@
-use eyre::Result;
+use aoc::*;
+
+use eyre::{bail, ensure};
 use itertools::Itertools;
 use regex::bytes::Regex;
 
 use std::collections::VecDeque;
-use std::fs;
 
 struct Plants {
     pots: VecDeque<u8>,
     current_start_index: i64,
 }
 
-fn read_token(token: u8) -> u8 {
+fn read_token(token: u8) -> Result<u8> {
     match token {
-        b'.' => 0,
-        b'#' => 1,
-        _ => panic!("unknown state"),
+        b'.' => Ok(0),
+        b'#' => Ok(1),
+        _ => bail!("unknown state"),
     }
 }
 
@@ -48,19 +49,20 @@ fn compute_sum(plants: &mut Plants) -> i64 {
 }
 
 fn main() -> Result<()> {
-    let input = fs::read("inputs/2018-day12.txt")?;
+    let input = setup(file!())?;
 
     let regex_start = Regex::new(r#"(?m)^initial state: ([#.]+)$"#)?;
     let regex_rule = Regex::new(r#"(?m)^([#.]{5}) => ([#.]$)"#)?;
 
     let mut rules = [0u8; 32];
     for cap in regex_rule.captures_iter(&input) {
-        rules[compute_rule_index(cap[1].iter().copied().map(read_token))] = read_token(cap[2][0]);
+        let rule_index = cap[1].iter().copied().map(read_token).try_process(|iter| compute_rule_index(iter))?;
+        rules[rule_index] = read_token(cap[2][0])?;
     }
 
-    assert_eq!(rules[0], 0);
+    ensure!(rules[0] == 0, "unsupported rule");
 
-    let mut plants = Plants { pots: regex_start.captures(&input).unwrap()[1].iter().copied().map(read_token).collect(), current_start_index: 0 };
+    let mut plants = Plants { pots: regex_start.captures(&input).value()?[1].iter().copied().map(read_token).try_collect()?, current_start_index: 0 };
 
     let mut buf = VecDeque::new();
 
