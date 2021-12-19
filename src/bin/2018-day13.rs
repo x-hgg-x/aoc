@@ -93,6 +93,8 @@ fn main() -> Result<()> {
     let mut first_crash_position = None;
 
     let last_position = loop {
+        let mut collision = false;
+
         for cart_index in &mut cart_indices {
             let (mut cart_row, mut cart_column) = grid.get_position(*cart_index);
 
@@ -141,6 +143,7 @@ fn main() -> Result<()> {
             match new_tile_cart {
                 None => *new_tile_cart = Some(cart),
                 _ => {
+                    collision = true;
                     *new_tile_cart = None;
                     if first_crash_position.is_none() {
                         first_crash_position = Some((cart_row, cart_column));
@@ -149,16 +152,18 @@ fn main() -> Result<()> {
             };
         }
 
-        cart_indices.sort_unstable();
+        if collision {
+            cart_indices.retain(|&cart_index| match &grid.tiles[cart_index] {
+                Tile::HorizontalLine(x) => x.is_some(),
+                Tile::VerticalLine(x) => x.is_some(),
+                Tile::LeftCurve(x) => x.is_some(),
+                Tile::RightCurve(x) => x.is_some(),
+                Tile::Intersection(x) => x.is_some(),
+                Tile::Empty => false,
+            });
+        }
 
-        cart_indices.retain(|&cart_index| match &grid.tiles[cart_index] {
-            Tile::HorizontalLine(x) => x.is_some(),
-            Tile::VerticalLine(x) => x.is_some(),
-            Tile::LeftCurve(x) => x.is_some(),
-            Tile::RightCurve(x) => x.is_some(),
-            Tile::Intersection(x) => x.is_some(),
-            Tile::Empty => false,
-        });
+        cart_indices.sort_unstable();
 
         if cart_indices.len() == 1 {
             break grid.get_position(cart_indices[0]);
