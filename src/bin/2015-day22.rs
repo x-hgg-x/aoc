@@ -5,7 +5,7 @@ use regex::Regex;
 use std::cmp::Ordering;
 use std::collections::BinaryHeap;
 
-trait Spell {
+trait ISpell {
     fn mana() -> i64;
     fn max_timer() -> i64;
     fn current_timer(&self) -> i64;
@@ -22,51 +22,45 @@ trait Spell {
         status.mana_spent += Self::mana();
         status.player_mana -= Self::mana();
     }
-
-    fn apply_effect(&mut self, _status: &mut Status) {}
 }
 
-macro_rules! spell {
-    ($name:ident) => {
+macro_rules! new_spell {
+    ($type_name:ident, $field_name:ident, $mana:expr, $max_timer:expr) => {
         #[derive(Default, Clone)]
-        struct $name {
+        struct $type_name {
             timer: i64,
         }
+
+        impl ISpell for $type_name {
+            fn mana() -> i64 {
+                $mana
+            }
+            fn max_timer() -> i64 {
+                $max_timer
+            }
+            fn current_timer(&self) -> i64 {
+                self.timer
+            }
+            fn current_timer_mut(&mut self) -> &mut i64 {
+                &mut self.timer
+            }
+            fn get(spells: &Spells) -> &Self {
+                &spells.$field_name
+            }
+            fn get_mut(spells: &mut Spells) -> &mut Self {
+                &mut spells.$field_name
+            }
+        }
     };
 }
 
-macro_rules! impl_spell {
-    ($mana:expr, $max_timer:expr, $field_name:ident) => {
-        fn mana() -> i64 {
-            $mana
-        }
-        fn max_timer() -> i64 {
-            $max_timer
-        }
-        fn current_timer(&self) -> i64 {
-            self.timer
-        }
-        fn current_timer_mut(&mut self) -> &mut i64 {
-            &mut self.timer
-        }
-        fn get(spells: &Spells) -> &Self {
-            &spells.$field_name
-        }
-        fn get_mut(spells: &mut Spells) -> &mut Self {
-            &mut spells.$field_name
-        }
-    };
-}
+new_spell!(MagicMissile, magic_missile, 53, 1);
+new_spell!(Drain, drain, 73, 1);
+new_spell!(Shield, shield, 113, 6);
+new_spell!(Poison, poison, 173, 6);
+new_spell!(Recharge, recharge, 229, 5);
 
-spell!(MagicMissile);
-spell!(Drain);
-spell!(Shield);
-spell!(Poison);
-spell!(Recharge);
-
-impl Spell for MagicMissile {
-    impl_spell!(53, 1, magic_missile);
-
+impl MagicMissile {
     fn apply_effect(&mut self, status: &mut Status) {
         if self.timer > 0 {
             self.timer -= 1;
@@ -75,9 +69,7 @@ impl Spell for MagicMissile {
     }
 }
 
-impl Spell for Drain {
-    impl_spell!(73, 1, drain);
-
+impl Drain {
     fn apply_effect(&mut self, status: &mut Status) {
         if self.timer > 0 {
             self.timer -= 1;
@@ -87,9 +79,7 @@ impl Spell for Drain {
     }
 }
 
-impl Spell for Shield {
-    impl_spell!(113, 6, shield);
-
+impl Shield {
     fn apply_effect(&mut self, status: &mut Status) {
         if self.timer > 0 {
             self.timer -= 1;
@@ -100,9 +90,7 @@ impl Spell for Shield {
     }
 }
 
-impl Spell for Poison {
-    impl_spell!(173, 6, poison);
-
+impl Poison {
     fn apply_effect(&mut self, status: &mut Status) {
         if self.timer > 0 {
             self.timer -= 1;
@@ -111,9 +99,7 @@ impl Spell for Poison {
     }
 }
 
-impl Spell for Recharge {
-    impl_spell!(229, 5, recharge);
-
+impl Recharge {
     fn apply_effect(&mut self, status: &mut Status) {
         if self.timer > 0 {
             self.timer -= 1;
@@ -163,12 +149,12 @@ impl GameState {
         Self { hard_mode, status: Status { player_hp, mana_spent: 0, player_armor: 0, player_mana, boss_hp, boss_damage }, spells: Default::default() }
     }
 
-    fn try_cast<S: Spell>(&self, spell: &S) -> Option<GameResult> {
+    fn try_cast<Spell: ISpell>(&self, spell: &Spell) -> Option<GameResult> {
         spell.is_castable(&self.status).then(|| {
             let mut next_state = self.clone();
             let (status, spells) = (&mut next_state.status, &mut next_state.spells);
 
-            S::get_mut(spells).cast(status);
+            Spell::get_mut(spells).cast(status);
 
             // Boss turn
             spells.apply_effects(status);
@@ -225,7 +211,7 @@ enum GameResult {
     Unknown(GameState),
 }
 
-fn process_result(heap: &mut BinaryHeap<GameState>, min_mana: &mut i64, current_state: &GameState, spell: &impl Spell) {
+fn process_result(heap: &mut BinaryHeap<GameState>, min_mana: &mut i64, current_state: &GameState, spell: &impl ISpell) {
     if let Some(game_result) = current_state.try_cast(spell) {
         match game_result {
             GameResult::GameWon(mana_spent) => {

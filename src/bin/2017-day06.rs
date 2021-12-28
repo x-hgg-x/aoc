@@ -3,7 +3,7 @@ use aoc::*;
 use itertools::Itertools;
 use smallvec::SmallVec;
 
-use std::collections::HashMap;
+use std::collections::hash_map::{Entry, HashMap};
 
 fn main() -> Result<()> {
     let input = setup(file!())?;
@@ -17,8 +17,8 @@ fn main() -> Result<()> {
 
     let old_count = loop {
         match previous_states.entry(banks.clone()) {
-            std::collections::hash_map::Entry::Occupied(entry) => break *entry.get(),
-            std::collections::hash_map::Entry::Vacant(entry) => entry.insert(count),
+            Entry::Occupied(entry) => break *entry.get(),
+            Entry::Vacant(entry) => entry.insert(count),
         };
 
         let (index_max, &max) = banks.iter().enumerate().rev().max_by_key(|(_, &x)| x).value()?;

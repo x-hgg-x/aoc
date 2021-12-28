@@ -5,7 +5,8 @@ use itertools::Itertools;
 use smallvec::SmallVec;
 
 use std::cmp::Ordering;
-use std::collections::{BinaryHeap, HashMap};
+use std::collections::hash_map::{Entry, HashMap};
+use std::collections::BinaryHeap;
 use std::iter::once;
 
 struct Permutations<'a, T, const N: usize> {
@@ -151,14 +152,14 @@ fn compute_shortest_distance(grid: &Grid, initial_position: (usize, usize), goal
                 }
 
                 match previous_positions.entry(new_index) {
-                    std::collections::hash_map::Entry::Occupied(mut entry) => {
+                    Entry::Occupied(mut entry) => {
                         let old_steps = entry.get_mut();
                         if new_steps >= *old_steps {
                             return;
                         }
                         *old_steps = new_steps;
                     }
-                    std::collections::hash_map::Entry::Vacant(entry) => {
+                    Entry::Vacant(entry) => {
                         entry.insert(new_steps);
                     }
                 }

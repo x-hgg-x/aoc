@@ -1,11 +1,12 @@
 use aoc::*;
 
-use eyre::ensure;
+use eyre::{bail, ensure};
 use itertools::Itertools;
 use regex::Regex;
 
 use std::cmp::Ordering;
-use std::collections::{BinaryHeap, HashMap};
+use std::collections::hash_map::{Entry, HashMap};
+use std::collections::BinaryHeap;
 
 struct Node {
     size: u64,
@@ -31,19 +32,18 @@ impl Grid {
 
 struct State {
     hole_position: (usize, usize),
-    previous_hole_position: (usize, usize),
     steps: usize,
     distance: usize,
 }
 
 impl State {
-    fn new(hole_position: (usize, usize), previous_hole_position: (usize, usize), (goal_row, goal_column): (usize, usize), steps: usize) -> Self {
+    fn new(hole_position: (usize, usize), (goal_row, goal_column): (usize, usize), steps: usize) -> Self {
         let (hole_row, hole_column) = hole_position;
         let abs_diff_x = if hole_row >= goal_row { hole_row - goal_row } else { goal_row - hole_row };
         let abs_diff_y = if hole_column >= goal_column { hole_column - goal_column } else { goal_column - hole_column };
         let distance = abs_diff_x + abs_diff_y;
 
-        Self { hole_position, previous_hole_position, steps, distance }
+        Self { hole_position, steps, distance }
     }
 
     fn estimate(&self) -> usize {
@@ -117,7 +117,7 @@ fn main() -> Result<()> {
     let goal_column = grid.width - 2;
     let goal_position = (goal_row, goal_column);
 
-    let initial_state = State::new(initial_position, initial_position, goal_position, 0);
+    let initial_state = State::new(initial_position, goal_position, 0);
 
     let mut previous_holes = HashMap::new();
     previous_holes.insert(initial_hole_index, initial_state.steps);
@@ -126,51 +126,54 @@ fn main() -> Result<()> {
     current_states.push(initial_state);
 
     let steps = loop {
-        if let Some(state) = current_states.pop() {
-            if state.hole_position == goal_position {
-                break state.steps;
-            }
-
-            let (state_hole_row, state_hole_column) = state.hole_position;
-            let state_hole_index = grid.get_index(state_hole_row, state_hole_column);
-            let state_hole_node_size = grid.nodes[state_hole_index].size;
-
-            let mut process_neighbors = |new_hole_row, new_hole_column| {
-                let new_hole_position = (new_hole_row, new_hole_column);
-                let new_hole_index = grid.get_index(new_hole_row, new_hole_column);
-                let new_steps = state.steps + 1;
-
-                if new_hole_position == state.previous_hole_position || grid.nodes[new_hole_index].used > state_hole_node_size {
-                    return;
+        match current_states.pop() {
+            None => bail!("unable to find a path to the goal"),
+            Some(state) => {
+                if state.hole_position == goal_position {
+                    break state.steps;
                 }
 
-                match previous_holes.entry(new_hole_index) {
-                    std::collections::hash_map::Entry::Occupied(mut entry) => {
-                        let old_steps = entry.get_mut();
-                        if new_steps >= *old_steps {
-                            return;
+                let (state_hole_row, state_hole_column) = state.hole_position;
+                let state_hole_index = grid.get_index(state_hole_row, state_hole_column);
+                let state_hole_node_size = grid.nodes[state_hole_index].size;
+
+                let mut process_neighbors = |new_hole_row, new_hole_column| {
+                    let new_hole_position = (new_hole_row, new_hole_column);
+                    let new_hole_index = grid.get_index(new_hole_row, new_hole_column);
+                    let new_steps = state.steps + 1;
+
+                    if grid.nodes[new_hole_index].used > state_hole_node_size {
+                        return;
+                    }
+
+                    match previous_holes.entry(new_hole_index) {
+                        Entry::Occupied(mut entry) => {
+                            let old_steps = entry.get_mut();
+                            if new_steps >= *old_steps {
+                                return;
+                            }
+                            *old_steps = new_steps;
                         }
-                        *old_steps = new_steps;
+                        Entry::Vacant(entry) => {
+                            entry.insert(new_steps);
+                        }
                     }
-                    std::collections::hash_map::Entry::Vacant(entry) => {
-                        entry.insert(new_steps);
-                    }
+
+                    current_states.push(State::new(new_hole_position, goal_position, new_steps));
+                };
+
+                if state_hole_row > 0 {
+                    process_neighbors(state_hole_row - 1, state_hole_column);
                 }
-
-                current_states.push(State::new(new_hole_position, state.previous_hole_position, goal_position, new_steps));
-            };
-
-            if state_hole_row > 0 {
-                process_neighbors(state_hole_row - 1, state_hole_column);
-            }
-            if state_hole_row < grid.height - 1 {
-                process_neighbors(state_hole_row + 1, state_hole_column);
-            }
-            if state_hole_column > 0 {
-                process_neighbors(state_hole_row, state_hole_column - 1);
-            }
-            if state_hole_column < grid.width - 1 {
-                process_neighbors(state_hole_row, state_hole_column + 1);
+                if state_hole_row < grid.height - 1 {
+                    process_neighbors(state_hole_row + 1, state_hole_column);
+                }
+                if state_hole_column > 0 {
+                    process_neighbors(state_hole_row, state_hole_column - 1);
+                }
+                if state_hole_column < grid.width - 1 {
+                    process_neighbors(state_hole_row, state_hole_column + 1);
+                }
             }
         }
     };
