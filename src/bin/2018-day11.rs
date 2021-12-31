@@ -48,7 +48,7 @@ fn compute_max_square_sum(power_partial_sums: &[i64], square_size: usize) -> Res
 
             (ul + dr - ur - dl, column - square_size, row - square_size)
         })
-        .max_by_key(|&(sum, _, _)| sum)
+        .max_by_key(|&(sum, ..)| sum)
         .value()
 }
 
@@ -68,7 +68,7 @@ fn main() -> Result<()> {
             let max = compute_max_square_sum(&power_partial_sums, square_size)?;
             Ok((max, square_size))
         })
-        .try_process(|iter| iter.max_by_key(|&((sum, _, _), _)| sum))?
+        .try_process(|iter| iter.max_by_key(|&((sum, ..), _)| sum))?
         .map(|((_, x, y), square_size)| (x, y, square_size))
         .value()?;
 

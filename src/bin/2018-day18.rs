@@ -35,12 +35,12 @@ fn step(tiles: &mut Vec<Tile>, buf: &mut Vec<Tile>) -> Result<()> {
                     _ => (trees, lumberyards),
                 });
 
-                Ok(match center {
-                    Tile::OpenGround if trees >= 3 => Tile::Trees,
-                    Tile::Trees if lumberyards >= 3 => Tile::Lumberyard,
-                    Tile::Lumberyard if trees == 0 || lumberyards == 0 => Tile::OpenGround,
-                    Tile::Empty => bail!("unable to step simulation"),
-                    tile => tile,
+                Ok(match (center, trees, lumberyards) {
+                    (Tile::OpenGround, 3.., _) => Tile::Trees,
+                    (Tile::Trees, _, 3..) => Tile::Lumberyard,
+                    (Tile::Lumberyard, 0, _) | (Tile::Lumberyard, _, 0) => Tile::OpenGround,
+                    (Tile::Empty, ..) => bail!("unable to step simulation"),
+                    (tile, ..) => tile,
                 })
             });
 

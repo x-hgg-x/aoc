@@ -64,8 +64,8 @@ fn main() -> Result<()> {
 
     let id_part_1 = guards.iter().max_by_key(|&(_, v)| v.iter().map(|&x| x.count_ones()).sum::<u32>()).map(|(&id, _)| id).value()?;
 
-    let result1 = max_minutes.iter().find(|&&(id, _, _)| id == id_part_1).map(|&(id, minute, _)| id * minute).value()?;
-    let result2 = max_minutes.iter().max_by_key(|&&(_, _, count)| count).map(|&(id, minute, _)| id * minute).value()?;
+    let result1 = max_minutes.iter().find(|&&(id, ..)| id == id_part_1).map(|&(id, minute, _)| id * minute).value()?;
+    let result2 = max_minutes.iter().max_by_key(|&&(.., count)| count).map(|&(id, minute, _)| id * minute).value()?;
 
     println!("{}", result1);
     println!("{}", result2);

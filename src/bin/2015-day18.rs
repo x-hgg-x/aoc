@@ -1,40 +1,38 @@
 use aoc::*;
 
-use eyre::ensure;
-use itertools::{iproduct, Itertools};
+use eyre::{bail, ensure};
+use itertools::{izip, Itertools};
+
+use std::iter::once;
+
+const SIZE: usize = 100;
+const WIDTH: usize = SIZE + 2;
+const HEIGHT: usize = SIZE + 2;
 
 struct Grid {
-    width: usize,
-    height: usize,
     lights: Vec<bool>,
     stuck: bool,
 }
 
 impl Grid {
-    fn new(width: usize, height: usize, lights: Vec<bool>, stuck: bool) -> Result<Self> {
-        ensure!(width * height == lights.len(), "unable to construct Grid: width * height != lights.len()");
+    fn new(lights: Vec<bool>, stuck: bool) -> Result<Self> {
+        ensure!(WIDTH * HEIGHT == lights.len(), "unable to construct Grid: width * height != lights.len()");
 
-        let mut grid = Self { width, height, lights, stuck };
+        let mut grid = Self { lights, stuck };
 
         if stuck {
             Self::stick_lights(&mut grid);
         }
+
         Ok(grid)
     }
 
     fn get_index(&self, row: usize, column: usize) -> usize {
-        row * self.width + column
-    }
-
-    fn neighbor_lights(&self, row: usize, column: usize, state: bool) -> usize {
-        let rows = row.saturating_sub(1)..=(row + 1).min(self.height - 1);
-        let columns = column.saturating_sub(1)..=(column + 1).min(self.width - 1);
-
-        iproduct!(rows, columns).map(|(row, column)| self.lights[self.get_index(row, column)]).filter(|&x| x).count() - state as usize
+        row * WIDTH + column
     }
 
     fn stick_lights(&mut self) {
-        let stuck_index = [(0, 0), (0, self.width - 1), (self.height - 1, 0), (self.height - 1, self.width - 1)];
+        let stuck_index = [(1, 1), (1, WIDTH - 2), (HEIGHT - 2, 1), (HEIGHT - 2, WIDTH - 2)];
 
         for &(row, column) in &stuck_index {
             let index = self.get_index(row, column);
@@ -42,20 +40,27 @@ impl Grid {
         }
     }
 
-    fn step(&mut self, n: u32) -> &mut Self {
+    fn step(&mut self, n: u32, buf: &mut Vec<bool>) -> &mut Self {
         for _ in 0..n {
-            self.lights = iproduct!(0..self.height, 0..self.width)
-                .map(|(row, column)| {
-                    let index = self.get_index(row, column);
-                    let light_state = self.lights[index];
-                    match (light_state, self.neighbor_lights(row, column, light_state)) {
+            let iter = self.lights.chunks_exact(WIDTH).tuple_windows().flat_map(|(row_0, row_1, row_2)| {
+                let inner_iter = izip!(row_0.windows(3), row_1.windows(3), row_2.windows(3)).map(|(x0, x1, x2)| {
+                    let center = x1[1];
+                    let neighbor_lights = x0.iter().chain([&x1[0], &x1[2]]).chain(x2).copied().map_into::<usize>().sum::<usize>();
+
+                    match (center, neighbor_lights) {
                         (true, 2..=3) => true,
                         (true, _) => false,
                         (false, 3) => true,
-                        (state, _) => state,
+                        (center, _) => center,
                     }
-                })
-                .collect();
+                });
+
+                once(false).chain(inner_iter).chain(once(false))
+            });
+
+            buf.clear();
+            buf.extend([false; WIDTH].into_iter().chain(iter).chain([false; WIDTH]));
+            std::mem::swap(buf, &mut self.lights);
 
             if self.stuck {
                 self.stick_lights();
@@ -71,18 +76,24 @@ impl Grid {
 
 fn main() -> Result<()> {
     let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
 
     let lights = input
-        .iter()
-        .filter_map(|&c| match c {
-            b'.' => Some(false),
-            b'#' => Some(true),
-            _ => None,
+        .lines()
+        .flat_map(|line| {
+            let iter = line.chars().map(|c| match c {
+                '.' => Ok(false),
+                '#' => Ok(true),
+                _ => bail!("unknown tile"),
+            });
+            once(Ok(false)).chain(iter).chain(once(Ok(false)))
         })
-        .collect_vec();
+        .try_process(|iter| [false; WIDTH].into_iter().chain(iter).chain([false; WIDTH]).collect_vec())?;
 
-    let result1 = Grid::new(100, 100, lights.clone(), false)?.step(100).count();
-    let result2 = Grid::new(100, 100, lights, true)?.step(100).count();
+    let mut buf = Vec::with_capacity(lights.len());
+
+    let result1 = Grid::new(lights.clone(), false)?.step(100, &mut buf).count();
+    let result2 = Grid::new(lights, true)?.step(100, &mut buf).count();
 
     println!("{}", result1);
     println!("{}", result2);

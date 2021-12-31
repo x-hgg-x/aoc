@@ -12,7 +12,7 @@ fn main() -> Result<()> {
         .find_iter(&input)
         .map(|x| match *x.as_str().as_bytes() {
             [b'"'] | [b'\\', b'\\'] | [b'\\', b'"'] => 1,
-            [b'\\', b'x', _, _] => 3,
+            [b'\\', b'x', ..] => 3,
             _ => 0,
         })
         .sum();

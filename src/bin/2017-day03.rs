@@ -1,6 +1,5 @@
 use aoc::*;
 
-use itertools::iproduct;
 use num_complex::Complex;
 
 struct Memory {
@@ -48,7 +47,7 @@ impl Memory {
         let rows = row.saturating_sub(1)..=(row + 1).min(self.size - 1);
         let columns = column.saturating_sub(1)..=(column + 1).min(self.size - 1);
 
-        iproduct!(rows, columns).map(|(row, column)| self.values[self.get_index(row, column)]).sum()
+        self.values.chunks_exact(self.size).skip(*rows.start()).take(rows.end() - rows.start() + 1).flat_map(|row| &row[columns.clone()]).sum()
     }
 }
 
@@ -77,7 +76,7 @@ fn main() -> Result<()> {
 
     let result1 = compute_steps(input);
 
-    let half_size = (input as f64).log(16.0).ceil() as usize;
+    let half_size = 1 + (input as f64).log(16.0).ceil() as usize;
     let mut memory = Memory::new(half_size);
 
     let result2 = loop {
