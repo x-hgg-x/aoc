@@ -7,7 +7,7 @@ const SIZE_P_1: usize = 1 + SIZE;
 
 fn compute_power_partial_sums(serial_number: i64) -> Vec<i64> {
     let mut power_partial_sums = vec![0; SIZE_P_1 * SIZE_P_1];
-    let mut remaining = &mut power_partial_sums[..];
+    let mut remaining = power_partial_sums.as_mut_slice();
 
     for index_y in 0.. {
         let (prev_row, row) = remaining.split_at_mut(SIZE_P_1);

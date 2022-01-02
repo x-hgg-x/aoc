@@ -82,19 +82,18 @@ impl Grid {
 
 struct State {
     position: (usize, usize),
-    previous_position: (usize, usize),
     steps: usize,
     distance: usize,
 }
 
 impl State {
-    fn new(position: (usize, usize), previous_position: (usize, usize), (goal_row, goal_column): (usize, usize), steps: usize) -> Self {
+    fn new(position: (usize, usize), (goal_row, goal_column): (usize, usize), steps: usize) -> Self {
         let (row, column) = position;
         let abs_diff_x = if row >= goal_row { row - goal_row } else { goal_row - row };
         let abs_diff_y = if column >= goal_column { column - goal_column } else { goal_column - column };
         let distance = abs_diff_x + abs_diff_y;
 
-        Self { position, previous_position, steps, distance }
+        Self { position, steps, distance }
     }
 
     fn estimate(&self) -> usize {
@@ -125,8 +124,7 @@ impl PartialOrd for State {
 fn compute_shortest_distance(grid: &Grid, initial_position: (usize, usize), goal_position: (usize, usize)) -> usize {
     let (initial_row, initial_column) = initial_position;
     let initial_index = grid.get_index(initial_row, initial_column);
-
-    let initial_state = State::new(initial_position, initial_position, goal_position, 0);
+    let initial_state = State::new(initial_position, goal_position, 0);
 
     let mut previous_positions = HashMap::new();
     previous_positions.insert(initial_index, initial_state.steps);
@@ -147,7 +145,7 @@ fn compute_shortest_distance(grid: &Grid, initial_position: (usize, usize), goal
                 let new_index = grid.get_index(new_row, new_column);
                 let new_steps = state.steps + 1;
 
-                if new_position == state.previous_position || !grid.tiles[new_index] {
+                if !grid.tiles[new_index] {
                     return;
                 }
 
@@ -164,7 +162,7 @@ fn compute_shortest_distance(grid: &Grid, initial_position: (usize, usize), goal
                     }
                 }
 
-                current_states.push(State::new(new_position, state.previous_position, goal_position, new_steps));
+                current_states.push(State::new(new_position, goal_position, new_steps));
             };
 
             if state_row > 0 {
