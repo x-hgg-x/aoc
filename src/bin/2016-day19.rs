@@ -12,7 +12,7 @@ fn main() -> Result<()> {
     let p = 3u64.pow((n as f64 - 1.0).log(3.0).floor() as u32);
     let result2 = n - p + n.saturating_sub(2 * p);
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

@@ -47,7 +47,7 @@ fn main() -> Result<()> {
                     let (arg1, arg2) = args.split('/').map(|x| x.as_bytes()[0]).next_tuple().value()?;
                     DanceMove::Partner(arg1, arg2)
                 }
-                other => bail!("unknown dance move: {}", other),
+                other => bail!("unknown dance move: {other}"),
             })
         })
         .try_collect()?;
@@ -74,7 +74,7 @@ fn main() -> Result<()> {
 
     let result2 = String::from_utf8_lossy(&uniques_states[(1_000_000_000 % uniques_states.len())]);
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

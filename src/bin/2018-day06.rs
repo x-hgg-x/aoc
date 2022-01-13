@@ -79,7 +79,7 @@ fn main() -> Result<()> {
     let result1 = area_counts.iter().max().value()?;
     let result2 = grid.tiles.iter().filter(|&&(_, x)| x < 10000).count();
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

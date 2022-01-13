@@ -41,7 +41,7 @@ fn main() -> Result<()> {
     }
     let result2 = *scores.iter().max().value()?;
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

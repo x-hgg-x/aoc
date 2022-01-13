@@ -118,7 +118,7 @@ fn main() -> Result<()> {
 
     let result2 = uniques_states[(1_000_000_000 - start) % cycle_size];
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

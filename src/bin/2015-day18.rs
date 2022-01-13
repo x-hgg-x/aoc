@@ -95,7 +95,7 @@ fn main() -> Result<()> {
     let result1 = Grid::new(lights.clone(), false)?.step(100, &mut buf).count();
     let result2 = Grid::new(lights, true)?.step(100, &mut buf).count();
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

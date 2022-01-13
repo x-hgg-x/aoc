@@ -63,7 +63,7 @@ fn main() -> Result<()> {
     }
     let result2 = String::from_iter(password);
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

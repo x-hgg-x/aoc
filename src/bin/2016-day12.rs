@@ -34,13 +34,13 @@ fn parse_register(register: &str) -> Option<usize> {
 }
 
 fn get_register(register: &str) -> Result<usize> {
-    parse_register(register).ok_or_else(|| eyre!("unknown register: {}", register))
+    parse_register(register).ok_or_else(|| eyre!("unknown register: {register}"))
 }
 
 fn get_input(input: &str) -> Result<Input> {
     match parse_register(input) {
         Some(r) => Ok(Input::Register(r)),
-        None => input.parse().map(Input::Value).wrap_err_with(|| eyre!("unknown register or value: {}", input)),
+        None => input.parse().map(Input::Value).wrap_err_with(|| eyre!("unknown register or value: {input}")),
     }
 }
 
@@ -79,7 +79,7 @@ fn main() -> Result<()> {
                 "inc" => Instruction::Increment(get_register(args[1])?),
                 "dec" => Instruction::Decrement(get_register(args[1])?),
                 "jnz" => Instruction::JumpIfNotZero(get_input(args[1])?, get_input(args[2])?),
-                other => bail!("unknown instruction: {}", other),
+                other => bail!("unknown instruction: {other}"),
             })
         })
         .try_collect()?;
@@ -87,7 +87,7 @@ fn main() -> Result<()> {
     let result1 = run(&instructions, [0, 0, 0, 0])?[0];
     let result2 = run(&instructions, [0, 0, 1, 0])?[0];
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

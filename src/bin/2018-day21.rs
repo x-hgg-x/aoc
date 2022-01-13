@@ -53,7 +53,7 @@ fn main() -> Result<()> {
     let result1 = first_value.value()?;
     let result2 = last_value.value()?;
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

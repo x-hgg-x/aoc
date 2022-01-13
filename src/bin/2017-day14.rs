@@ -138,7 +138,7 @@ fn main() -> Result<()> {
 
     let result2 = regions_count;
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

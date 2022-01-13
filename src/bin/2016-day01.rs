@@ -38,7 +38,7 @@ fn main() -> Result<()> {
         .map(|(_, (_, block))| block.l1_norm())
         .value()?;
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

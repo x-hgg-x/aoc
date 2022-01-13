@@ -45,7 +45,7 @@ fn main() -> Result<()> {
     let result1 = password_generator.next_valid();
     let result2 = password_generator.next_valid();
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

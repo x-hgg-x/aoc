@@ -42,7 +42,7 @@ fn main() -> Result<()> {
     let result1 = forbidden_ranges[0].1 + 1;
     let result2 = forbidden_ranges.windows(2).map(|x| x[1].0 - x[0].1 - 1).sum::<u32>();
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

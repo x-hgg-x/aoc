@@ -26,7 +26,7 @@ fn main() -> Result<()> {
                 q += 1;
                 r -= 1;
             }
-            other => bail!("unknown direction: {}", other),
+            other => bail!("unknown direction: {other}"),
         }
 
         distance = (q.abs() + r.abs() + (q + r).abs()) / 2;
@@ -36,7 +36,7 @@ fn main() -> Result<()> {
     let result1 = distance;
     let result2 = max_distance;
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

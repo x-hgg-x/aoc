@@ -61,7 +61,7 @@ fn main() -> Result<()> {
     let power_partial_sums = compute_power_partial_sums(serial_number);
 
     let (_, x1, y1) = compute_max_square_sum(&power_partial_sums, 3)?;
-    let result1 = format!("{},{}", x1, y1);
+    let result1 = format!("{x1},{y1}");
 
     let (x2, y2, best_square_size) = (1..=300)
         .map(|square_size| {
@@ -72,9 +72,9 @@ fn main() -> Result<()> {
         .map(|((_, x, y), square_size)| (x, y, square_size))
         .value()?;
 
-    let result2 = format!("{},{},{}", x2, y2, best_square_size);
+    let result2 = format!("{x2},{y2},{best_square_size}");
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

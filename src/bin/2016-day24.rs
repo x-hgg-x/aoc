@@ -245,7 +245,7 @@ fn main() -> Result<()> {
     let result1 = compute_shortest_path(&permutations, &distances, |path| once(first_location).chain(path.iter().copied()))?;
     let result2 = compute_shortest_path(&permutations, &distances, |path| once(first_location).chain(path.iter().copied()).chain(once(first_location)))?;
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

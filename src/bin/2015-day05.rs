@@ -46,7 +46,7 @@ fn main() -> Result<()> {
         .filter(|&x| x)
         .count();
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

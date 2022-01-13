@@ -88,7 +88,7 @@ fn main() -> Result<()> {
     let result1 = String::from_utf8_lossy(&message);
     let result2 = message_time;
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

@@ -151,7 +151,7 @@ impl ParseRegex {
                 let cap = self.regex_move_position.captures(line).value()?;
                 Ok(Operation::MovePosition(cap[1].parse()?, cap[2].parse()?))
             }
-            _ => Err(eyre!("unknown operation: {}", line)),
+            _ => Err(eyre!("unknown operation: {line}")),
         }
     }
 }
@@ -184,7 +184,7 @@ fn main() -> Result<()> {
     }
     let result2 = String::from_utf8_lossy(&password);
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

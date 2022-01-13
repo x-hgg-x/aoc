@@ -15,7 +15,7 @@ fn main() -> Result<()> {
     let result1 = sides.chunks_exact(3).filter(|x| check_triangle(x[0], x[1], x[2])).count();
     let result2: usize = (0..3).map(|n| sides.iter().skip(n).step_by(3).tuples().filter(|&(a, b, c)| check_triangle(*a, *b, *c)).count()).sum();
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

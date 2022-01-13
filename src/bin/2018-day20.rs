@@ -59,7 +59,7 @@ fn main() -> Result<()> {
     let result1 = *distances.values().max().value()?;
     let result2 = distances.values().filter(|&&distance| distance >= 1000).count();
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

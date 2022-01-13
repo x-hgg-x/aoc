@@ -54,7 +54,7 @@ fn main() -> Result<()> {
 
     let result1 = double_count * triple_count;
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

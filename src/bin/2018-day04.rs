@@ -67,7 +67,7 @@ fn main() -> Result<()> {
     let result1 = max_minutes.iter().find(|&&(id, ..)| id == id_part_1).map(|&(id, minute, _)| id * minute).value()?;
     let result2 = max_minutes.iter().max_by_key(|&&(.., count)| count).map(|&(id, minute, _)| id * minute).value()?;
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

@@ -180,7 +180,7 @@ fn main() -> Result<()> {
 
     let result2 = steps + 5 * (goal_column) + 1;
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

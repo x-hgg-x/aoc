@@ -15,7 +15,7 @@ fn main() -> Result<()> {
     let result1 = generator_a.clone().zip(generator_b.clone()).take(40_000_000).filter(|&(a, b)| a as u16 == b as u16).count();
     let result2 = generator_a.filter(|a| a % 4 == 0).zip(generator_b.filter(|b| b % 8 == 0)).take(5_000_000).filter(|&(a, b)| a as u16 == b as u16).count();
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

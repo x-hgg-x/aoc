@@ -35,7 +35,7 @@ fn main() -> Result<()> {
     let result1 = race.last().value()?.1;
     let result2 = race.iter().map(|(pos, _)| pos).sorted_unstable().dedup_with_count().map(|(count, _)| count).max().value()?;
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

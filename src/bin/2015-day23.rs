@@ -16,7 +16,10 @@ enum Instruction {
 fn get_register(register: &str) -> Result<usize> {
     match register.as_bytes()[0] {
         x @ b'a'..=b'b' => Ok((x - b'a').into()),
-        other => bail!("unknown register: {:?}", char::from(other)),
+        other => {
+            let ch = char::from(other);
+            bail!("unknown register: {ch:?}");
+        }
     }
 }
 
@@ -67,7 +70,7 @@ fn main() -> Result<()> {
                 "jmp" => Instruction::Jump(args[1].parse()?),
                 "jie" => Instruction::JumpIfEven(get_register(args[1])?, args[2].parse()?),
                 "jio" => Instruction::JumpIfOne(get_register(args[1])?, args[2].parse()?),
-                other => bail!("unknown instruction: {}", other),
+                other => bail!("unknown instruction: {other}"),
             })
         })
         .try_collect()?;
@@ -75,7 +78,7 @@ fn main() -> Result<()> {
     let result1 = run(&instructions, [0, 0])?[1];
     let result2 = run(&instructions, [1, 0])?[1];
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

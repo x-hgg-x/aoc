@@ -25,14 +25,14 @@ fn main() -> Result<()> {
             }
             b'}' if !garbage => group_score -= 1,
             _ if garbage => garbage_count += 1,
-            _ => {}
+            _ => (),
         }
     }
 
     let result1 = total_score;
     let result2 = garbage_count;
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

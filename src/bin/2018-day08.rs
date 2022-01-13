@@ -34,7 +34,7 @@ fn main() -> Result<()> {
 
     let (result1, result2, _) = parse_tree(&data)?;
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

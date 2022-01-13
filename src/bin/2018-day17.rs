@@ -192,7 +192,7 @@ fn main() -> Result<()> {
     let result1 = water;
     let result2 = stable_water;
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

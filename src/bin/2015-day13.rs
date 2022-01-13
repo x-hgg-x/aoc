@@ -103,7 +103,7 @@ fn main() -> Result<()> {
 
     let result2 = max_hapiness(&nodes, &edges)?;
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

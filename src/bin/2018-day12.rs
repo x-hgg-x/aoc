@@ -88,7 +88,7 @@ fn main() -> Result<()> {
 
     let result2 = count2 + (count2 - count1) / (n2 - n1) * (n3 - n2);
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

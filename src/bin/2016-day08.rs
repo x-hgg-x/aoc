@@ -45,7 +45,7 @@ fn main() -> Result<()> {
             "rect " => turn_on_rect(&mut pixels, i, j),
             "rotate row y=" => rotate_row(&mut pixels, i, j),
             "rotate column x=" => rotate_column(&mut pixels, i, j),
-            _ => {}
+            _ => (),
         }
     }
 
@@ -55,7 +55,7 @@ fn main() -> Result<()> {
     let result1 = count;
     let result2 = String::from_utf8_lossy(&message);
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

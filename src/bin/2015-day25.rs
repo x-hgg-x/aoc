@@ -18,6 +18,6 @@ fn main() -> Result<()> {
 
     let result = generator.nth(n).value()?;
 
-    println!("{}", result);
+    println!("{result}");
     Ok(())
 }

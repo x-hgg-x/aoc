@@ -34,13 +34,13 @@ fn parse_register(register: &str) -> Option<usize> {
 }
 
 fn get_register(register: &str) -> Result<usize> {
-    parse_register(register).ok_or_else(|| eyre!("unknown register: {}", register))
+    parse_register(register).ok_or_else(|| eyre!("unknown register: {register}"))
 }
 
 fn get_input(input: &str) -> Result<Input> {
     match parse_register(input) {
         Some(r) => Ok(Input::Register(r)),
-        None => input.parse().map(Input::Value).wrap_err_with(|| eyre!("unknown register or value: {}", input)),
+        None => input.parse().map(Input::Value).wrap_err_with(|| eyre!("unknown register or value: {input}")),
     }
 }
 
@@ -83,7 +83,7 @@ fn main() -> Result<()> {
                 "sub" => Instruction::Substraction(get_register(args[1])?, get_input(args[2])?),
                 "mul" => Instruction::Multiplication(get_register(args[1])?, get_input(args[2])?),
                 "jnz" => Instruction::JumpIfNotZero(get_input(args[1])?, get_input(args[2])?),
-                other => bail!("unknown instruction: {}", other),
+                other => bail!("unknown instruction: {other}"),
             })
         })
         .try_collect()?;
@@ -99,7 +99,7 @@ fn main() -> Result<()> {
     let result1 = mul_count;
     let result2 = composite_number_count;
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

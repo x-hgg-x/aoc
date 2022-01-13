@@ -39,7 +39,7 @@ fn parse_register(register: &str) -> Option<usize> {
 fn get_input(input: &str) -> Result<Input> {
     match parse_register(input) {
         Some(r) => Ok(Input::Register(r)),
-        None => input.parse().map(Input::Value).wrap_err_with(|| eyre!("unknown register or value: {}", input)),
+        None => input.parse().map(Input::Value).wrap_err_with(|| eyre!("unknown register or value: {input}")),
     }
 }
 
@@ -97,7 +97,7 @@ fn main() -> Result<()> {
                 "jnz" => Instruction::JumpIfNotZero(get_input(args[1])?, get_input(args[2])?),
                 "tgl" => Instruction::Toogle(get_input(args[1])?),
                 "out" => Instruction::Transmit(get_input(args[1])?),
-                other => bail!("unknown instruction: {}", other),
+                other => bail!("unknown instruction: {other}"),
             })
         })
         .try_collect()?;
@@ -110,6 +110,6 @@ fn main() -> Result<()> {
     })?
     .value()?;
 
-    println!("{}", result);
+    println!("{result}");
     Ok(())
 }

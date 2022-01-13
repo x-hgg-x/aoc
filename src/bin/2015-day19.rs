@@ -36,7 +36,7 @@ fn main() -> Result<()> {
 
     let result2 = length - num_rn_ar - 2 * num_y - 1;
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

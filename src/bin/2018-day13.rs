@@ -99,7 +99,7 @@ fn main() -> Result<()> {
             let (mut cart_row, mut cart_column) = grid.get_position(*cart_index);
 
             let mut cart = match &mut grid.tiles[*cart_index] {
-                Tile::Empty => bail!("empty tile at {:?}", (cart_row, cart_column)),
+                Tile::Empty => bail!("empty tile at ({cart_row}, {cart_column})"),
                 Tile::HorizontalLine(x) | Tile::VerticalLine(x) | Tile::LeftCurve(x) | Tile::RightCurve(x) | Tile::Intersection(x) => match x.take() {
                     Some(cart) => cart,
                     None => continue,
@@ -111,7 +111,7 @@ fn main() -> Result<()> {
             *cart_index = grid.get_index(cart_row, cart_column);
 
             let new_tile_cart = match &mut grid.tiles[*cart_index] {
-                Tile::Empty => bail!("empty tile at {:?}", (cart_row, cart_column)),
+                Tile::Empty => bail!("empty tile at ({cart_row}, {cart_column})"),
                 Tile::HorizontalLine(x) | Tile::VerticalLine(x) => x,
                 Tile::LeftCurve(x) => {
                     if cart.direction.im != 0 {
@@ -119,7 +119,7 @@ fn main() -> Result<()> {
                     } else if cart.direction.re != 0 {
                         cart.direction *= TURN_RIGHT
                     } else {
-                        bail!("unable to follow path at {:?}", (cart_row, cart_column));
+                        bail!("unable to follow path at ({cart_row}, {cart_column})");
                     }
                     x
                 }
@@ -129,7 +129,7 @@ fn main() -> Result<()> {
                     } else if cart.direction.re != 0 {
                         cart.direction *= TURN_LEFT
                     } else {
-                        bail!("unable to follow path at {:?}", (cart_row, cart_column));
+                        bail!("unable to follow path at ({cart_row}, {cart_column})");
                     }
                     x
                 }
@@ -173,10 +173,10 @@ fn main() -> Result<()> {
     let (x1, y1) = first_crash_position.map(|(row, column)| (column, row)).value()?;
     let (x2, y2) = (last_position.1, last_position.0);
 
-    let result1 = format!("{},{}", x1, y1);
-    let result2 = format!("{},{}", x2, y2);
+    let result1 = format!("{x1},{y1}");
+    let result2 = format!("{x2},{y2}");
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

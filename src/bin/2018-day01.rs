@@ -24,7 +24,7 @@ fn main() -> Result<()> {
         }
     };
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

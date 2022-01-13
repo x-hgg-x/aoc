@@ -37,7 +37,7 @@ fn main() -> Result<()> {
     let result1 = count;
     let result2 = count - old_count;
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

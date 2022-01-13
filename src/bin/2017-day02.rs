@@ -27,7 +27,7 @@ fn main() -> Result<()> {
     let result1 = sum1;
     let result2 = sum2;
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

@@ -45,7 +45,7 @@ fn main() -> Result<()> {
     let result1 = real_rooms.iter().fold(0, |acc, (_, id)| acc + id);
     let result2 = real_rooms.iter().find(|(name, _)| name == "northpole-object-storage").map(|&(_, id)| id).value()?;
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

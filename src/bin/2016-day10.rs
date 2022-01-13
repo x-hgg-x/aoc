@@ -42,7 +42,7 @@ fn parse_node(node_type: &str, node_number: &str, value_type: ValueType) -> Resu
     match node_type {
         "bot" => Ok(Node::Bot(node_number.parse()?, value_type)),
         "output" => Ok(Node::Output(node_number.parse()?, value_type)),
-        other => Err(eyre!("unknown node type: {}", other)),
+        other => Err(eyre!("unknown node type: {other}")),
     }
 }
 
@@ -67,7 +67,7 @@ fn main() -> Result<()> {
             let value = cap[1].parse()?;
             input_edges.push((bot_number, value));
         } else {
-            bail!("unknown instruction: {}", line)
+            bail!("unknown instruction: {line}")
         }
     }
 
@@ -102,7 +102,7 @@ fn main() -> Result<()> {
                 Node::Output(0..=2, value_type) => {
                     output_0_1_2 *= bots[bot_number].get_value(value_type)?;
                 }
-                _ => {}
+                _ => (),
             }
         }
 
@@ -116,7 +116,7 @@ fn main() -> Result<()> {
     let result1 = bot_61_17.value()?;
     let result2 = output_0_1_2;
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

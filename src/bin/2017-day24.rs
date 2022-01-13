@@ -59,7 +59,7 @@ fn main() -> Result<()> {
     let result1 = max_strength;
     let result2 = max_strength_longest_bridge;
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

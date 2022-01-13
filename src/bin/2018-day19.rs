@@ -28,7 +28,7 @@ fn main() -> Result<()> {
     let result1 = run(n1);
     let result2 = run(n2);
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

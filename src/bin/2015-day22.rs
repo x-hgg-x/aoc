@@ -227,7 +227,7 @@ fn process_result(heap: &mut BinaryHeap<GameState>, min_mana: &mut i64, current_
             GameResult::Unknown(game_state) if game_state.status.mana_spent < *min_mana => {
                 heap.push(game_state);
             }
-            _ => {}
+            _ => (),
         }
     }
 }
@@ -261,7 +261,7 @@ fn main() -> Result<()> {
     let result1 = solve(false, boss_hp, boss_damage);
     let result2 = solve(true, boss_hp, boss_damage);
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

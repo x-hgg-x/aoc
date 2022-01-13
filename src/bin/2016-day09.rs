@@ -50,7 +50,7 @@ fn main() -> Result<()> {
     let result1 = file_length_v1(input, &re, &mut locations)?;
     let result2 = file_length_v2(input, &re, &mut locations)?;
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

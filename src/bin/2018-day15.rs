@@ -415,7 +415,7 @@ fn main() -> Result<()> {
             .value()?,
     };
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

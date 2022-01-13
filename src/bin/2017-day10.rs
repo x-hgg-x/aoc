@@ -52,7 +52,7 @@ fn main() -> Result<()> {
     let result1 = list[..2].iter().copied().map_into::<u64>().product::<u64>();
     let result2 = knot_hash(input.as_bytes())?;
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

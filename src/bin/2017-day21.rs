@@ -167,7 +167,7 @@ fn main() -> Result<()> {
     }
     let result2 = grid.tiles.iter().filter(|&&x| x).count();
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

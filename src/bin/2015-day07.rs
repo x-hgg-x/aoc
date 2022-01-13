@@ -166,7 +166,7 @@ impl ParseRegex {
                 let op2 = cap.name("op2").value()?.as_str();
                 map.0.insert(name, Variable::new(Operation::RShift(Operand::parse_new(op1), Operand::parse_new(op2))));
             }
-            _ => bail!("unknown instruction: {}", line),
+            _ => bail!("unknown instruction: {line}"),
         };
 
         Ok(())
@@ -193,11 +193,11 @@ fn main() -> Result<()> {
     let result1 = map.value("a");
 
     map.clear();
-    let new_line = format!("{} -> b", result1);
+    let new_line = format!("{result1} -> b");
     parse_regex.parse(&mut map, &new_line)?;
     let result2 = map.value("a");
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

@@ -68,6 +68,6 @@ fn main() -> Result<()> {
 
     let result = tape.values().copied().map_into::<u64>().sum::<u64>();
 
-    println!("{}", result);
+    println!("{result}");
     Ok(())
 }

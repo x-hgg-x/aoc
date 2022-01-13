@@ -20,7 +20,7 @@ fn main() -> Result<()> {
     let result1 = get_min_house(min_presents, 10, usize::MAX)?;
     let result2 = get_min_house(min_presents, 11, 50)?;
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

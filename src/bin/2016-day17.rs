@@ -64,7 +64,7 @@ fn main() -> Result<()> {
     let result1 = String::from_utf8_lossy(min_path.as_ref().value()?);
     let result2 = max_path_len;
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

@@ -25,14 +25,14 @@ fn main() -> Result<()> {
             ">=" => condition_register >= condition_value,
             "==" => condition_register == condition_value,
             "!=" => condition_register != condition_value,
-            other => bail!("unknown instruction: {}", other),
+            other => bail!("unknown instruction: {other}"),
         } {
             let lvalue = registers.entry(cap.get(1).value()?.as_str()).or_default();
             let increment = cap[3].parse::<i64>()?;
             let multiplier = match &cap[2] {
                 "inc" => 1,
                 "dec" => -1,
-                other => bail!("unknown instruction: {}", other),
+                other => bail!("unknown instruction: {other}"),
             };
 
             *lvalue += multiplier * increment;
@@ -46,7 +46,7 @@ fn main() -> Result<()> {
     let result1 = *registers.values().max().value()?;
     let result2 = max_value;
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

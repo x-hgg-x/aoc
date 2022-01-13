@@ -107,7 +107,7 @@ fn main() -> Result<()> {
     let result1 = compute_step_list(&nodes);
     let result2 = compute_total_time(&nodes);
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

@@ -94,7 +94,7 @@ fn main() -> Result<()> {
     let result1 = run1(grid.clone());
     let result2 = run2(grid);
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

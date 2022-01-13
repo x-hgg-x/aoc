@@ -89,7 +89,7 @@ fn main() -> Result<()> {
     let result1 = bottom_node.name;
     let result2 = compute_unbalanced_node_corrected_weight(&map, bottom_node)?;
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

@@ -29,7 +29,7 @@ fn main() -> Result<()> {
     let result1 = run(jumps.clone(), false)?;
     let result2 = run(jumps, true)?;
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

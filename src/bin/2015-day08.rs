@@ -19,7 +19,7 @@ fn main() -> Result<()> {
 
     let result2: usize = input.lines().map(|line| 2 + line.bytes().filter(|&x| x == b'"' || x == b'\\').count()).sum();
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

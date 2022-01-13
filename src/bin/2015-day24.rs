@@ -51,7 +51,7 @@ fn main() -> Result<()> {
             .any(|(_, third_group)| get_subset_sum_iter(&third_group, goal_weight2).next().is_some())
     })?;
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

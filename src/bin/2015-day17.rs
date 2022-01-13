@@ -34,7 +34,7 @@ fn main() -> Result<()> {
     let min = combinations.iter().min().value()?;
     let result2 = combinations.iter().filter(|&x| x == min).count();
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

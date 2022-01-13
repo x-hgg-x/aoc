@@ -46,7 +46,7 @@ fn main() -> Result<()> {
     let result1 = find_digest(input, |digest| digest[..2] == [0, 0] && digest[2] <= 0x0F)?;
     let result2 = find_digest(input, |digest| digest[..3] == [0, 0, 0])?;
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

@@ -50,7 +50,7 @@ fn main() -> Result<()> {
 
     let result2 = groups_count;
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

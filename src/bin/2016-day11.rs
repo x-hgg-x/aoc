@@ -167,7 +167,7 @@ fn main() -> Result<()> {
             "second" => 1,
             "third" => 2,
             "fourth" => 3,
-            other => bail!("unknown floor: {}", other),
+            other => bail!("unknown floor: {other}"),
         };
 
         for cap in regex_gen_chip.captures_iter(line) {
@@ -175,7 +175,7 @@ fn main() -> Result<()> {
             match &cap[2] {
                 "-compatible microchip" => chips.insert(element_type, floor),
                 " generator" => generators.insert(element_type, floor),
-                other => bail!("unknown element: {}", other),
+                other => bail!("unknown element: {other}"),
             };
         }
     }
@@ -190,7 +190,7 @@ fn main() -> Result<()> {
     state.pairs.sort_unstable();
     let result2 = solve(&state);
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

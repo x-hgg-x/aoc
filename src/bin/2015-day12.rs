@@ -23,7 +23,7 @@ fn main() -> Result<()> {
                 match c {
                     b'{' => *braces += 1,
                     b'}' => *braces -= 1,
-                    _ => {}
+                    _ => (),
                 };
                 Some((pos, *braces))
             })
@@ -38,7 +38,7 @@ fn main() -> Result<()> {
                 match c {
                     b'{' => *braces += 1,
                     b'}' => *braces -= 1,
-                    _ => {}
+                    _ => (),
                 };
                 Some((pos, *braces))
             })
@@ -52,7 +52,7 @@ fn main() -> Result<()> {
 
     let result2 = count(&regex_num, &input)?;
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

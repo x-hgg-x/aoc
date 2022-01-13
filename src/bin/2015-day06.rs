@@ -50,7 +50,7 @@ fn main() -> Result<()> {
                 "turn on" => Command::TurnOn,
                 "turn off" => Command::TurnOff,
                 "toggle" => Command::Toogle,
-                other => bail!("unknown instruction: {}", other),
+                other => bail!("unknown instruction: {other}"),
             };
 
             let line_range = x[2].parse()?..=x[4].parse()?;
@@ -78,7 +78,7 @@ fn main() -> Result<()> {
     grid.fill([0; 1000]);
     let result2 = compute_brightness(&mut grid, &instructions, f2);
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

@@ -47,7 +47,7 @@ fn main() -> Result<()> {
         .filter(|(hypernets, supernets)| iproduct!(get_aba(hypernets), get_aba(supernets)).any(|(bab, aba)| aba[0] == bab[1] && aba[1] == bab[0]))
         .count();
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

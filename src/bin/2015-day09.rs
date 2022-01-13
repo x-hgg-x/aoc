@@ -82,7 +82,7 @@ fn main() -> Result<()> {
     let result1 = *distances.iter().min().value()?;
     let result2 = *distances.iter().max().value()?;
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

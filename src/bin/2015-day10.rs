@@ -30,7 +30,7 @@ fn main() -> Result<()> {
     let result1 = look_and_say.next(40).len();
     let result2 = look_and_say.next(10).len();
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

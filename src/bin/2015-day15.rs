@@ -62,7 +62,7 @@ fn main() -> Result<()> {
     let result1 = cookies.iter().map(|(score, _)| score).max().value()?;
     let result2 = cookies.iter().filter(|&&(_, calories)| calories == 500).map(|(score, _)| score).max().value()?;
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

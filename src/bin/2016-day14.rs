@@ -143,7 +143,7 @@ fn main() -> Result<()> {
     let result1 = Queue::new(input, 0).compute_64th_key_index()?;
     let result2 = Queue::new(input, 2016).compute_64th_key_index()?;
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

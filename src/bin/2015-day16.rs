@@ -56,7 +56,7 @@ fn main() -> Result<()> {
 
     let result2 = get_aunt(&input, &gift, &regex_compounds, &regex_num)?;
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

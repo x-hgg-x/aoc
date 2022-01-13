@@ -43,7 +43,7 @@ fn main() -> Result<()> {
     let result1 = compute_checksum(input, 272);
     let result2 = compute_checksum(input, 35651584);
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

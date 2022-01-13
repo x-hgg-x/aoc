@@ -29,7 +29,7 @@ fn main() -> Result<()> {
     let result1 = count_safe_tiles(input, 40);
     let result2 = count_safe_tiles(input, 400000);
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

@@ -39,7 +39,7 @@ fn main() -> Result<()> {
     let result1 = get_code(input, &keypad1, (1, 1))?;
     let result2 = get_code(input, &keypad2, (2, 0))?;
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

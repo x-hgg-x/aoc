@@ -99,7 +99,7 @@ fn main() -> Result<()> {
                     }
                 }
 
-                bail!("unable to follow path at (row, column) = {:?}", (row, column))
+                bail!("unable to follow path at (row, column) = ({row}, {column})")
             }
             _ => (),
         }
@@ -108,7 +108,7 @@ fn main() -> Result<()> {
     let result1 = String::from_utf8_lossy(&letters);
     let result2 = count;
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

@@ -61,7 +61,7 @@ fn main() -> Result<()> {
     let result1 = particles.iter().chain(&destroyed).min_by_key(|x| x.position.0.abs() + x.position.1.abs() + x.position.2.abs()).map(|x| x.index).value()?;
     let result2 = particles.len();
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

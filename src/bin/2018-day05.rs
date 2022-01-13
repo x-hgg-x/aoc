@@ -31,7 +31,7 @@ fn main() -> Result<()> {
     let result1 = react(input, &mut output, None);
     let result2 = (b'a'..=b'z').map(|c| react(input, &mut output, Some(c))).min().value()?;
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

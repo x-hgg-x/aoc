@@ -112,7 +112,7 @@ fn run2(instructions: &[Instruction2]) -> Result<usize> {
             let (self_queue, other_queue, other_program_id) = match program_id {
                 0 => (&mut queue_0, &mut queue_1, (program_id ^ 1) as usize),
                 1 => (&mut queue_1, &mut queue_0, (program_id ^ 1) as usize),
-                other => bail!("unknown program id: {}", other),
+                other => bail!("unknown program id: {other}"),
             };
 
             loop {
@@ -175,7 +175,7 @@ fn main() -> Result<()> {
                 "mod" => Instruction1::Modulo(args[1].as_bytes()[0], get_input(args[2])),
                 "rcv" => Instruction1::RecoverIfNotZero(get_input(args[1])),
                 "jgz" => Instruction1::JumpIfGreaterThanZero(get_input(args[1]), get_input(args[2])),
-                other => bail!("unknown instruction: {}", other),
+                other => bail!("unknown instruction: {other}"),
             })
         })
         .try_collect()?;
@@ -185,7 +185,7 @@ fn main() -> Result<()> {
     let instructions_2: Vec<_> = instructions_1.iter().map(convert_instruction).try_collect()?;
     let result2 = run2(&instructions_2)?;
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

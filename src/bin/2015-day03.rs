@@ -47,7 +47,7 @@ fn main() -> Result<()> {
         .dedup()
         .count();
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

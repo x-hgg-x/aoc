@@ -32,7 +32,7 @@ fn main() -> Result<()> {
         })
         .try_process(|iter| iter.sum())?;
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

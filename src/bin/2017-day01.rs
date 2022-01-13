@@ -12,7 +12,7 @@ fn main() -> Result<()> {
     let result1 = count(input, 1);
     let result2 = count(input, input.len() / 2);
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

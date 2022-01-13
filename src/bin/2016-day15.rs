@@ -68,7 +68,7 @@ fn main() -> Result<()> {
 
     let result2 = chinese_remainder_theorem(&modulos, &remainders)?;
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }

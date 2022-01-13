@@ -27,7 +27,7 @@ fn main() -> Result<()> {
     }
     let result2 = after_0;
 
-    println!("{}", result1);
-    println!("{}", result2);
+    println!("{result1}");
+    println!("{result2}");
     Ok(())
 }
