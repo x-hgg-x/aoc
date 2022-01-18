@@ -16,14 +16,10 @@ fn main() -> Result<()> {
         match c {
             b'(' => states.push((current_position, current_distance)),
             b')' => {
-                let old_state = states.pop().value()?;
-                current_position = old_state.0;
-                current_distance = old_state.1;
+                (current_position, current_distance) = states.pop().value()?;
             }
             b'|' => {
-                let old_state = *states.last().value()?;
-                current_position = old_state.0;
-                current_distance = old_state.1;
+                (current_position, current_distance) = *states.last().value()?;
             }
             _ => {
                 match c {

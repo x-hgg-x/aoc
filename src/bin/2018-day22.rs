@@ -108,12 +108,8 @@ struct State {
 
 impl State {
     fn new(position: (usize, usize), region: Region, current_time: usize, tool: Tool, cave: &Cave) -> Self {
-        let abs_diff = (
-            if position.0 >= cave.target_position.0 { position.0 - cave.target_position.0 } else { cave.target_position.0 - position.0 },
-            if position.1 >= cave.target_position.1 { position.1 - cave.target_position.1 } else { cave.target_position.1 - position.1 },
-        );
-
-        Self { position, region, current_time, tool, distance: abs_diff.0 + abs_diff.1 }
+        let distance = position.0.abs_diff(cave.target_position.0) + position.1.abs_diff(cave.target_position.1);
+        Self { position, region, current_time, tool, distance }
     }
 
     fn estimate(&self) -> usize {
@@ -227,11 +223,8 @@ fn main() -> Result<()> {
     let initial_tool = Tool::Torch;
     let initial_state = State::new(initial_position, initial_region, initial_time, initial_tool, &cave);
 
-    let mut previous_positions = HashMap::new();
-    previous_positions.insert((initial_position, initial_tool), initial_time);
-
-    let mut current_states = BinaryHeap::new();
-    current_states.push(initial_state);
+    let mut previous_positions = HashMap::from([((initial_position, initial_tool), initial_time)]);
+    let mut current_states = BinaryHeap::from([initial_state]);
 
     let result2 = loop {
         if let Some(state) = current_states.pop() {

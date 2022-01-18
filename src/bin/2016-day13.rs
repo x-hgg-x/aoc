@@ -31,10 +31,7 @@ fn main() -> Result<()> {
     let directions = [Point::new(-1, 0), Point::new(1, 0), Point::new(0, -1), Point::new(0, 1)];
 
     let mut current_points = vec![start.clone()];
-
-    let mut previous_points = HashSet::new();
-    previous_points.insert(start);
-
+    let mut previous_points = HashSet::from([start]);
     let mut next_points = Vec::new();
 
     let mut goal_steps = None;

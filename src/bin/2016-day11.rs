@@ -123,10 +123,7 @@ fn solve(state: &State) -> usize {
         .collect_vec();
 
     let mut current_states = vec![state.clone()];
-
-    let mut previous_states = HashSet::new();
-    previous_states.insert(state.clone());
-
+    let mut previous_states = HashSet::from([state.clone()]);
     let mut next_states = Vec::new();
 
     let mut steps = 0;

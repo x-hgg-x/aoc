@@ -233,8 +233,7 @@ fn process_result(heap: &mut BinaryHeap<GameState>, min_mana: &mut i64, current_
 }
 
 fn solve(hard_mode: bool, boss_hp: i64, boss_damage: i64) -> i64 {
-    let mut heap = BinaryHeap::new();
-    heap.push(GameState::new(hard_mode, 50, 500, boss_hp, boss_damage));
+    let mut heap = BinaryHeap::from([GameState::new(hard_mode, 50, 500, boss_hp, boss_damage)]);
 
     let mut min_mana = i64::MAX;
     while let Some(state) = heap.pop() {

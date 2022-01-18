@@ -89,10 +89,7 @@ struct State {
 impl State {
     fn new(position: (usize, usize), (goal_row, goal_column): (usize, usize), steps: usize) -> Self {
         let (row, column) = position;
-        let abs_diff_x = if row >= goal_row { row - goal_row } else { goal_row - row };
-        let abs_diff_y = if column >= goal_column { column - goal_column } else { goal_column - column };
-        let distance = abs_diff_x + abs_diff_y;
-
+        let distance = row.abs_diff(goal_row) + column.abs_diff(goal_column);
         Self { position, steps, distance }
     }
 
@@ -126,11 +123,8 @@ fn compute_shortest_distance(grid: &Grid, initial_position: (usize, usize), goal
     let initial_index = grid.get_index(initial_row, initial_column);
     let initial_state = State::new(initial_position, goal_position, 0);
 
-    let mut previous_positions = HashMap::new();
-    previous_positions.insert(initial_index, initial_state.steps);
-
-    let mut current_states = BinaryHeap::new();
-    current_states.push(initial_state);
+    let mut previous_positions = HashMap::from([(initial_index, initial_state.steps)]);
+    let mut current_states = BinaryHeap::from([initial_state]);
 
     loop {
         if let Some(state) = current_states.pop() {

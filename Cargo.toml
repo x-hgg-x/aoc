@@ -13,8 +13,5 @@ num-complex = "*"
 regex = "*"
 smallvec = { version = "*", features = ["const_generics"] }
 
-[patch.crates-io]
-eyre = { git = 'https://github.com/x-hgg-x/eyre', branch = "capture" }
-
 [profile.release]
 debug = true

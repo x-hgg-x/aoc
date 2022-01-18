@@ -34,7 +34,7 @@ fn main() -> Result<()> {
     let regex_compounds = Regex::new(r#"(children|cats|samoyeds|pomeranians|akitas|vizslas|goldfish|trees|cars|perfumes): (\d+)(?:, )?"#)?;
     let regex_num = Regex::new(r#"^Sue (\d+): "#)?;
 
-    let mut gift = <HashMap<_, _>>::from_iter([
+    let mut gift = <HashMap<_, _>>::from([
         ("children", 3..=3),
         ("cats", 7..=7),
         ("samoyeds", 2..=2),

@@ -95,10 +95,7 @@ fn main() -> Result<()> {
 
     let result1 = max_hapiness(&nodes, &edges)?;
 
-    for &node in &nodes {
-        edges.insert(("Me", node), 0);
-        edges.insert((node, "Me"), 0);
-    }
+    edges.extend(nodes.iter().flat_map(|&node| [(("Me", node), 0), ((node, "Me"), 0)]));
     nodes.push("Me");
 
     let result2 = max_hapiness(&nodes, &edges)?;

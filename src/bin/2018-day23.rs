@@ -5,6 +5,7 @@ use regex::Regex;
 
 use std::cmp::{Ordering, Reverse};
 use std::collections::BinaryHeap;
+use std::iter;
 
 const OCTANTS: [[i64; 3]; 8] = [[0, 0, 0], [0, 0, 1], [0, 1, 0], [0, 1, 1], [1, 0, 0], [1, 0, 1], [1, 1, 0], [1, 1, 1]];
 
@@ -54,10 +55,7 @@ fn intersecting_bots(box_corner: [i64; 3], box_size: i64, nanobots: &[Nanobot]) 
     nanobots
         .iter()
         .filter(|&nanobot| {
-            let box_distance = nanobot
-                .position
-                .into_iter()
-                .zip(box_corner)
+            let box_distance = iter::zip(nanobot.position, box_corner)
                 .map(|(p, c)| {
                     let box_low = c;
                     let box_high = c + box_size - 1;
@@ -92,16 +90,15 @@ fn main() -> Result<()> {
         })
         .count();
 
-    let bounding_box = nanobots.iter().flat_map(|nanobot| nanobot.position.into_iter().map(i64::abs).max()).max().value()?;
-    let max_box_size = 1i64 << (i64::BITS - bounding_box.leading_zeros());
+    let bounding_box = nanobots.iter().flat_map(|nanobot| nanobot.position.into_iter().map(|x| x.abs() as u64)).max().value()?;
+    let max_box_size = i64::try_from(bounding_box.next_power_of_two())?;
 
     let initial_intersecting_bots = nanobots.len();
     let initial_box_corner = [-max_box_size; 3];
     let initial_box_size = 2 * max_box_size;
     let initial_state = State::new(initial_intersecting_bots, initial_box_corner, initial_box_size);
 
-    let mut current_states = BinaryHeap::new();
-    current_states.push(initial_state);
+    let mut current_states = BinaryHeap::from([initial_state]);
 
     let result2 = loop {
         if let Some(state) = current_states.pop() {

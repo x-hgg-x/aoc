@@ -39,10 +39,7 @@ struct State {
 impl State {
     fn new(hole_position: (usize, usize), (goal_row, goal_column): (usize, usize), steps: usize) -> Self {
         let (hole_row, hole_column) = hole_position;
-        let abs_diff_x = if hole_row >= goal_row { hole_row - goal_row } else { goal_row - hole_row };
-        let abs_diff_y = if hole_column >= goal_column { hole_column - goal_column } else { goal_column - hole_column };
-        let distance = abs_diff_x + abs_diff_y;
-
+        let distance = hole_row.abs_diff(goal_row) + hole_column.abs_diff(goal_column);
         Self { hole_position, steps, distance }
     }
 
@@ -118,12 +115,8 @@ fn main() -> Result<()> {
     let goal_position = (goal_row, goal_column);
 
     let initial_state = State::new(initial_position, goal_position, 0);
-
-    let mut previous_holes = HashMap::new();
-    previous_holes.insert(initial_hole_index, initial_state.steps);
-
-    let mut current_states = BinaryHeap::new();
-    current_states.push(initial_state);
+    let mut previous_holes = HashMap::from([(initial_hole_index, initial_state.steps)]);
+    let mut current_states = BinaryHeap::from([initial_state]);
 
     let steps = loop {
         match current_states.pop() {

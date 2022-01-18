@@ -51,8 +51,8 @@ fn main() -> Result<()> {
         })
         .try_collect()?;
 
-    let steps = regex_steps.captures_iter(&input).next().value()?[1].parse::<usize>()?;
-    let mut state = regex_begin.captures_iter(&input).next().value()?.get(1).value()?.as_str();
+    let steps = regex_steps.captures(&input).value()?[1].parse::<usize>()?;
+    let mut state = regex_begin.captures(&input).value()?.get(1).value()?.as_str();
 
     let mut tape = HashMap::new();
     let mut current_position = 0;

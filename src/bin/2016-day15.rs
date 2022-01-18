@@ -3,20 +3,14 @@ use aoc::*;
 use eyre::ensure;
 use regex::Regex;
 
+use std::iter;
+
 fn euclide_inverse(a: i64, b: i64) -> Result<(i64, i64)> {
     let (mut r1, mut u1, mut v1, mut r2, mut u2, mut v2) = (a, 1, 0, b, 0, 1);
 
     while r2 != 0 {
         let q = r1 / r2;
-        let (r1_old, u1_old, v1_old) = (r1, u1, v1);
-
-        r1 = r2;
-        u1 = u2;
-        v1 = v2;
-
-        r2 = r1_old - q * r2;
-        u2 = u1_old - q * u2;
-        v2 = v1_old - q * v2;
+        (r1, u1, v1, r2, u2, v2) = (r2, u2, v2, r1 - q * r2, u1 - q * u2, v1 - q * v2);
     }
 
     ensure!(r1 == 1, "inputs must be coprimes");
@@ -27,9 +21,7 @@ fn euclide_inverse(a: i64, b: i64) -> Result<(i64, i64)> {
 fn chinese_remainder_theorem(modulos: &[i64], remainders: &[i64]) -> Result<i64> {
     let product: i64 = modulos.iter().product();
 
-    let solution: i64 = modulos
-        .iter()
-        .zip(remainders)
+    let solution: i64 = iter::zip(modulos, remainders)
         .map(|(&modulo, &remainder)| {
             let prod_other = product / modulo;
             let (u, _) = euclide_inverse(prod_other, modulo)?;

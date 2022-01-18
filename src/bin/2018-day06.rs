@@ -67,7 +67,7 @@ fn main() -> Result<()> {
     }
 
     let mut area_counts = vec![0usize; coordinates.len()];
-    for &value in grid.tiles.iter().map(|(x, _)| x).flatten() {
+    for &value in grid.tiles.iter().flat_map(|(x, _)| x) {
         area_counts[value] += 1;
     }
 

@@ -95,7 +95,7 @@ fn run1(instructions: &[Instruction1]) -> Result<i64> {
 fn run2(instructions: &[Instruction2]) -> Result<usize> {
     let mut program_1_send_count = 0;
 
-    let mut all_registers = [HashMap::from_iter([(b'p', 0)]), HashMap::from_iter([(b'p', 1)])];
+    let mut all_registers = [HashMap::from([(b'p', 0)]), HashMap::from([(b'p', 1)])];
     let mut ips = [0, 0];
 
     let program_ids = [0, 1];

@@ -25,7 +25,7 @@ fn main() -> Result<()> {
                 })
                 .collect_vec();
 
-            vowels_count >= 3 && !doubles.iter().any(|x| x.is_none()) && doubles.iter().filter_map(|&x| x).any(|x| x)
+            vowels_count >= 3 && !doubles.iter().any(|x| x.is_none()) && doubles.iter().any(|&x| x == Some(true))
         })
         .filter(|&x| x)
         .count();
