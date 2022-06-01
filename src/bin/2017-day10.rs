@@ -44,7 +44,7 @@ fn main() -> Result<()> {
     let input = String::from_utf8_lossy(&input);
     let input = input.trim();
 
-    let lengths: Vec<_> = input.split(',').map(|x| x.parse::<usize>()).try_collect()?;
+    let lengths: Vec<usize> = input.split(',').map(|x| x.parse()).try_collect()?;
 
     let mut list = (0..=u8::MAX).collect_vec();
     knot_hash_round(&mut list, &lengths, &mut 0, &mut 0);

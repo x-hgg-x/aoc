@@ -31,7 +31,7 @@ enum Operand<'a> {
 
 impl<'a> Operand<'a> {
     fn parse_new(op: &'a str) -> Self {
-        match op.parse::<u64>() {
+        match op.parse() {
             Ok(val) => Operand::Constant(val),
             Err(_) => Operand::Variable(op),
         }

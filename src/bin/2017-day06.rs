@@ -9,7 +9,7 @@ fn main() -> Result<()> {
     let input = setup(file!())?;
     let input = String::from_utf8_lossy(&input);
 
-    let mut banks: SmallVec<[_; 16]> = input.split_ascii_whitespace().map(|x| x.parse::<usize>()).try_collect()?;
+    let mut banks: SmallVec<[usize; 16]> = input.split_ascii_whitespace().map(|x| x.parse()).try_collect()?;
     let size = banks.len() as usize;
 
     let mut previous_states = HashMap::new();

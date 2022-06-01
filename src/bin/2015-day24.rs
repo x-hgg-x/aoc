@@ -39,7 +39,7 @@ fn main() -> Result<()> {
     let input = setup(file!())?;
     let input = String::from_utf8_lossy(&input);
 
-    let weights: Vec<_> = input.split_ascii_whitespace().map(|x| x.parse::<u64>()).try_collect()?;
+    let weights: Vec<u64> = input.split_ascii_whitespace().map(|x| x.parse()).try_collect()?;
     let total_weight: u64 = weights.iter().sum();
 
     let goal_weight1 = total_weight / 3;

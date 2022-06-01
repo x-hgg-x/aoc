@@ -30,7 +30,7 @@ fn main() -> Result<()> {
     let input = setup(file!())?;
     let input = String::from_utf8_lossy(&input);
 
-    let data: Vec<_> = input.split_ascii_whitespace().map(|x| x.parse::<usize>()).try_collect()?;
+    let data: Vec<usize> = input.split_ascii_whitespace().map(|x| x.parse()).try_collect()?;
 
     let (result1, result2, _) = parse_tree(&data)?;
 

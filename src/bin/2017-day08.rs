@@ -11,7 +11,7 @@ fn main() -> Result<()> {
 
     let re = Regex::new(r#"(?m)^(\w+) (inc|dec) (-?\d+) if (\w+) ([<>!=]+) (-?\d+)$"#)?;
 
-    let mut registers = HashMap::<_, i64>::new();
+    let mut registers = HashMap::new();
     let mut max_value = 0;
 
     for cap in re.captures_iter(&input) {
