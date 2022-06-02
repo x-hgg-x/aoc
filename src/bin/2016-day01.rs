@@ -1,7 +1,7 @@
 use aoc::*;
 
 use itertools::Itertools;
-use num_complex::{self, Complex};
+use num_complex::Complex;
 use regex::Regex;
 
 fn main() -> Result<()> {
@@ -12,14 +12,18 @@ fn main() -> Result<()> {
 
     let blocks = re.captures_iter(&input).map(|cap| Ok((cap.get(1).value()?.as_str(), cap[2].parse::<usize>()?))).try_process(|iter| {
         iter.scan((Complex::new(0, 1), Complex::new(0, 0)), |(direction, block), (turn, step)| {
-            *direction *= match turn {
-                "R" => Complex::new(0, -1),
-                "L" => Complex::new(0, 1),
-                _ => Complex::new(1, 0),
+            let new_direction = match turn {
+                "R" => *direction * Complex::new(0, -1),
+                "L" => *direction * Complex::new(0, 1),
+                _ => *direction,
             };
 
-            let intermediate_blocks = (1..=step).map(|i| *block + Complex::new(i as i64, 0) * *direction).collect_vec();
-            *block = intermediate_blocks[step - 1];
+            let current_block = *block;
+            let intermediate_blocks = (1..=step).map(move |i| current_block + i as i64 * new_direction);
+
+            *direction = new_direction;
+            *block += step as i64 * new_direction;
+
             Some(intermediate_blocks)
         })
         .flatten()
