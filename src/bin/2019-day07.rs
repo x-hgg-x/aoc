@@ -139,7 +139,6 @@ fn run(program_state: &mut Intcode) -> Result<Option<i64>> {
 fn main() -> Result<()> {
     let input = setup(file!())?;
     let input = String::from_utf8_lossy(&input);
-
     let input = input.trim();
 
     let program: Vec<i64> = input.split(',').map(|x| x.parse()).try_collect()?;
