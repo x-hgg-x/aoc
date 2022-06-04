@@ -11,8 +11,8 @@ fn main() -> Result<()> {
 
     let mut graph = vec![vec![]; points.len()];
 
-    for (index_x, (x0, x1, x2, x3)) in points.iter().enumerate() {
-        for (index_y, (y0, y1, y2, y3)) in points.iter().enumerate().skip(index_x + 1) {
+    for (index_x, &(x0, x1, x2, x3)) in points.iter().enumerate() {
+        for (index_y, &(y0, y1, y2, y3)) in points.iter().enumerate().skip(index_x + 1) {
             if ((y0 - x0).abs() + (y1 - x1).abs() + (y2 - x2).abs() + (y3 - x3).abs()) <= 3 {
                 graph[index_x].push(index_y);
                 graph[index_y].push(index_x);
