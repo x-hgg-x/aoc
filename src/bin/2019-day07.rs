@@ -54,12 +54,6 @@ impl<'a, T: Clone, const N: usize> Iterator for Permutations<'a, T, N> {
     }
 }
 
-struct Intcode {
-    program: Vec<i64>,
-    ip: usize,
-    inputs: SmallVec<[i64; 2]>,
-}
-
 fn get_input(program: &[i64], instruction: i64, arg_position: u32, arg: i64) -> Result<i64> {
     match instruction / 10i64.pow(1 + arg_position) % 10 {
         0 => Ok(program[usize::try_from(arg)?]),
@@ -68,70 +62,78 @@ fn get_input(program: &[i64], instruction: i64, arg_position: u32, arg: i64) -> 
     }
 }
 
-fn run(program_state: &mut Intcode) -> Result<Option<i64>> {
-    let Intcode { program, ip, inputs } = program_state;
+struct Intcode {
+    program: Vec<i64>,
+    ip: usize,
+    inputs: SmallVec<[i64; 2]>,
+}
 
-    loop {
-        let instruction = program[*ip];
-        match instruction % 100 {
-            1 => {
-                let arg1 = get_input(program, instruction, 1, program[*ip + 1])?;
-                let arg2 = get_input(program, instruction, 2, program[*ip + 2])?;
-                let arg3 = program[*ip + 3];
-                program[usize::try_from(arg3)?] = arg1 + arg2;
-                *ip += 4;
-            }
-            2 => {
-                let arg1 = get_input(program, instruction, 1, program[*ip + 1])?;
-                let arg2 = get_input(program, instruction, 2, program[*ip + 2])?;
-                let arg3 = program[*ip + 3];
-                program[usize::try_from(arg3)?] = arg1 * arg2;
-                *ip += 4;
-            }
-            3 => {
-                let arg1 = program[*ip + 1];
-                program[usize::try_from(arg1)?] = inputs.remove(0);
-                *ip += 2;
-            }
-            4 => {
-                let arg1 = get_input(program, instruction, 1, program[*ip + 1])?;
-                *ip += 2;
-                return Ok(Some(arg1));
-            }
-            5 => {
-                let arg1 = get_input(program, instruction, 1, program[*ip + 1])?;
-                let arg2 = get_input(program, instruction, 2, program[*ip + 2])?;
-                if arg1 != 0 {
-                    *ip = arg2.try_into()?;
-                } else {
-                    *ip += 3;
+impl Intcode {
+    fn run(&mut self) -> Result<Option<i64>> {
+        let Intcode { program, ip, inputs } = self;
+
+        loop {
+            let instruction = program[*ip];
+            match instruction % 100 {
+                1 => {
+                    let arg1 = get_input(program, instruction, 1, program[*ip + 1])?;
+                    let arg2 = get_input(program, instruction, 2, program[*ip + 2])?;
+                    let arg3 = program[*ip + 3];
+                    program[usize::try_from(arg3)?] = arg1 + arg2;
+                    *ip += 4;
                 }
-            }
-            6 => {
-                let arg1 = get_input(program, instruction, 1, program[*ip + 1])?;
-                let arg2 = get_input(program, instruction, 2, program[*ip + 2])?;
-                if arg1 == 0 {
-                    *ip = arg2.try_into()?;
-                } else {
-                    *ip += 3;
+                2 => {
+                    let arg1 = get_input(program, instruction, 1, program[*ip + 1])?;
+                    let arg2 = get_input(program, instruction, 2, program[*ip + 2])?;
+                    let arg3 = program[*ip + 3];
+                    program[usize::try_from(arg3)?] = arg1 * arg2;
+                    *ip += 4;
                 }
+                3 => {
+                    let arg1 = program[*ip + 1];
+                    program[usize::try_from(arg1)?] = inputs.remove(0);
+                    *ip += 2;
+                }
+                4 => {
+                    let arg1 = get_input(program, instruction, 1, program[*ip + 1])?;
+                    *ip += 2;
+                    return Ok(Some(arg1));
+                }
+                5 => {
+                    let arg1 = get_input(program, instruction, 1, program[*ip + 1])?;
+                    let arg2 = get_input(program, instruction, 2, program[*ip + 2])?;
+                    if arg1 != 0 {
+                        *ip = arg2.try_into()?;
+                    } else {
+                        *ip += 3;
+                    }
+                }
+                6 => {
+                    let arg1 = get_input(program, instruction, 1, program[*ip + 1])?;
+                    let arg2 = get_input(program, instruction, 2, program[*ip + 2])?;
+                    if arg1 == 0 {
+                        *ip = arg2.try_into()?;
+                    } else {
+                        *ip += 3;
+                    }
+                }
+                7 => {
+                    let arg1 = get_input(program, instruction, 1, program[*ip + 1])?;
+                    let arg2 = get_input(program, instruction, 2, program[*ip + 2])?;
+                    let arg3 = program[*ip + 3];
+                    program[usize::try_from(arg3)?] = (arg1 < arg2).into();
+                    *ip += 4;
+                }
+                8 => {
+                    let arg1 = get_input(program, instruction, 1, program[*ip + 1])?;
+                    let arg2 = get_input(program, instruction, 2, program[*ip + 2])?;
+                    let arg3 = program[*ip + 3];
+                    program[usize::try_from(arg3)?] = (arg1 == arg2).into();
+                    *ip += 4;
+                }
+                99 => return Ok(None),
+                other => return Err(eyre!("unknown opcode: {other}")),
             }
-            7 => {
-                let arg1 = get_input(program, instruction, 1, program[*ip + 1])?;
-                let arg2 = get_input(program, instruction, 2, program[*ip + 2])?;
-                let arg3 = program[*ip + 3];
-                program[usize::try_from(arg3)?] = (arg1 < arg2).into();
-                *ip += 4;
-            }
-            8 => {
-                let arg1 = get_input(program, instruction, 1, program[*ip + 1])?;
-                let arg2 = get_input(program, instruction, 2, program[*ip + 2])?;
-                let arg3 = program[*ip + 3];
-                program[usize::try_from(arg3)?] = (arg1 == arg2).into();
-                *ip += 4;
-            }
-            99 => break Ok(None),
-            other => return Err(eyre!("unknown opcode: {other}")),
         }
     }
 }
@@ -147,8 +149,8 @@ fn main() -> Result<()> {
         .map(|permutation| {
             let mut in_out = 0;
             for phase_setting in permutation {
-                let mut program_state = Intcode { program: program.clone(), ip: 0, inputs: SmallVec::from_buf([phase_setting, in_out]) };
-                in_out = run(&mut program_state)?.value()?;
+                let mut intcode = Intcode { program: program.clone(), ip: 0, inputs: SmallVec::from_buf([phase_setting, in_out]) };
+                in_out = intcode.run()?.value()?;
             }
             Ok(in_out)
         })
@@ -157,7 +159,7 @@ fn main() -> Result<()> {
 
     let result2 = Permutations::<_, 5>::new(&[5, 6, 7, 8, 9])
         .map(|permutation| {
-            let mut program_states = SmallVec::<[_; 5]>::from_iter(permutation.iter().map(|&phase_setting| Intcode {
+            let mut intcodes = SmallVec::<[_; 5]>::from_iter(permutation.iter().map(|&phase_setting| Intcode {
                 program: program.clone(),
                 ip: 0,
                 inputs: SmallVec::from_slice(&[phase_setting]),
@@ -167,11 +169,11 @@ fn main() -> Result<()> {
 
             let mut in_out = 0;
             loop {
-                for (program_state, halted) in program_states.iter_mut().zip(&mut halted_programs) {
+                for (intcode, halted) in intcodes.iter_mut().zip(&mut halted_programs) {
                     if !*halted {
-                        program_state.inputs.push(in_out);
+                        intcode.inputs.push(in_out);
 
-                        match run(program_state)? {
+                        match intcode.run()? {
                             Some(value) => in_out = value,
                             None => *halted = true,
                         }
