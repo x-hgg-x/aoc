@@ -26,81 +26,94 @@ fn get_register(program: &mut HashMap<usize, i64>, ip: usize, arg_position: usiz
     }
 }
 
-fn run(mut program: HashMap<usize, i64>, input: i64) -> Result<i64> {
-    let mut output = None;
+struct Intcode {
+    program: HashMap<usize, i64>,
+    ip: usize,
+    relative_base: i64,
+    input: i64,
+}
 
-    let mut ip = 0;
-    let mut relative_base = 0;
-    loop {
-        let instruction = *program.entry(ip).or_default();
-        match instruction % 100 {
-            1 => {
-                let arg1 = get_input(&mut program, ip, 1, relative_base, instruction)?;
-                let arg2 = get_input(&mut program, ip, 2, relative_base, instruction)?;
-                let arg3 = get_register(&mut program, ip, 3, relative_base, instruction)?;
-                *arg3 = arg1 + arg2;
-                ip += 4;
-            }
-            2 => {
-                let arg1 = get_input(&mut program, ip, 1, relative_base, instruction)?;
-                let arg2 = get_input(&mut program, ip, 2, relative_base, instruction)?;
-                let arg3 = get_register(&mut program, ip, 3, relative_base, instruction)?;
-                *arg3 = arg1 * arg2;
-                ip += 4;
-            }
-            3 => {
-                let arg1 = get_register(&mut program, ip, 1, relative_base, instruction)?;
-                *arg1 = input;
-                ip += 2;
-            }
-            4 => {
-                let arg1 = get_input(&mut program, ip, 1, relative_base, instruction)?;
-                output = Some(arg1);
-                ip += 2;
-            }
-            5 => {
-                let arg1 = get_input(&mut program, ip, 1, relative_base, instruction)?;
-                let arg2 = get_input(&mut program, ip, 2, relative_base, instruction)?;
-                if arg1 != 0 {
-                    ip = arg2.try_into()?;
-                } else {
-                    ip += 3;
-                }
-            }
-            6 => {
-                let arg1 = get_input(&mut program, ip, 1, relative_base, instruction)?;
-                let arg2 = get_input(&mut program, ip, 2, relative_base, instruction)?;
-                if arg1 == 0 {
-                    ip = arg2.try_into()?;
-                } else {
-                    ip += 3;
-                }
-            }
-            7 => {
-                let arg1 = get_input(&mut program, ip, 1, relative_base, instruction)?;
-                let arg2 = get_input(&mut program, ip, 2, relative_base, instruction)?;
-                let arg3 = get_register(&mut program, ip, 3, relative_base, instruction)?;
-                *arg3 = (arg1 < arg2).into();
-                ip += 4;
-            }
-            8 => {
-                let arg1 = get_input(&mut program, ip, 1, relative_base, instruction)?;
-                let arg2 = get_input(&mut program, ip, 2, relative_base, instruction)?;
-                let arg3 = get_register(&mut program, ip, 3, relative_base, instruction)?;
-                *arg3 = (arg1 == arg2).into();
-                ip += 4;
-            }
-            9 => {
-                let arg1 = get_input(&mut program, ip, 1, relative_base, instruction)?;
-                relative_base += arg1;
-                ip += 2;
-            }
-            99 => break,
-            other => return Err(eyre!("unknown opcode: {other}")),
-        }
+impl Intcode {
+    fn new(program: HashMap<usize, i64>, input: i64) -> Self {
+        Self { program, ip: 0, relative_base: 0, input }
     }
 
-    output.value()
+    fn run(&mut self) -> Result<i64> {
+        let Intcode { program, ip, relative_base, input } = self;
+
+        let mut output = None;
+
+        loop {
+            let instruction = *program.entry(*ip).or_default();
+            match instruction % 100 {
+                1 => {
+                    let arg1 = get_input(program, *ip, 1, *relative_base, instruction)?;
+                    let arg2 = get_input(program, *ip, 2, *relative_base, instruction)?;
+                    let arg3 = get_register(program, *ip, 3, *relative_base, instruction)?;
+                    *arg3 = arg1 + arg2;
+                    *ip += 4;
+                }
+                2 => {
+                    let arg1 = get_input(program, *ip, 1, *relative_base, instruction)?;
+                    let arg2 = get_input(program, *ip, 2, *relative_base, instruction)?;
+                    let arg3 = get_register(program, *ip, 3, *relative_base, instruction)?;
+                    *arg3 = arg1 * arg2;
+                    *ip += 4;
+                }
+                3 => {
+                    let arg1 = get_register(program, *ip, 1, *relative_base, instruction)?;
+                    *arg1 = *input;
+                    *ip += 2;
+                }
+                4 => {
+                    let arg1 = get_input(program, *ip, 1, *relative_base, instruction)?;
+                    output = Some(arg1);
+                    *ip += 2;
+                }
+                5 => {
+                    let arg1 = get_input(program, *ip, 1, *relative_base, instruction)?;
+                    let arg2 = get_input(program, *ip, 2, *relative_base, instruction)?;
+                    if arg1 != 0 {
+                        *ip = arg2.try_into()?;
+                    } else {
+                        *ip += 3;
+                    }
+                }
+                6 => {
+                    let arg1 = get_input(program, *ip, 1, *relative_base, instruction)?;
+                    let arg2 = get_input(program, *ip, 2, *relative_base, instruction)?;
+                    if arg1 == 0 {
+                        *ip = arg2.try_into()?;
+                    } else {
+                        *ip += 3;
+                    }
+                }
+                7 => {
+                    let arg1 = get_input(program, *ip, 1, *relative_base, instruction)?;
+                    let arg2 = get_input(program, *ip, 2, *relative_base, instruction)?;
+                    let arg3 = get_register(program, *ip, 3, *relative_base, instruction)?;
+                    *arg3 = (arg1 < arg2).into();
+                    *ip += 4;
+                }
+                8 => {
+                    let arg1 = get_input(program, *ip, 1, *relative_base, instruction)?;
+                    let arg2 = get_input(program, *ip, 2, *relative_base, instruction)?;
+                    let arg3 = get_register(program, *ip, 3, *relative_base, instruction)?;
+                    *arg3 = (arg1 == arg2).into();
+                    *ip += 4;
+                }
+                9 => {
+                    let arg1 = get_input(program, *ip, 1, *relative_base, instruction)?;
+                    *relative_base += arg1;
+                    *ip += 2;
+                }
+                99 => break,
+                other => return Err(eyre!("unknown opcode: {other}")),
+            }
+        }
+
+        output.value()
+    }
 }
 
 fn main() -> Result<()> {
@@ -110,8 +123,8 @@ fn main() -> Result<()> {
 
     let program: HashMap<usize, i64> = input.split(',').enumerate().map(|(pos, val)| Result::Ok((pos, val.parse()?))).try_collect()?;
 
-    let result1 = run(program.clone(), 1)?;
-    let result2 = run(program, 2)?;
+    let result1 = Intcode::new(program.clone(), 1).run()?;
+    let result2 = Intcode::new(program, 2).run()?;
 
     println!("{result1}");
     println!("{result2}");

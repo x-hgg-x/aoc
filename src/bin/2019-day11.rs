@@ -37,6 +37,10 @@ struct Intcode {
 }
 
 impl Intcode {
+    fn new(program: HashMap<usize, i64>, input: i64) -> Self {
+        Self { program, ip: 0, relative_base: 0, input }
+    }
+
     fn run(&mut self) -> Result<Option<SmallVec<[i64; 2]>>> {
         let Intcode { program, ip, relative_base, input } = self;
 
@@ -145,9 +149,9 @@ fn main() -> Result<()> {
 
     let program: HashMap<usize, i64> = input.split(',').enumerate().map(|(pos, val)| Result::Ok((pos, val.parse()?))).try_collect()?;
 
-    let result1 = draw(Intcode { program: program.clone(), ip: 0, relative_base: 0, input: 0 })?.len();
+    let result1 = draw(Intcode::new(program.clone(), 0))?.len();
 
-    let grid = draw(Intcode { program, ip: 0, relative_base: 0, input: 1 })?;
+    let grid = draw(Intcode::new(program, 1))?;
 
     let mut min_re = 0;
     let mut max_re = 0;

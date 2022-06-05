@@ -69,6 +69,10 @@ struct Intcode {
 }
 
 impl Intcode {
+    fn new(program: Vec<i64>, inputs: SmallVec<[i64; 2]>) -> Self {
+        Self { program, ip: 0, inputs }
+    }
+
     fn run(&mut self) -> Result<Option<i64>> {
         let Intcode { program, ip, inputs } = self;
 
@@ -149,7 +153,7 @@ fn main() -> Result<()> {
         .map(|permutation| {
             let mut in_out = 0;
             for phase_setting in permutation {
-                let mut intcode = Intcode { program: program.clone(), ip: 0, inputs: SmallVec::from_buf([phase_setting, in_out]) };
+                let mut intcode = Intcode::new(program.clone(), SmallVec::from_buf([phase_setting, in_out]));
                 in_out = intcode.run()?.value()?;
             }
             Ok(in_out)
@@ -159,11 +163,8 @@ fn main() -> Result<()> {
 
     let result2 = Permutations::<_, 5>::new(&[5, 6, 7, 8, 9])
         .map(|permutation| {
-            let mut intcodes = SmallVec::<[_; 5]>::from_iter(permutation.iter().map(|&phase_setting| Intcode {
-                program: program.clone(),
-                ip: 0,
-                inputs: SmallVec::from_slice(&[phase_setting]),
-            }));
+            let mut intcodes: SmallVec<[_; 5]> =
+                permutation.iter().map(|&phase_setting| Intcode::new(program.clone(), SmallVec::from_slice(&[phase_setting]))).collect();
 
             let mut halted_programs = [false; 5];
 
