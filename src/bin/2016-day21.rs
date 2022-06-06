@@ -1,6 +1,6 @@
 use aoc::*;
 
-use eyre::eyre;
+use eyre::bail;
 use itertools::Itertools;
 use regex::{Regex, RegexSet};
 
@@ -151,7 +151,7 @@ impl ParseRegex {
                 let cap = self.regex_move_position.captures(line).value()?;
                 Ok(Operation::MovePosition(cap[1].parse()?, cap[2].parse()?))
             }
-            _ => Err(eyre!("unknown operation: {line}")),
+            _ => bail!("unknown operation: {line}"),
         }
     }
 }

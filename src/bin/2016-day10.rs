@@ -1,6 +1,6 @@
 use aoc::*;
 
-use eyre::{bail, eyre};
+use eyre::bail;
 use regex::Regex;
 use smallvec::SmallVec;
 
@@ -42,7 +42,7 @@ fn parse_node(node_type: &str, node_number: &str, value_type: ValueType) -> Resu
     match node_type {
         "bot" => Ok(Node::Bot(node_number.parse()?, value_type)),
         "output" => Ok(Node::Output(node_number.parse()?, value_type)),
-        other => Err(eyre!("unknown node type: {other}")),
+        other => bail!("unknown node type: {other}"),
     }
 }
 

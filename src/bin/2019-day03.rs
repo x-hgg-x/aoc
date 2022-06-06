@@ -1,6 +1,6 @@
 use aoc::*;
 
-use eyre::eyre;
+use eyre::bail;
 use itertools::Itertools;
 use num_complex::Complex;
 
@@ -21,7 +21,7 @@ fn main() -> Result<()> {
                         Some('R') => Complex::new(1, 0),
                         Some('D') => Complex::new(0, -1),
                         Some('U') => Complex::new(0, 1),
-                        other => return Err(eyre!("unknown direction: {other:?}")),
+                        other => bail!("unknown direction: {other:?}"),
                     };
 
                     let length = chars.as_str().parse::<i64>()?;

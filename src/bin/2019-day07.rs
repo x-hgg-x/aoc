@@ -1,6 +1,6 @@
 use aoc::*;
 
-use eyre::eyre;
+use eyre::bail;
 use itertools::Itertools;
 use smallvec::SmallVec;
 
@@ -54,14 +54,6 @@ impl<'a, T: Clone, const N: usize> Iterator for Permutations<'a, T, N> {
     }
 }
 
-fn get_input(program: &[i64], instruction: i64, arg_position: u32, arg: i64) -> Result<i64> {
-    match instruction / 10i64.pow(1 + arg_position) % 10 {
-        0 => Ok(program[usize::try_from(arg)?]),
-        1 => Ok(arg),
-        other => Err(eyre!("unknown parameter mode: {other}")),
-    }
-}
-
 struct Intcode {
     program: Vec<i64>,
     ip: usize,
@@ -73,70 +65,78 @@ impl Intcode {
         Self { program, ip: 0, inputs }
     }
 
-    fn run(&mut self) -> Result<Option<i64>> {
-        let Intcode { program, ip, inputs } = self;
+    fn get_input(&self, arg_position: usize, instruction: i64) -> Result<i64> {
+        let arg = self.program[self.ip + arg_position];
 
+        match instruction / 10i64.pow(1 + arg_position as u32) % 10 {
+            0 => Ok(self.program[usize::try_from(arg)?]),
+            1 => Ok(arg),
+            other => bail!("unknown parameter mode: {other}"),
+        }
+    }
+
+    fn run(&mut self) -> Result<Option<i64>> {
         loop {
-            let instruction = program[*ip];
+            let instruction = self.program[self.ip];
             match instruction % 100 {
                 1 => {
-                    let arg1 = get_input(program, instruction, 1, program[*ip + 1])?;
-                    let arg2 = get_input(program, instruction, 2, program[*ip + 2])?;
-                    let arg3 = program[*ip + 3];
-                    program[usize::try_from(arg3)?] = arg1 + arg2;
-                    *ip += 4;
+                    let arg1 = self.get_input(1, instruction)?;
+                    let arg2 = self.get_input(2, instruction)?;
+                    let arg3 = self.program[self.ip + 3];
+                    self.program[usize::try_from(arg3)?] = arg1 + arg2;
+                    self.ip += 4;
                 }
                 2 => {
-                    let arg1 = get_input(program, instruction, 1, program[*ip + 1])?;
-                    let arg2 = get_input(program, instruction, 2, program[*ip + 2])?;
-                    let arg3 = program[*ip + 3];
-                    program[usize::try_from(arg3)?] = arg1 * arg2;
-                    *ip += 4;
+                    let arg1 = self.get_input(1, instruction)?;
+                    let arg2 = self.get_input(2, instruction)?;
+                    let arg3 = self.program[self.ip + 3];
+                    self.program[usize::try_from(arg3)?] = arg1 * arg2;
+                    self.ip += 4;
                 }
                 3 => {
-                    let arg1 = program[*ip + 1];
-                    program[usize::try_from(arg1)?] = inputs.remove(0);
-                    *ip += 2;
+                    let arg1 = self.program[self.ip + 1];
+                    self.program[usize::try_from(arg1)?] = self.inputs.remove(0);
+                    self.ip += 2;
                 }
                 4 => {
-                    let arg1 = get_input(program, instruction, 1, program[*ip + 1])?;
-                    *ip += 2;
+                    let arg1 = self.get_input(1, instruction)?;
+                    self.ip += 2;
                     return Ok(Some(arg1));
                 }
                 5 => {
-                    let arg1 = get_input(program, instruction, 1, program[*ip + 1])?;
-                    let arg2 = get_input(program, instruction, 2, program[*ip + 2])?;
+                    let arg1 = self.get_input(1, instruction)?;
+                    let arg2 = self.get_input(2, instruction)?;
                     if arg1 != 0 {
-                        *ip = arg2.try_into()?;
+                        self.ip = arg2.try_into()?;
                     } else {
-                        *ip += 3;
+                        self.ip += 3;
                     }
                 }
                 6 => {
-                    let arg1 = get_input(program, instruction, 1, program[*ip + 1])?;
-                    let arg2 = get_input(program, instruction, 2, program[*ip + 2])?;
+                    let arg1 = self.get_input(1, instruction)?;
+                    let arg2 = self.get_input(2, instruction)?;
                     if arg1 == 0 {
-                        *ip = arg2.try_into()?;
+                        self.ip = arg2.try_into()?;
                     } else {
-                        *ip += 3;
+                        self.ip += 3;
                     }
                 }
                 7 => {
-                    let arg1 = get_input(program, instruction, 1, program[*ip + 1])?;
-                    let arg2 = get_input(program, instruction, 2, program[*ip + 2])?;
-                    let arg3 = program[*ip + 3];
-                    program[usize::try_from(arg3)?] = (arg1 < arg2).into();
-                    *ip += 4;
+                    let arg1 = self.get_input(1, instruction)?;
+                    let arg2 = self.get_input(2, instruction)?;
+                    let arg3 = self.program[self.ip + 3];
+                    self.program[usize::try_from(arg3)?] = (arg1 < arg2).into();
+                    self.ip += 4;
                 }
                 8 => {
-                    let arg1 = get_input(program, instruction, 1, program[*ip + 1])?;
-                    let arg2 = get_input(program, instruction, 2, program[*ip + 2])?;
-                    let arg3 = program[*ip + 3];
-                    program[usize::try_from(arg3)?] = (arg1 == arg2).into();
-                    *ip += 4;
+                    let arg1 = self.get_input(1, instruction)?;
+                    let arg2 = self.get_input(2, instruction)?;
+                    let arg3 = self.program[self.ip + 3];
+                    self.program[usize::try_from(arg3)?] = (arg1 == arg2).into();
+                    self.ip += 4;
                 }
                 99 => return Ok(None),
-                other => return Err(eyre!("unknown opcode: {other}")),
+                other => bail!("unknown opcode: {other}"),
             }
         }
     }

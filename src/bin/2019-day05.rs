@@ -1,13 +1,13 @@
 use aoc::*;
 
-use eyre::eyre;
+use eyre::bail;
 use itertools::Itertools;
 
 fn get_input(program: &[i64], instruction: i64, arg_position: u32, arg: i64) -> Result<i64> {
     match instruction / 10i64.pow(1 + arg_position) % 10 {
         0 => Ok(program[usize::try_from(arg)?]),
         1 => Ok(arg),
-        other => Err(eyre!("unknown parameter mode: {other}")),
+        other => bail!("unknown parameter mode: {other}"),
     }
 }
 
@@ -75,7 +75,7 @@ fn run(mut program: Vec<i64>, input: i64) -> Result<i64> {
                 ip += 4;
             }
             99 => break,
-            other => return Err(eyre!("unknown opcode: {other}")),
+            other => bail!("unknown opcode: {other}"),
         }
     }
 

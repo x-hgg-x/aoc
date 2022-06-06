@@ -5,10 +5,10 @@ use num_complex::Complex;
 
 use std::iter::repeat;
 
-const TURN_LEFT: Complex<i64> = Complex::new(0, 1);
+const LEFT_TURN: Complex<i64> = Complex::new(0, 1);
 const NO_TURN: Complex<i64> = Complex::new(1, 0);
-const TURN_RIGHT: Complex<i64> = Complex::new(0, -1);
-const TURNS: [Complex<i64>; 3] = [TURN_LEFT, NO_TURN, TURN_RIGHT];
+const RIGHT_TURN: Complex<i64> = Complex::new(0, -1);
+const TURNS: [Complex<i64>; 3] = [LEFT_TURN, NO_TURN, RIGHT_TURN];
 
 struct Cart {
     direction: Complex<i64>,
@@ -115,9 +115,9 @@ fn main() -> Result<()> {
                 Tile::HorizontalLine(x) | Tile::VerticalLine(x) => x,
                 Tile::LeftCurve(x) => {
                     if cart.direction.im != 0 {
-                        cart.direction *= TURN_LEFT;
+                        cart.direction *= LEFT_TURN;
                     } else if cart.direction.re != 0 {
-                        cart.direction *= TURN_RIGHT
+                        cart.direction *= RIGHT_TURN
                     } else {
                         bail!("unable to follow path at ({cart_row}, {cart_column})");
                     }
@@ -125,9 +125,9 @@ fn main() -> Result<()> {
                 }
                 Tile::RightCurve(x) => {
                     if cart.direction.im != 0 {
-                        cart.direction *= TURN_RIGHT;
+                        cart.direction *= RIGHT_TURN;
                     } else if cart.direction.re != 0 {
-                        cart.direction *= TURN_LEFT
+                        cart.direction *= LEFT_TURN
                     } else {
                         bail!("unable to follow path at ({cart_row}, {cart_column})");
                     }

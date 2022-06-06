@@ -1,6 +1,6 @@
 use aoc::*;
 
-use eyre::eyre;
+use eyre::bail;
 use itertools::{iproduct, Itertools};
 
 fn run(mut program: Vec<usize>, noun: usize, verb: usize) -> Result<usize> {
@@ -19,7 +19,7 @@ fn run(mut program: Vec<usize>, noun: usize, verb: usize) -> Result<usize> {
                 program[args.2] = program[args.0] * program[args.1]
             }
             99 => break,
-            other => return Err(eyre!("unknown opcode: {other}")),
+            other => bail!("unknown opcode: {other}"),
         }
         ip += 4;
     }

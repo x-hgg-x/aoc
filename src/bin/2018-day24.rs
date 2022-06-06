@@ -1,6 +1,6 @@
 use aoc::*;
 
-use eyre::eyre;
+use eyre::bail;
 use itertools::Itertools;
 use regex::Regex;
 
@@ -173,7 +173,7 @@ fn parse_initial_battle(input: &str) -> Result<Battle> {
                         match &cap_defense[1] {
                             "weak" => weaknesses.extend(iter),
                             "immune" => immunities.extend(iter),
-                            other => return Err(eyre!("unknown defense type: {other}")),
+                            other => bail!("unknown defense type: {other}"),
                         }
                     }
                 }

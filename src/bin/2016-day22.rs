@@ -26,6 +26,7 @@ impl Grid {
     }
 
     fn get_index(&self, row: usize, column: usize) -> usize {
+        // column-major order
         column * self.height + row
     }
 }
