@@ -4,7 +4,7 @@ use eyre::bail;
 use itertools::Itertools;
 use num_complex::Complex;
 
-use std::collections::{HashMap, HashSet};
+use std::collections::{HashMap, HashSet, VecDeque};
 
 enum State {
     NeedInput,
@@ -146,7 +146,7 @@ fn main() -> Result<()> {
     let mut current_direction = Complex::new(0, 0);
     let mut unknown_tiles = HashMap::from([(NORTH, vec![1]), (SOUTH, vec![2]), (WEST, vec![3]), (EAST, vec![4])]);
     let mut unknown_path = Vec::new();
-    let mut remaining_inputs = Vec::new();
+    let mut remaining_inputs = VecDeque::new();
 
     let mut grid = HashMap::from([(current_position, Tile::Empty)]);
     let mut goal_position = None;
@@ -155,35 +155,38 @@ fn main() -> Result<()> {
         match intcode.run()? {
             State::Finished => break,
             State::NeedInput => {
-                if let Some(input) = remaining_inputs.pop() {
+                if let Some(input) = remaining_inputs.pop_front() {
                     intcode.input = Some(input as i64);
                     current_direction = DIRECTIONS[(input - 1) as usize];
                     continue;
                 }
 
-                let current_path = unknown_path;
-
-                for (new_input, direction) in (1..=4).zip(DIRECTIONS) {
-                    let position = current_position + direction;
-                    if grid.get(&position).is_none() && !unknown_tiles.contains_key(&position) {
-                        let mut new_path = current_path.clone();
+                for (new_input, new_direction) in (1..=4).zip(DIRECTIONS) {
+                    let new_position = current_position + new_direction;
+                    if !grid.contains_key(&new_position) && !unknown_tiles.contains_key(&new_position) {
+                        let mut new_path = unknown_path.clone();
                         new_path.push(new_input);
-                        unknown_tiles.insert(position, new_path);
+                        unknown_tiles.insert(new_position, new_path);
                     }
                 }
 
                 match unknown_tiles.keys().next().copied() {
                     None => break,
                     Some(position) => {
+                        let current_path = unknown_path;
                         unknown_path = unknown_tiles.remove(&position).value()?;
 
                         let min_len = || unknown_path.len().min(current_path.len());
                         let common_path_size = current_path.iter().zip(&unknown_path).position(|(x, y)| x != y).unwrap_or_else(min_len);
 
-                        let path_iter = unknown_path.iter().copied().rev().take(unknown_path.len() - common_path_size);
-                        let current_path_iter = current_path.iter().map(|&x| REVERSE_INPUTS[(x - 1) as usize]).skip(common_path_size);
+                        let iter = current_path
+                            .iter()
+                            .rev()
+                            .map(|&x| REVERSE_INPUTS[(x - 1) as usize])
+                            .take(current_path.len() - common_path_size)
+                            .chain(unknown_path.iter().copied().skip(common_path_size));
 
-                        remaining_inputs.extend(path_iter.chain(current_path_iter));
+                        remaining_inputs.extend(iter);
                     }
                 };
             }

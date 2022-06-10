@@ -3,17 +3,18 @@ use aoc::*;
 use itertools::{Either, Itertools};
 
 fn get_subset_sum_iter(set: &[u64], goal_sum: u64) -> impl Iterator<Item = u64> + '_ {
-    (1..(1u64 << set.len()))
+    (1u64..(1 << set.len()))
         .scan((0, 0), move |(sum, gray), index| {
             let new_gray = index ^ (index >> 1);
             let bit_changed = *gray ^ new_gray;
+            *gray = new_gray;
+
             let diff = set[bit_changed.trailing_zeros() as usize];
             if new_gray & bit_changed == 0 {
                 *sum -= diff;
             } else {
                 *sum += diff;
             }
-            *gray = new_gray;
 
             Some((*sum, new_gray))
         })

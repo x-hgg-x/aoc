@@ -15,13 +15,14 @@ fn main() -> Result<()> {
         .scan((0, 0), |(sum, gray), index| {
             let new_gray = index ^ (index >> 1);
             let bit_changed = *gray ^ new_gray;
+            *gray = new_gray;
+
             let diff = set[bit_changed.trailing_zeros() as usize];
             if new_gray & bit_changed == 0 {
                 *sum -= diff;
             } else {
                 *sum += diff;
             }
-            *gray = new_gray;
 
             Some((*sum, new_gray.count_ones()))
         })
