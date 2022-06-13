@@ -5,41 +5,39 @@ use itertools::Itertools;
 use regex::Regex;
 use smallvec::SmallVec;
 
-use std::cell::Cell;
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDeque};
 
-#[derive(Default)]
 struct Node<'a> {
     name: &'a str,
     weight: u64,
-    total_weight: Cell<Option<u64>>,
     children_names: SmallVec<[&'a str; 8]>,
-    parent: Option<&'a str>,
 }
 
-fn compute_total_weight(map: &HashMap<&str, Node>, node_name: &str) -> u64 {
-    let node = &map[node_name];
+fn compute_total_weights<'a>(nodes: &HashMap<&'a str, Node>, parents: &HashMap<&'a str, Option<&'a str>>) -> HashMap<&'a str, u64> {
+    let mut total_weights = HashMap::new();
+    let mut queue: VecDeque<_> = nodes.iter().filter(|&(_, node)| node.children_names.is_empty()).map(|(&name, _)| name).collect();
 
-    match node.total_weight.get() {
-        Some(total_weight) => total_weight,
-        None => {
-            let total_weight = node.children_names.iter().fold(node.weight, |acc, &child_name| acc + compute_total_weight(map, child_name));
-            node.total_weight.set(Some(total_weight));
-            total_weight
+    while let Some(name) = queue.pop_front() {
+        let node = &nodes[name];
+        total_weights.insert(name, node.children_names.iter().fold(node.weight, |acc, &child_name| acc + total_weights[child_name]));
+
+        if let Some(parent) = parents[name] {
+            if nodes[parent].children_names.iter().all(|&x| total_weights.get(x).is_some()) {
+                queue.push_back(parent);
+            }
         }
     }
+
+    total_weights
 }
 
-fn compute_unbalanced_node_corrected_weight(map: &HashMap<&str, Node>, bottom_node: &Node) -> Result<u64> {
+fn compute_unbalanced_node_corrected_weight(nodes: &HashMap<&str, Node>, bottom_node: &Node, total_weights: &HashMap<&str, u64>) -> Result<u64> {
     let mut unbalanced_node_name = bottom_node.name;
     let mut balanced_weight = bottom_node.weight;
 
     loop {
-        let mut children_total_weights: SmallVec<[_; 8]> = map[unbalanced_node_name]
-            .children_names
-            .iter()
-            .map(|&child_name| Result::Ok((child_name, map[child_name].total_weight.get().value()?)))
-            .try_collect()?;
+        let mut children_total_weights: SmallVec<[_; 8]> =
+            nodes[unbalanced_node_name].children_names.iter().map(|&child_name| (child_name, total_weights[child_name])).collect();
 
         children_total_weights.sort_unstable_by_key(|&(_, weight)| weight);
 
@@ -55,8 +53,8 @@ fn compute_unbalanced_node_corrected_weight(map: &HashMap<&str, Node>, bottom_no
         };
     }
 
-    let unbalanced_node = &map[unbalanced_node_name];
-    Ok(unbalanced_node.weight + balanced_weight - unbalanced_node.total_weight.get().value()?)
+    let unbalanced_node = &nodes[unbalanced_node_name];
+    Ok(unbalanced_node.weight + balanced_weight - total_weights[unbalanced_node.name])
 }
 
 fn main() -> Result<()> {
@@ -66,7 +64,8 @@ fn main() -> Result<()> {
     let regex_line = Regex::new(r#"(?m)^(\w+)\s+\((\d+)\)((?:\s+->.*)?)$"#)?;
     let regex_children = Regex::new(r#"\w+"#)?;
 
-    let mut map = HashMap::<_, Node>::new();
+    let mut nodes = HashMap::new();
+    let mut parents = HashMap::new();
 
     for cap in regex_line.captures_iter(&input) {
         let node_name = cap.get(1).value()?.as_str();
@@ -74,20 +73,18 @@ fn main() -> Result<()> {
         let children_names = regex_children.find_iter(cap.get(3).value()?.as_str()).map(|x| x.as_str()).collect();
 
         for &child_name in &children_names {
-            map.entry(child_name).or_default().parent = Some(node_name);
+            parents.insert(child_name, Some(node_name));
         }
+        parents.entry(node_name).or_default();
 
-        let node = map.entry(node_name).or_default();
-        node.name = node_name;
-        node.weight = node_weight;
-        node.children_names = children_names;
+        nodes.insert(node_name, Node { name: node_name, weight: node_weight, children_names });
     }
 
-    let bottom_node = map.values().find(|&node| node.parent.is_none()).value()?;
-    compute_total_weight(&map, bottom_node.name);
+    let bottom_node_name = parents.iter().find(|(_, &v)| v.is_none()).map(|(&k, _)| k).value()?;
+    let total_weights = compute_total_weights(&nodes, &parents);
 
-    let result1 = bottom_node.name;
-    let result2 = compute_unbalanced_node_corrected_weight(&map, bottom_node)?;
+    let result1 = bottom_node_name;
+    let result2 = compute_unbalanced_node_corrected_weight(&nodes, &nodes[bottom_node_name], &total_weights)?;
 
     println!("{result1}");
     println!("{result2}");

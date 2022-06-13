@@ -1,10 +1,10 @@
-use std::collections::{HashMap, HashSet, VecDeque};
-
 use aoc::*;
 
 use itertools::Itertools;
 use regex::Regex;
 use smallvec::SmallVec;
+
+use std::collections::{HashMap, HashSet, VecDeque};
 
 const STARTING_BAG: &str = "shiny gold";
 
@@ -51,7 +51,6 @@ fn main() -> Result<()> {
 
     while let Some(bag) = queue.pop_front() {
         inside_bag_counts.insert(bag, graph[bag].iter().map(|&(bag_count, content_bag)| bag_count * (1 + inside_bag_counts[content_bag])).sum::<u64>());
-
         queue.extend(inverted_graph[bag].iter().filter(|&&x| graph[x].iter().all(|&(_, content_bag)| inside_bag_counts.get(content_bag).is_some())));
     }
 

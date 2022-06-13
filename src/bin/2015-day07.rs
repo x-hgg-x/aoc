@@ -2,27 +2,9 @@ use aoc::*;
 
 use eyre::bail;
 use regex::{Regex, RegexSet};
+use smallvec::SmallVec;
 
-use std::cell::Cell;
-use std::collections::HashMap;
-
-struct GlobalMap<'a>(HashMap<&'a str, Variable<'a>>);
-
-impl<'a> GlobalMap<'a> {
-    fn new() -> Self {
-        GlobalMap(HashMap::new())
-    }
-
-    fn value(&self, variable: &str) -> u64 {
-        self.0[variable].value(self)
-    }
-
-    fn clear(&self) {
-        for variable in self.0.values() {
-            variable.clear();
-        }
-    }
-}
+use std::collections::{HashMap, VecDeque};
 
 enum Operand<'a> {
     Constant(u64),
@@ -37,10 +19,17 @@ impl<'a> Operand<'a> {
         }
     }
 
-    fn value(&self, map: &GlobalMap) -> u64 {
-        match self {
-            &Operand::Constant(x) => x,
-            Operand::Variable(variable) => map.value(variable),
+    fn dependency(&self) -> Option<&'a str> {
+        match *self {
+            Operand::Variable(x) => Some(x),
+            _ => None,
+        }
+    }
+
+    fn value(&self, values: &HashMap<&str, u64>) -> u64 {
+        match *self {
+            Operand::Constant(x) => x,
+            Operand::Variable(x) => values[x],
         }
     }
 }
@@ -54,36 +43,16 @@ enum Operation<'a> {
     RShift(Operand<'a>, Operand<'a>),
 }
 
-struct Variable<'a> {
-    operation: Operation<'a>,
-    value: Cell<Option<u64>>,
-}
-
-impl<'a> Variable<'a> {
-    fn new(operation: Operation<'a>) -> Self {
-        Variable { operation, value: Cell::new(None) }
-    }
-
-    fn value(&self, map: &GlobalMap) -> u64 {
-        match self.value.get() {
-            Some(value) => value,
-            None => {
-                let value = match &self.operation {
-                    Operation::Identity(op) => op.value(map),
-                    Operation::And(op1, op2) => op1.value(map) & op2.value(map),
-                    Operation::Or(op1, op2) => op1.value(map) | op2.value(map),
-                    Operation::Not(op) => !op.value(map),
-                    Operation::LShift(op1, op2) => op1.value(map) << op2.value(map),
-                    Operation::RShift(op1, op2) => op1.value(map) >> op2.value(map),
-                };
-                self.value.set(Some(value));
-                value
-            }
+impl<'a> Operation<'a> {
+    fn value(&self, values: &HashMap<&str, u64>) -> u64 {
+        match self {
+            Operation::Identity(op) => op.value(values),
+            Operation::And(op1, op2) => op1.value(values) & op2.value(values),
+            Operation::Or(op1, op2) => op1.value(values) | op2.value(values),
+            Operation::Not(op) => !op.value(values),
+            Operation::LShift(op1, op2) => op1.value(values) << op2.value(values),
+            Operation::RShift(op1, op2) => op1.value(values) >> op2.value(values),
         }
-    }
-
-    fn clear(&self) {
-        self.value.set(None);
     }
 }
 
@@ -124,52 +93,63 @@ impl ParseRegex {
         })
     }
 
-    fn parse<'a>(&self, map: &mut GlobalMap<'a>, line: &'a str) -> Result<()> {
+    fn parse<'a>(&self, line: &'a str) -> Result<(&'a str, SmallVec<[&'a str; 2]>, Operation<'a>)> {
         match self.set.matches(line).iter().next() {
             Some(Self::REGEX_IDENTITY) => {
                 let cap = self.regex_identity.captures(line).value()?;
                 let name = cap.name("name").value()?.as_str();
-                let op = cap.name("op").value()?.as_str();
-                map.0.insert(name, Variable::new(Operation::Identity(Operand::parse_new(op))));
+                let op = Operand::parse_new(cap.name("op").value()?.as_str());
+                Ok((name, [op.dependency()].into_iter().flatten().collect(), Operation::Identity(op)))
             }
             Some(Self::REGEX_AND) => {
                 let cap = self.regex_and.captures(line).value()?;
                 let name = cap.name("name").value()?.as_str();
-                let op1 = cap.name("op1").value()?.as_str();
-                let op2 = cap.name("op2").value()?.as_str();
-                map.0.insert(name, Variable::new(Operation::And(Operand::parse_new(op1), Operand::parse_new(op2))));
+                let op1 = Operand::parse_new(cap.name("op1").value()?.as_str());
+                let op2 = Operand::parse_new(cap.name("op2").value()?.as_str());
+                Ok((name, [op1.dependency(), op2.dependency()].into_iter().flatten().collect(), Operation::And(op1, op2)))
             }
             Some(Self::REGEX_OR) => {
                 let cap = self.regex_or.captures(line).value()?;
                 let name = cap.name("name").value()?.as_str();
-                let op1 = cap.name("op1").value()?.as_str();
-                let op2 = cap.name("op2").value()?.as_str();
-                map.0.insert(name, Variable::new(Operation::Or(Operand::parse_new(op1), Operand::parse_new(op2))));
+                let op1 = Operand::parse_new(cap.name("op1").value()?.as_str());
+                let op2 = Operand::parse_new(cap.name("op2").value()?.as_str());
+                Ok((name, [op1.dependency(), op2.dependency()].into_iter().flatten().collect(), Operation::Or(op1, op2)))
             }
             Some(Self::REGEX_NOT) => {
                 let cap = self.regex_not.captures(line).value()?;
                 let name = cap.name("name").value()?.as_str();
-                let op = cap.name("op").value()?.as_str();
-                map.0.insert(name, Variable::new(Operation::Not(Operand::parse_new(op))));
+                let op = Operand::parse_new(cap.name("op").value()?.as_str());
+                Ok((name, [op.dependency()].into_iter().flatten().collect(), Operation::Not(op)))
             }
             Some(Self::REGEX_LSHIFT) => {
                 let cap = self.regex_lshift.captures(line).value()?;
                 let name = cap.name("name").value()?.as_str();
-                let op1 = cap.name("op1").value()?.as_str();
-                let op2 = cap.name("op2").value()?.as_str();
-                map.0.insert(name, Variable::new(Operation::LShift(Operand::parse_new(op1), Operand::parse_new(op2))));
+                let op1 = Operand::parse_new(cap.name("op1").value()?.as_str());
+                let op2 = Operand::parse_new(cap.name("op2").value()?.as_str());
+                Ok((name, [op1.dependency(), op2.dependency()].into_iter().flatten().collect(), Operation::LShift(op1, op2)))
             }
             Some(Self::REGEX_RSHIFT) => {
                 let cap = self.regex_rshift.captures(line).value()?;
                 let name = cap.name("name").value()?.as_str();
-                let op1 = cap.name("op1").value()?.as_str();
-                let op2 = cap.name("op2").value()?.as_str();
-                map.0.insert(name, Variable::new(Operation::RShift(Operand::parse_new(op1), Operand::parse_new(op2))));
+                let op1 = Operand::parse_new(cap.name("op1").value()?.as_str());
+                let op2 = Operand::parse_new(cap.name("op2").value()?.as_str());
+                Ok((name, [op1.dependency(), op2.dependency()].into_iter().flatten().collect(), Operation::RShift(op1, op2)))
             }
             _ => bail!("unknown instruction: {line}"),
-        };
+        }
+    }
+}
 
-        Ok(())
+fn compute_values<'a>(
+    values: &mut HashMap<&'a str, u64>,
+    graph: &HashMap<&'a str, (Operation<'a>, SmallVec<[&'a str; 2]>)>,
+    inverted_graph: &HashMap<&'a str, Vec<&'a str>>,
+) {
+    let mut queue: VecDeque<_> = graph.iter().filter(|&(_, (_, dependencies))| dependencies.is_empty()).map(|(&name, _)| name).collect();
+
+    while let Some(name) = queue.pop_front() {
+        values.insert(name, graph[name].0.value(values));
+        queue.extend(inverted_graph[name].iter().copied().filter(|&x| graph[x].1.iter().all(|&dependencies| values.get(dependencies).is_some())));
     }
 }
 
@@ -186,16 +166,35 @@ fn main() -> Result<()> {
         Regex::new(r#"^(?P<op1>\w+) RSHIFT (?P<op2>\w+) -> (?P<name>\w+)$"#)?,
     )?;
 
-    let mut map = GlobalMap::new();
-    for line in input.lines() {
-        parse_regex.parse(&mut map, line)?;
-    }
-    let result1 = map.value("a");
+    let mut graph = HashMap::new();
+    let mut inverted_graph = HashMap::<_, Vec<_>>::new();
 
-    map.clear();
-    let new_line = format!("{result1} -> b");
-    parse_regex.parse(&mut map, &new_line)?;
-    let result2 = map.value("a");
+    for line in input.lines() {
+        let (name, dependencies, op) = parse_regex.parse(line)?;
+
+        graph.insert(name, (op, dependencies.clone()));
+        inverted_graph.entry(name).or_default();
+
+        for dependency in dependencies {
+            inverted_graph.entry(dependency).or_default().push(name);
+        }
+    }
+
+    let mut values = HashMap::new();
+    compute_values(&mut values, &graph, &inverted_graph);
+    let result1 = values["a"];
+
+    values.clear();
+    for &dependency in &graph["b"].1 {
+        let parent = inverted_graph.entry(dependency).or_default();
+        if let Some(position) = parent.iter().position(|&x| x == "b") {
+            parent.remove(position);
+        }
+    }
+    graph.insert("b", (Operation::Identity(Operand::Constant(result1)), SmallVec::new()));
+
+    compute_values(&mut values, &graph, &inverted_graph);
+    let result2 = values["a"];
 
     println!("{result1}");
     println!("{result2}");
