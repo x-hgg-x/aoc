@@ -1,7 +1,6 @@
 use aoc::*;
 
-use eyre::bail;
-use itertools::{Itertools, MinMaxResult};
+use itertools::Itertools;
 
 fn main() -> Result<()> {
     let input = setup(file!())?;
@@ -15,11 +14,8 @@ fn main() -> Result<()> {
         buf.clear();
         line.split_ascii_whitespace().map(|x| Ok(x.parse::<i64>()?)).try_process(|iter| buf.extend(iter))?;
 
-        sum1 += match buf.iter().minmax() {
-            MinMaxResult::OneElement(_) => 0,
-            MinMaxResult::MinMax(min, max) => max - min,
-            MinMaxResult::NoElements => bail!("empty_line"),
-        };
+        let (min, max) = buf.iter().minmax().into_option().value()?;
+        sum1 += max - min;
 
         sum2 += buf.iter().copied().tuple_combinations().find_map(|(x, y)| (x % y == 0).then(|| x / y).or_else(|| (y % x == 0).then(|| y / x))).value()?;
     }
