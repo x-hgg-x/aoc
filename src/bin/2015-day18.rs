@@ -81,9 +81,9 @@ fn main() -> Result<()> {
     let lights = input
         .lines()
         .flat_map(|line| {
-            let iter = line.chars().map(|c| match c {
-                '.' => Ok(false),
-                '#' => Ok(true),
+            let iter = line.bytes().map(|x| match x {
+                b'.' => Ok(false),
+                b'#' => Ok(true),
                 _ => bail!("unknown tile"),
             });
             once(Ok(false)).chain(iter).chain(once(Ok(false)))

@@ -70,10 +70,10 @@ fn main() -> Result<()> {
     let mut tiles = input
         .lines()
         .flat_map(|line| {
-            let iter = line.chars().map(|c| match c {
-                '.' => Ok(Tile::OpenGround),
-                '|' => Ok(Tile::Trees),
-                '#' => Ok(Tile::Lumberyard),
+            let iter = line.bytes().map(|x| match x {
+                b'.' => Ok(Tile::OpenGround),
+                b'|' => Ok(Tile::Trees),
+                b'#' => Ok(Tile::Lumberyard),
                 _ => bail!("unknown tile"),
             });
             once(Ok(Tile::Empty)).chain(iter).chain(once(Ok(Tile::Empty)))
