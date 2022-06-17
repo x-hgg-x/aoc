@@ -142,7 +142,7 @@ impl Instruction {
         self.execute(&mut before, input_a, input_b, c)?;
 
         if before != after {
-            *valid_instructions &= 0xFFFF ^ (1 << (*self as u8));
+            *valid_instructions &= !(1 << (*self as u8));
         }
 
         Ok(())
@@ -188,7 +188,7 @@ fn main() -> Result<()> {
 
     while let Some((index, &possible_opcode)) = possible_opcodes.iter().find_position(|possible_opcode| possible_opcode.count_ones() == 1) {
         opcodes[index] = possible_opcode.trailing_zeros().try_into()?;
-        possible_opcodes.iter_mut().for_each(|x| *x &= 0xFFFF ^ possible_opcode);
+        possible_opcodes.iter_mut().for_each(|x| *x &= !possible_opcode);
     }
 
     check_instructions_mapping(opcodes, &possible_opcodes)?;
