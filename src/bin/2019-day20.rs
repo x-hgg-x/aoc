@@ -160,7 +160,7 @@ fn solve(map: &Map, start_position: Point, goal_position: Point, has_depth: bool
         }
     }
 
-    bail!("unable solve maze")
+    bail!("unable to solve maze")
 }
 
 fn main() -> Result<()> {
