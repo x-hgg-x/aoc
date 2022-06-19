@@ -6,14 +6,12 @@ struct Password<'a> {
 
 impl<'a> Password<'a> {
     fn next(&mut self) -> &mut [u8] {
-        let mut carry = 1;
         for x in self.data.iter_mut().rev() {
-            if *x + carry <= b'z' {
-                *x += carry;
+            if *x < b'z' {
+                *x += 1;
                 break;
             } else {
                 *x = b'a';
-                carry = 1;
             }
         }
 

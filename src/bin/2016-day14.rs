@@ -32,10 +32,9 @@ impl Iterator for HashGenerator {
             return Some(md5::compute(&self.data));
         }
 
-        let mut carry = 1;
         for (pos, x) in self.data[self.input_len..].iter_mut().enumerate().rev() {
-            if *x + carry <= b'9' {
-                *x += carry;
+            if *x < b'9' {
+                *x += 1;
                 break;
             } else if pos == 0 {
                 self.data[self.input_len..].fill(b'0');
@@ -44,7 +43,6 @@ impl Iterator for HashGenerator {
                 break;
             } else {
                 *x = b'0';
-                carry = 1;
             }
         }
 

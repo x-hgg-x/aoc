@@ -15,14 +15,12 @@ fn check_password_2(data: &[u8; 6]) -> bool {
 }
 
 fn next_password(mut data: [u8; 6]) -> [u8; 6] {
-    let mut carry = 1;
     for x in data.iter_mut().rev() {
-        if *x + carry <= b'9' {
-            *x += carry;
+        if *x < b'9' {
+            *x += 1;
             break;
         } else {
             *x = b'0';
-            carry = 1;
         }
     }
     data

@@ -13,10 +13,9 @@ fn hash_generator(input: &[u8]) -> impl Iterator<Item = (usize, Digest)> {
     data.push(b'1');
 
     once((n, md5::compute(&data))).chain(std::iter::from_fn(move || {
-        let mut carry = 1;
         for (pos, x) in data[input_len..].iter_mut().enumerate().rev() {
-            if *x + carry <= b'9' {
-                *x += carry;
+            if *x < b'9' {
+                *x += 1;
                 break;
             } else if pos == 0 {
                 data[input_len..].fill(b'0');
@@ -25,7 +24,6 @@ fn hash_generator(input: &[u8]) -> impl Iterator<Item = (usize, Digest)> {
                 break;
             } else {
                 *x = b'0';
-                carry = 1;
             }
         }
 
