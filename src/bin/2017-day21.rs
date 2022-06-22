@@ -46,17 +46,20 @@ fn reduce(array: &[bool]) -> usize {
 
 fn transpose(array: &mut [bool], size: usize) -> &mut [bool] {
     for i in 0..size {
+        let offset_i = size * i;
         for j in i + 1..size {
-            array.swap(i + size * j, j + size * i);
+            let offset_j = size * j;
+            array.swap(i + offset_j, j + offset_i);
         }
     }
     array
 }
 
 fn flip(array: &mut [bool], size: usize) -> &mut [bool] {
-    for i in 0..size {
-        for j in 0..(size + 1) / 2 {
-            array.swap(i + size * j, i + size * (size - 1 - j));
+    for row in array.chunks_exact_mut(size) {
+        let mut iter = row.iter_mut();
+        while let (Some(first), Some(last)) = (iter.next(), iter.next_back()) {
+            std::mem::swap(first, last);
         }
     }
     array
