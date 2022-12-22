@@ -90,7 +90,7 @@ fn main() -> Result<()> {
         })
         .count();
 
-    let bounding_box = nanobots.iter().flat_map(|nanobot| nanobot.position.into_iter().map(|x| x.abs() as u64)).max().value()?;
+    let bounding_box = nanobots.iter().flat_map(|nanobot| nanobot.position.into_iter().map(|x| x.unsigned_abs())).max().value()?;
     let max_box_size = i64::try_from(bounding_box.next_power_of_two())?;
 
     let initial_intersecting_bots = nanobots.len();

@@ -76,7 +76,7 @@ impl ParseRegex {
 
     fn new(regex_identity: Regex, regex_and: Regex, regex_or: Regex, regex_not: Regex, regex_lshift: Regex, regex_rshift: Regex) -> Result<Self> {
         Ok(Self {
-            set: RegexSet::new(&[
+            set: RegexSet::new([
                 regex_identity.as_str(),
                 regex_and.as_str(),
                 regex_or.as_str(),

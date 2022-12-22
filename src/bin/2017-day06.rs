@@ -10,7 +10,7 @@ fn main() -> Result<()> {
     let input = String::from_utf8_lossy(&input);
 
     let mut banks: SmallVec<[usize; 16]> = input.split_ascii_whitespace().map(|x| x.parse()).try_collect()?;
-    let size = banks.len() as usize;
+    let size = banks.len();
 
     let mut previous_states = HashMap::new();
     let mut count = 0usize;

@@ -10,6 +10,7 @@ enum Instruction {
     Accumulate(i64),
     Jump(i64),
 }
+
 impl Instruction {
     fn swap(&mut self) {
         *self = match *self {

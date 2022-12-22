@@ -21,7 +21,7 @@ fn main() -> Result<()> {
         }
 
         fields.sort_unstable();
-        fields.iter().zip(&sorted_required_fields).all(|(&(name, _), &required_name)| name == required_name).then(|| fields)
+        fields.iter().zip(&sorted_required_fields).all(|(&(name, _), &required_name)| name == required_name).then_some(fields)
     });
 
     for fields in iter {

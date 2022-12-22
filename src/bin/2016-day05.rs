@@ -56,7 +56,7 @@ fn main() -> Result<()> {
     let mut password = ['_'; 8];
     for &(fifth, sixth) in sub_hashes.iter().rev() {
         if fifth < 8 {
-            password[fifth as usize] = char::from_digit(sixth as u32, 16).value()?;
+            password[fifth] = char::from_digit(sixth as u32, 16).value()?;
         }
     }
     let result2 = String::from_iter(password);

@@ -102,7 +102,7 @@ impl ParseRegex {
         regex_move_position: Regex,
     ) -> Result<Self> {
         Ok(Self {
-            set: RegexSet::new(&[
+            set: RegexSet::new([
                 regex_swap_position.as_str(),
                 regex_swap_letter.as_str(),
                 regex_rotate_left.as_str(),

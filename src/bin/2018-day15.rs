@@ -404,7 +404,7 @@ fn main() -> Result<()> {
                 (|| {
                     let battle = Battle { elf_attack_power, ..initial_battle.clone() };
                     let (outcome, elf_casualties) = run(battle, &mut buffer)?;
-                    Result::Ok((!elf_casualties).then(|| outcome))
+                    Result::Ok((!elf_casualties).then_some(outcome))
                 })()
                 .transpose()
             })

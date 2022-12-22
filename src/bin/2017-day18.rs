@@ -110,8 +110,8 @@ fn run2(instructions: &[Instruction2]) -> Result<usize> {
     'run: loop {
         for (ip, registers, program_id) in izip!(&mut ips, &mut all_registers, program_ids) {
             let (self_queue, other_queue, other_program_id) = match program_id {
-                0 => (&mut queue_0, &mut queue_1, (program_id ^ 1) as usize),
-                1 => (&mut queue_1, &mut queue_0, (program_id ^ 1) as usize),
+                0 => (&mut queue_0, &mut queue_1, program_id ^ 1),
+                1 => (&mut queue_1, &mut queue_0, program_id ^ 1),
                 other => bail!("unknown program id: {other}"),
             };
 
