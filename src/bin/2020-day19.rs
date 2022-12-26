@@ -89,9 +89,9 @@ fn main() -> Result<()> {
         queue.extend(inverted_graph[name].iter().copied().filter(|&x| graph[x].iter().flatten().all(|&dep| valid_rule_messages.get(dep).is_some())));
     }
 
-    ensure!(graph["0"].as_slice() == [SmallVec::from(["8", "11"])], "invalid input");
-    ensure!(graph["8"].as_slice() == [SmallVec::from(["42"])], "invalid input");
-    ensure!(graph["11"].as_slice() == [SmallVec::from(["42", "31"])], "invalid input");
+    ensure!(graph["0"].as_slice() == [SmallVec::from_buf(["8", "11"])], "invalid input");
+    ensure!(graph["8"].as_slice() == [SmallVec::from_buf(["42"])], "invalid input");
+    ensure!(graph["11"].as_slice() == [SmallVec::from_buf(["42", "31"])], "invalid input");
 
     let rule_31_messages = valid_rule_messages.get("31").value()?;
     let rule_42_messages = valid_rule_messages.get("42").value()?;

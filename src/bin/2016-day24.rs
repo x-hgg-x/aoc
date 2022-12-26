@@ -32,7 +32,7 @@ impl<'a, T, const N: usize> Permutations<'a, T, N> {
     }
 }
 
-impl<'a, T: Clone, const N: usize> Iterator for Permutations<'a, T, N> {
+impl<'a, T: Copy, const N: usize> Iterator for Permutations<'a, T, N> {
     type Item = SmallVec<[T; N]>;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -43,7 +43,7 @@ impl<'a, T: Clone, const N: usize> Iterator for Permutations<'a, T, N> {
         let mut x = self.factorial_index;
 
         self.buf.clear();
-        self.available = SmallVec::from(self.data);
+        self.available = SmallVec::from_slice(self.data);
 
         self.buf.extend(self.factorials[..self.data.len()].iter().rev().map(|&place_value| {
             let index = x / place_value;
