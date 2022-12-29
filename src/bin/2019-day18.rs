@@ -28,7 +28,7 @@ impl Map {
         keys: SmallVec<[(Complex<i64>, u32); 26]>,
         doors: HashMap<Complex<i64>, u32>,
     ) -> Result<Self> {
-        ensure!(width * height == tiles.len(), "unable to construct Grid: width * height != tiles.len()");
+        ensure!(width * height == tiles.len(), "unable to construct Map: width * height != tiles.len()");
         Ok(Self { width, tiles, initial_position, keys, doors })
     }
 

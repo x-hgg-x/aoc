@@ -18,7 +18,7 @@ struct Map {
 
 impl Map {
     fn new(width: usize, height: usize, tiles: Vec<u8>, portals: HashMap<Point, Point>) -> Result<Self> {
-        ensure!(width * height == tiles.len(), "unable to construct Grid: width * height != tiles.len()");
+        ensure!(width * height == tiles.len(), "unable to construct Map: width * height != tiles.len()");
         Ok(Self { width, tiles, portals })
     }
 
