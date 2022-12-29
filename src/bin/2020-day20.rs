@@ -173,7 +173,7 @@ fn compute_grid_borders(grids: &HashMap<u64, Grid>, size: usize) -> Vec<(u64, Bo
         grid_borders.extend(borders.into_iter().map(|(border, value)| (id, border, value)));
     }
 
-    grid_borders.sort_unstable_by_key(|&(_, _, value)| value);
+    grid_borders.sort_unstable_by_key(|&(.., value)| value);
 
     grid_borders
 }
