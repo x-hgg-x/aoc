@@ -4,18 +4,13 @@ use num_complex::Complex;
 
 use std::collections::HashMap;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Default)]
 enum Node {
+    #[default]
     Clean,
     Weakened,
     Infected,
     Flagged,
-}
-
-impl Default for Node {
-    fn default() -> Self {
-        Node::Clean
-    }
 }
 
 fn run1(mut grid: HashMap<Complex<i64>, Node>) -> usize {

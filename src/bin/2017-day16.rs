@@ -72,7 +72,7 @@ fn main() -> Result<()> {
         }
     }
 
-    let result2 = String::from_utf8_lossy(&uniques_states[(1_000_000_000 % uniques_states.len())]);
+    let result2 = String::from_utf8_lossy(&uniques_states[1_000_000_000 % uniques_states.len()]);
 
     println!("{result1}");
     println!("{result2}");

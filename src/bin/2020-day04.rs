@@ -36,7 +36,7 @@ fn main() -> Result<()> {
         check2 = check2 && byr.len() == 4 && (1920..=2002).contains(&byr.parse::<u16>()?);
         check2 = check2 && eyr.len() == 4 && (2020..=2030).contains(&eyr.parse::<u16>()?);
         check2 = check2 && iyr.len() == 4 && (2010..=2020).contains(&iyr.parse::<u16>()?);
-        check2 = check2 && pid.len() == 9 && pid.bytes().all(|x| matches!(x, b'0'..=b'9'));
+        check2 = check2 && pid.len() == 9 && pid.bytes().all(|x| x.is_ascii_digit());
         check2 = check2 && matches!(ecl.as_bytes(), b"amb" | b"blu" | b"brn" | b"gry" | b"grn" | b"hzl" | b"oth");
         check2 = check2 && matches!(hcl.as_bytes(), [b'#', tail @ ..] if tail.len() == 6 && tail.iter().all(|&x| matches!(x, b'0'..=b'9' | b'a'..=b'f')));
 
