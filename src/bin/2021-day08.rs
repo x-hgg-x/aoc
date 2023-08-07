@@ -93,7 +93,7 @@ fn main() -> Result<()> {
                     sum
                 })
         })
-        .try_process(|iter| iter.sum::<u64>())?;
+        .try_sum::<u64>()?;
 
     println!("{result1}");
     println!("{result2}");

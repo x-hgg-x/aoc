@@ -59,7 +59,7 @@ fn max_hapiness(nodes: &[&str], edges: &HashMap<(&str, &str), i64>) -> Result<i6
     Permutations::<_, 9>::new(nodes)
         .map(|mut x| {
             x.push(x[0]);
-            x.windows(2).map(|x| Ok(edges.get(&(x[0], x[1])).value()? + edges.get(&(x[1], x[0])).value()?)).try_process(|iter| iter.sum())
+            x.windows(2).map(|x| Ok(edges.get(&(x[0], x[1])).value()? + edges.get(&(x[1], x[0])).value()?)).try_sum()
         })
         .try_process(|iter| iter.max())?
         .value()

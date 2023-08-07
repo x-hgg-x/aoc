@@ -182,7 +182,7 @@ fn main() -> Result<()> {
 
             Ok((valid_instructions.count_ones() >= 3) as u64)
         })
-        .try_process(|iter| iter.sum::<u64>())?;
+        .try_sum::<u64>()?;
 
     let mut opcodes = [Instruction::None; 16];
 

@@ -143,7 +143,7 @@ fn main() -> Result<()> {
             ensure!(stack.len() == 1, "operation failed");
             Ok(stack.pop().value()?.value)
         })
-        .try_process(|iter| iter.sum::<u64>())?;
+        .try_sum::<u64>()?;
 
     let result2 = expressions_tokens
         .iter()
@@ -172,7 +172,7 @@ fn main() -> Result<()> {
             ensure!(stack.len() == 1, "operation failed");
             Ok(stack.pop().value()?.value)
         })
-        .try_process(|iter| iter.sum::<u64>())?;
+        .try_sum::<u64>()?;
 
     println!("{result1}");
     println!("{result2}");

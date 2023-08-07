@@ -125,7 +125,7 @@ fn main() -> Result<()> {
 
     let run = |x, y| Intcode::new(program.clone(), SmallVec::from_buf([y, x])).run();
 
-    let result1 = iproduct!(0..50, 0..50).map(|(x, y)| run(x, y)).try_process(|iter| iter.sum::<i64>())?;
+    let result1 = iproduct!(0..50, 0..50).map(|(x, y)| run(x, y)).try_sum::<i64>()?;
 
     let mut x = 0;
     let mut y = 99;

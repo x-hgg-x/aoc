@@ -19,7 +19,7 @@ fn main() -> Result<()> {
 
             Ok(2 * sum + min)
         })
-        .try_process(|iter| iter.sum())?;
+        .try_sum()?;
 
     let result2: i64 = edges
         .iter()
@@ -30,7 +30,7 @@ fn main() -> Result<()> {
 
             Ok(2 * (sum - max) + product)
         })
-        .try_process(|iter| iter.sum())?;
+        .try_sum()?;
 
     println!("{result1}");
     println!("{result2}");

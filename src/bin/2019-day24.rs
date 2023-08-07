@@ -192,7 +192,7 @@ fn main() -> Result<()> {
             b'#' => Ok(1 << index),
             other => bail!("unknown tile: {other}"),
         })
-        .try_process(|iter| iter.sum::<u32>())?;
+        .try_sum::<u32>()?;
 
     let mut grid = initial_grid;
     let mut visited = HashSet::new();

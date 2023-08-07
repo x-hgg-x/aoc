@@ -3,6 +3,7 @@ use itertools::ProcessResults;
 
 use std::env;
 use std::fs;
+use std::iter::Sum;
 use std::path::{Path, PathBuf};
 
 pub type Result<T> = eyre::Result<T>;
@@ -46,6 +47,14 @@ pub trait IteratorExt: Iterator {
             Err(e) => Some(Err(e)),
         })
         .transpose()
+    }
+
+    fn try_sum<T>(self) -> Result<T>
+    where
+        Self: Sized,
+        Result<T>: Sum<Self::Item>,
+    {
+        self.sum()
     }
 }
 

@@ -189,7 +189,7 @@ fn main() -> Result<()> {
             map.doors = doors;
             solve(&map)
         })
-        .try_process(|iter| iter.sum::<usize>())?;
+        .try_sum::<usize>()?;
 
     println!("{result1}");
     println!("{result2}");

@@ -18,7 +18,7 @@ fn main() -> Result<()> {
                     b'B' | b'R' => Ok(1 << index),
                     _ => bail!("unknown seat region"),
                 })
-                .try_process(|iter| iter.sum::<u16>())
+                .try_sum::<u16>()
         })
         .try_process(|iter| iter.sorted_unstable().collect_vec())?;
 

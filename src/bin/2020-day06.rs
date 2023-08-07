@@ -16,7 +16,7 @@ fn main() -> Result<()> {
 
     for group in input.split("\n\n") {
         let mut lines = group.lines();
-        let first_line = lines.next().map(|line| line.as_bytes()).unwrap_or(&[]);
+        let first_line = lines.next().map(|line| line.as_bytes()).unwrap_or_default();
 
         questions_union.clear();
         questions_union.extend(first_line.iter().copied());
