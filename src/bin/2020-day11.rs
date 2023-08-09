@@ -42,8 +42,8 @@ fn simulate(mut grid: Grid, buffer: &mut Vec<Option<bool>>, min_neighbors: usize
 
             let top = i_row + 1;
             let left = i_col + 1;
-            let bottom = grid.height - i_row;
             let right = grid.width - i_col;
+            let bottom = grid.height - i_row;
 
             let mut count = 0;
             count += (1..top.min(max_diff)).find_map(|diff| grid.tiles[grid.get_index(i_row - diff, i_col)]).unwrap_or_default() as usize;
