@@ -29,21 +29,19 @@ impl Grid {
         Ok(Self { width, tiles, min_width, max_width, min_depth, max_depth })
     }
 
-    fn get_index(&self, row: usize, column: usize) -> usize {
-        row * self.width + column
+    fn get_index(&self, x: i64, y: i64) -> Result<usize> {
+        let row = usize::try_from(y - self.min_depth)?;
+        let column = usize::try_from(x - self.min_width)?;
+        Ok(row * self.width + column)
     }
 
     fn tile(&self, x: i64, y: i64) -> Result<Tile> {
-        let row = (y - self.min_depth).try_into()?;
-        let column = (x - self.min_width).try_into()?;
-        let tile_index = self.get_index(row, column);
+        let tile_index = self.get_index(x, y)?;
         Ok(self.tiles[tile_index])
     }
 
     fn tile_mut(&mut self, x: i64, y: i64) -> Result<&mut Tile> {
-        let row = (y - self.min_depth).try_into()?;
-        let column = (x - self.min_width).try_into()?;
-        let tile_index = self.get_index(row, column);
+        let tile_index = self.get_index(x, y)?;
         Ok(&mut self.tiles[tile_index])
     }
 }
