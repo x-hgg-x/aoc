@@ -22,9 +22,8 @@ struct State {
 }
 
 fn compute_best_pressures(connections: &[HashMap<u8, (Vec<u8>, u64)>], start_valve_id: u8, total_time: u64) -> HashMap<u64, u64> {
-    let start = State { valve_id: start_valve_id, remaining: total_time, pressure: 0, open_valves: 0 };
-
-    let mut current_states = vec![start];
+    let initial_state = State { valve_id: start_valve_id, remaining: total_time, pressure: 0, open_valves: 0 };
+    let mut current_states = vec![initial_state];
     let mut best_pressures = HashMap::new();
 
     while let Some(state) = current_states.pop() {

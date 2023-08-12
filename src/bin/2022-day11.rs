@@ -95,14 +95,14 @@ fn main() -> Result<()> {
     let input = setup(file!())?;
     let input = String::from_utf8_lossy(&input);
 
-    let re = Regex::new(
-        "(?m)Monkey \\d+:\\s+\
-        Starting items: (?P<items>\\d+(?:, \\d+)*)\\s+\
-        Operation: new = (?P<op1>\\d+|old) (?P<op>[+*]) (?P<op2>\\d+|old)\\s+\
-        Test: divisible by (?P<divisor>\\d+)\\s+\
-        If true: throw to monkey (?P<true>\\d+)\\s+\
-        If false: throw to monkey (?P<false>\\d+)",
-    )?;
+    let re = Regex::new(concat!(
+        r#"(?m)Monkey \d+:\s+"#,
+        r#"Starting items: (?P<items>\d+(?:, \d+)*)\s+"#,
+        r#"Operation: new = (?P<op1>\d+|old) (?P<op>[+*]) (?P<op2>\d+|old)\s+"#,
+        r#"Test: divisible by (?P<divisor>\d+)\s+"#,
+        r#"If true: throw to monkey (?P<true>\d+)\s+"#,
+        r#"If false: throw to monkey (?P<false>\d+)"#,
+    ))?;
 
     let monkeys: Vec<_> = re
         .captures_iter(&input)
