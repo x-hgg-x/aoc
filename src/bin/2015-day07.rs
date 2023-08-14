@@ -149,7 +149,7 @@ fn compute_values<'a>(
 
     while let Some(name) = queue.pop_front() {
         values.insert(name, graph[name].0.value(values));
-        queue.extend(inverted_graph[name].iter().copied().filter(|&x| graph[x].1.iter().all(|&dependencies| values.get(dependencies).is_some())));
+        queue.extend(inverted_graph[name].iter().copied().filter(|&x| graph[x].1.iter().all(|&dependencies| values.contains_key(dependencies))));
     }
 }
 

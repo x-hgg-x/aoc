@@ -49,7 +49,7 @@ fn main() -> Result<()> {
         .keys()
         .flat_map(|&name| &inverted_graph[name])
         .copied()
-        .filter(|&name| graph[name].iter().flatten().all(|&dep| valid_rule_messages.get(dep).is_some()))
+        .filter(|&name| graph[name].iter().flatten().all(|&dep| valid_rule_messages.contains_key(dep)))
         .sorted_unstable()
         .dedup()
         .collect();
@@ -86,7 +86,7 @@ fn main() -> Result<()> {
         }
 
         valid_rule_messages.insert(name, valid_messages);
-        queue.extend(inverted_graph[name].iter().copied().filter(|&x| graph[x].iter().flatten().all(|&dep| valid_rule_messages.get(dep).is_some())));
+        queue.extend(inverted_graph[name].iter().copied().filter(|&x| graph[x].iter().flatten().all(|&dep| valid_rule_messages.contains_key(dep))));
     }
 
     ensure!(graph["0"].as_slice() == [SmallVec::from_buf(["8", "11"])], "invalid input");

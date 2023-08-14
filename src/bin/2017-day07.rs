@@ -22,7 +22,7 @@ fn compute_total_weights<'a>(nodes: &HashMap<&'a str, Node>, parents: &HashMap<&
         total_weights.insert(name, node.children_names.iter().fold(node.weight, |acc, &child_name| acc + total_weights[child_name]));
 
         if let Some(parent) = parents[name] {
-            if nodes[parent].children_names.iter().all(|&x| total_weights.get(x).is_some()) {
+            if nodes[parent].children_names.iter().all(|&x| total_weights.contains_key(x)) {
                 queue.push_back(parent);
             }
         }

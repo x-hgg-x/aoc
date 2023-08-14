@@ -56,7 +56,7 @@ fn compute_steps(port: i64) -> i64 {
         return 0;
     }
 
-    let sqrt = ((port - 1) as f64).sqrt().floor() as i64;
+    let sqrt = ((port - 1) as f64).sqrt() as i64;
     let port_diag_inf = sqrt.pow(2) + 1;
 
     if sqrt % 2 == 0 {
