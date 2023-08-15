@@ -53,7 +53,7 @@ fn parse_grid(input: &str) -> Result<Map> {
                 b'@' => initial_position = Some(Complex::new(i_col, i_row)),
                 b'a'..=b'z' => keys.push((Complex::new(i_col, i_row), 1u32 << (x - b'a'))),
                 b'A'..=b'Z' => {
-                    doors.insert(Complex::new(i_col, i_row), 1u32 << (x - b'a'));
+                    doors.insert(Complex::new(i_col, i_row), 1u32 << (x - b'A'));
                 }
                 _ => (),
             }
@@ -118,9 +118,7 @@ fn solve(map: &Map) -> Result<usize> {
     let all_keys = map.keys.iter().fold(0, |acc, (_, key)| acc | key);
 
     let mut visited = HashSet::new();
-    let mut queue = BinaryHeap::new();
-
-    queue.push(Reverse((0usize, (map.initial_position.re, map.initial_position.im), 0u32)));
+    let mut queue = BinaryHeap::from([Reverse((0usize, (map.initial_position.re, map.initial_position.im), 0u32))]);
 
     while let Some(Reverse((distance, position, collected_keys))) = queue.pop() {
         if collected_keys == all_keys {
