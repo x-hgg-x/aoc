@@ -1,7 +1,7 @@
 use aoc::*;
 
 fn count(input: &[u8], shift: usize) -> u64 {
-    input.iter().zip(input.iter().cycle().skip(shift)).filter_map(|(x, y)| (x == y).then(|| (x - b'0') as u64)).sum()
+    input.iter().zip(input.iter().cycle().skip(shift)).filter(|&(x, y)| x == y).map(|(x, _)| (x - b'0') as u64).sum()
 }
 
 fn main() -> Result<()> {

@@ -154,7 +154,7 @@ fn run(mut battle: Battle, buffer: &mut Buffer, boost: i64) -> std::result::Resu
     }
 }
 
-fn parse_initial_battle(input: &str) -> Result<Battle> {
+fn parse_initial_battle(input: &str) -> Result<Battle<'_>> {
     let regex_armies = Regex::new(r#"(?ms)^Immune System:$(.*)^Infection:$(.*)$"#)?;
     let regex_units = Regex::new(r#"(?m)^(\d+) units each with (\d+) hit points (\(.+?\) )?with an attack that does (\d+) (\w+) damage at initiative (\d+)$"#)?;
     let regex_defenses = Regex::new(r#"(weak|immune) to ([a-z, ]+)"#)?;

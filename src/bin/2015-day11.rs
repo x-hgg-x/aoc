@@ -24,7 +24,7 @@ impl<'a> Password<'a> {
 
             let mut iter = password.windows(2).enumerate().filter(|(_, x)| x[0] == x[1]);
 
-            let check1 = iter.next().and_then(|(pos1, _)| iter.last().map(|(pos2, _)| pos2 - pos1 > 1)).filter(|&x| x).is_some();
+            let check1 = iter.next().and_then(|(pos1, _)| iter.next_back().map(|(pos2, _)| pos2 - pos1 > 1)).filter(|&x| x).is_some();
             let check2 = password.windows(3).any(|x| x[0] + 1 == x[1] && x[1] + 1 == x[2]);
             let check3 = !password.iter().any(|&x| x == b'i' || x == b'o' || x == b'l');
 

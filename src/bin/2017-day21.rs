@@ -10,26 +10,16 @@ type Mat2x2 = SmallVec<[bool; 4]>;
 type Mat3x3 = SmallVec<[bool; 9]>;
 type Mat4x4 = SmallVec<[bool; 16]>;
 
-trait SmallVecBool: Deref<Target = [bool]> + FromIterator<bool> {
-    fn new() -> Self;
-    fn extend_from_slice(&mut self, slice: &[bool]);
-}
+trait SmallVecBool: Deref<Target = [bool]> + FromIterator<bool> {}
 
-impl<T: Array<Item = bool>> SmallVecBool for SmallVec<T> {
-    fn new() -> Self {
-        Self::new()
-    }
-    fn extend_from_slice(&mut self, slice: &[bool]) {
-        self.extend_from_slice(slice)
-    }
-}
+impl<T: Array<Item = bool>> SmallVecBool for SmallVec<T> {}
 
 struct Grid {
     size: usize,
     tiles: Vec<bool>,
 }
 
-fn parse<T: FromIterator<bool>>(pattern: &str) -> T {
+fn parse<T: SmallVecBool>(pattern: &str) -> T {
     pattern
         .bytes()
         .filter_map(|x| match x {

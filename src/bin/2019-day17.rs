@@ -6,7 +6,7 @@ use num_complex::Complex;
 
 use std::collections::{HashMap, VecDeque};
 use std::fmt::Write;
-use std::iter::repeat;
+use std::iter::repeat_n;
 
 struct Intcode {
     program: HashMap<usize, i64>,
@@ -147,7 +147,7 @@ fn compute_grid(mut intcode: Intcode) -> Result<(Grid, Complex<i64>, Complex<i64
     let mut current_direction = None;
 
     let mut tiles = Vec::with_capacity(width * height);
-    tiles.extend(repeat(false).take(width));
+    tiles.extend(repeat_n(false, width));
 
     for (i_row, row) in outputs.split(|&x| x == 10).filter(|row| !row.is_empty()).enumerate() {
         let i_row = i_row as i64;
@@ -186,7 +186,7 @@ fn compute_grid(mut intcode: Intcode) -> Result<(Grid, Complex<i64>, Complex<i64
         tiles.push(false);
     }
 
-    tiles.extend(repeat(false).take(width));
+    tiles.extend(repeat_n(false, width));
 
     Ok((Grid::new(width, height, tiles)?, current_position.value()?, current_direction.value()?))
 }

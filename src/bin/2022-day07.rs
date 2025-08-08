@@ -5,7 +5,7 @@ use itertools::Itertools;
 
 use std::cell::Cell;
 use std::collections::HashMap;
-use std::iter::repeat;
+use std::iter::repeat_n;
 
 struct Dir {
     size: u64,
@@ -40,7 +40,7 @@ fn main() -> Result<()> {
                 dir_stack.push(dir);
             }
         } else if command == "$ ls" {
-            let path = repeat("/").take(dir_stack.len()).interleave(dir_stack.iter().copied()).collect::<String>();
+            let path = repeat_n("/", dir_stack.len()).interleave(dir_stack.iter().copied()).collect::<String>();
 
             let mut size = 0;
             let mut children = Vec::new();

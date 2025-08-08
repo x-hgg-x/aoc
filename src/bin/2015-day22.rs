@@ -10,7 +10,6 @@ trait ISpell {
     fn max_timer() -> i64;
     fn current_timer(&self) -> i64;
     fn current_timer_mut(&mut self) -> &mut i64;
-    fn get(spells: &Spells) -> &Self;
     fn get_mut(spells: &mut Spells) -> &mut Self;
 
     fn is_castable(&self, status: &Status) -> bool {
@@ -43,9 +42,6 @@ macro_rules! new_spell {
             }
             fn current_timer_mut(&mut self) -> &mut i64 {
                 &mut self.timer
-            }
-            fn get(spells: &Spells) -> &Self {
-                &spells.$field_name
             }
             fn get_mut(spells: &mut Spells) -> &mut Self {
                 &mut spells.$field_name

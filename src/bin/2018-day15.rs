@@ -185,18 +185,17 @@ fn movement<Creature: ICreature>(
                 let grid = &*grid;
                 let (enemy_row, enemy_column) = grid.get_position(enemy.tile_index());
 
-                grid.adjacent_tile_indices(enemy_row, enemy_column).into_iter().filter_map(move |adjacent_enemy_tile_index| {
-                    grid.tiles[adjacent_enemy_tile_index].is_empty().then(|| {
+                grid.adjacent_tile_indices(enemy_row, enemy_column)
+                    .into_iter()
+                    .filter(|&adjacent_enemy_tile_index| grid.tiles[adjacent_enemy_tile_index].is_empty())
+                    .map(move |adjacent_enemy_tile_index| {
                         let (adjacent_enemy_row, adjacent_enemy_column) = grid.get_position(adjacent_enemy_tile_index);
 
-                        adjacent_tile_indices.iter().filter_map(move |&start_tile_index| {
-                            grid.tiles[start_tile_index].is_empty().then(|| {
-                                let position = grid.get_position(start_tile_index);
-                                State::new(position, 1, (adjacent_enemy_row, adjacent_enemy_column), start_tile_index)
-                            })
+                        adjacent_tile_indices.iter().filter(|&&start_tile_index| grid.tiles[start_tile_index].is_empty()).map(move |&start_tile_index| {
+                            let position = grid.get_position(start_tile_index);
+                            State::new(position, 1, (adjacent_enemy_row, adjacent_enemy_column), start_tile_index)
                         })
                     })
-                })
             })
             .flatten(),
     );

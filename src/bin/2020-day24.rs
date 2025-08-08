@@ -9,7 +9,7 @@ fn main() -> Result<()> {
     let mut tiles = HashMap::new();
 
     for line in input.lines() {
-        let position = line.split_inclusive(|c: char| matches!(c, 'e' | 'w')).fold((0i64, 0i64), |(q, r), direction| match direction {
+        let position = line.split_inclusive(['e', 'w']).fold((0i64, 0i64), |(q, r), direction| match direction {
             "e" => (q + 1, r),
             "w" => (q - 1, r),
             "se" => (q, r + 1),

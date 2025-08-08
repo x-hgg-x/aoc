@@ -47,7 +47,7 @@ fn compute_cycle_size(initial_positions: Vec<[i64; 3]>, initial_velocities: Vec<
     let mut steps = 0;
     let mut cycle_sizes = [0; 3];
 
-    while cycle_sizes.iter().any(|&x| x == 0) {
+    while cycle_sizes.contains(&0) {
         step(&mut positions, &mut velocities);
         steps += 1;
 

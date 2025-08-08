@@ -3,7 +3,7 @@ use aoc::*;
 use eyre::ensure;
 use itertools::{izip, Itertools};
 
-use std::iter::{self, repeat};
+use std::iter::{self, repeat_n};
 
 const STEPS: usize = 50;
 
@@ -114,10 +114,9 @@ fn main() -> Result<()> {
     let width = 2 * (STEPS + 1) + base_width;
     let height = 2 * (STEPS + 1) + base_height;
 
-    let pixels = repeat(None)
-        .take(width * (STEPS + 1))
-        .chain(lines.flat_map(|line| repeat(None).take(STEPS + 1).chain(line.bytes().map(|x| Some(x == b'#'))).chain(repeat(None).take(STEPS + 1))))
-        .chain(repeat(None).take(width * (STEPS + 1)))
+    let pixels = repeat_n(None, width * (STEPS + 1))
+        .chain(lines.flat_map(|line| repeat_n(None, STEPS + 1).chain(line.bytes().map(|x| Some(x == b'#'))).chain(repeat_n(None, STEPS + 1))))
+        .chain(repeat_n(None, width * (STEPS + 1)))
         .collect_vec();
 
     let mut image = Image::new(width, height, pixels, Rect { row_offset: STEPS + 1, col_offset: STEPS + 1, row_size: base_height, col_size: base_width })?;

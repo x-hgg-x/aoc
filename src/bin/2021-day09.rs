@@ -3,7 +3,7 @@ use aoc::*;
 use eyre::ensure;
 use itertools::{izip, Itertools};
 
-use std::iter::{once, repeat};
+use std::iter::{once, repeat_n};
 
 struct Grid {
     width: usize,
@@ -34,7 +34,7 @@ fn main() -> Result<()> {
     let base_width = input.lines().next().value()?.len();
     let base_height = input.lines().count();
 
-    let additional_line = repeat(9).take(base_width + 2);
+    let additional_line = repeat_n(9, base_width + 2);
 
     let tiles = additional_line
         .clone()

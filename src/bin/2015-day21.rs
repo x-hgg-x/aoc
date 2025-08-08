@@ -38,9 +38,9 @@ fn main() -> Result<()> {
     let boss_damage: i64 = cap[2].parse()?;
     let boss_armor: i64 = cap[3].parse()?;
 
-    let weapons = vec![Equipment::new(8, 4, 0), Equipment::new(10, 5, 0), Equipment::new(25, 6, 0), Equipment::new(40, 7, 0), Equipment::new(74, 8, 0)];
+    let weapons = [Equipment::new(8, 4, 0), Equipment::new(10, 5, 0), Equipment::new(25, 6, 0), Equipment::new(40, 7, 0), Equipment::new(74, 8, 0)];
 
-    let armors = vec![
+    let armors = [
         Equipment::new(0, 0, 0),
         Equipment::new(13, 0, 1),
         Equipment::new(31, 0, 2),
@@ -49,7 +49,7 @@ fn main() -> Result<()> {
         Equipment::new(102, 0, 5),
     ];
 
-    let rings = vec![
+    let rings = [
         Equipment::new(25, 1, 0),
         Equipment::new(50, 2, 0),
         Equipment::new(100, 3, 0),

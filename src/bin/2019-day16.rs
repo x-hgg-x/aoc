@@ -3,7 +3,7 @@ use aoc::*;
 use eyre::ensure;
 use itertools::Itertools;
 
-use std::iter::repeat;
+use std::iter::{repeat, repeat_n};
 
 fn compute_fft(initial_array: &[u8]) -> String {
     let mut array = initial_array.to_vec();
@@ -15,7 +15,7 @@ fn compute_fft(initial_array: &[u8]) -> String {
         buffer.clear();
 
         buffer.extend((1..=array.len()).map(|repetition| {
-            let pattern_iter = repeat(pattern.into_iter().flat_map(|y| repeat(y).take(repetition))).flatten().skip(1);
+            let pattern_iter = repeat(pattern.into_iter().flat_map(|y| repeat_n(y, repetition))).flatten().skip(1);
             (array.iter().zip(pattern_iter).map(|(&x, y)| x as i64 * y).sum::<i64>().abs() % 10) as u8
         }));
 

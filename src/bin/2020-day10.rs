@@ -2,7 +2,7 @@ use aoc::*;
 
 use itertools::Itertools;
 
-use std::iter::{once, repeat};
+use std::iter::{once, repeat_n};
 
 fn main() -> Result<()> {
     let input = setup(file!())?;
@@ -27,7 +27,7 @@ fn main() -> Result<()> {
 
     let result1 = diff_1_count * diff_3_count;
 
-    let mut counts = once(1u64).chain(repeat(0).take(*joltages.last().value()?)).collect_vec();
+    let mut counts = once(1u64).chain(repeat_n(0, *joltages.last().value()?)).collect_vec();
     for &joltage in &joltages[1..] {
         counts[joltage] = counts[joltage.saturating_sub(3)..joltage].iter().sum();
     }
