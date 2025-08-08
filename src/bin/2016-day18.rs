@@ -12,7 +12,11 @@ fn count_safe_tiles(input: &[u8], row_count: usize) -> usize {
     let mut buf = Vec::with_capacity(line.len());
     for _ in 0..(row_count - 1) {
         buf.clear();
-        buf.extend(once(line[1]).chain(line.windows(3).map(|x| (x[0] ^ x[2]) ^ 1)).chain(once(line[line.len() - 2])));
+        buf.extend(
+            once(line[1])
+                .chain(line.windows(3).map(|x| (x[0] ^ x[2]) ^ 1))
+                .chain(once(line[line.len() - 2])),
+        );
         std::mem::swap(&mut buf, &mut line);
         sum += line.iter().sum::<usize>();
     }

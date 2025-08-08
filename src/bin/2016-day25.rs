@@ -39,7 +39,10 @@ fn parse_register(register: &str) -> Option<usize> {
 fn get_input(input: &str) -> Result<Input> {
     match parse_register(input) {
         Some(r) => Ok(Input::Register(r)),
-        None => input.parse().map(Input::Value).wrap_err_with(|| eyre!("unknown register or value: {input}")),
+        None => input
+            .parse()
+            .map(Input::Value)
+            .wrap_err_with(|| eyre!("unknown register or value: {input}")),
     }
 }
 
@@ -50,7 +53,9 @@ fn run(instructions: &mut [Instruction], mut registers: [i64; 4]) -> Result<Smal
 
     while range.contains(&ip) && clock.len() < clock.capacity() {
         match instructions[ip as usize] {
-            Instruction::Copy(input, Input::Register(r)) => registers[r] = input.get_value(&registers),
+            Instruction::Copy(input, Input::Register(r)) => {
+                registers[r] = input.get_value(&registers)
+            }
             Instruction::Increment(Input::Register(r)) => registers[r] += 1,
             Instruction::Decrement(Input::Register(r)) => registers[r] -= 1,
             Instruction::JumpIfNotZero(input1, input2) => {
@@ -64,10 +69,14 @@ fn run(instructions: &mut [Instruction], mut registers: [i64; 4]) -> Result<Smal
                 if (0..instructions.len().try_into()?).contains(&idx) {
                     let toggled_instruction = &mut instructions[idx as usize];
                     *toggled_instruction = match *toggled_instruction {
-                        Instruction::Copy(input1, input2) => Instruction::JumpIfNotZero(input1, input2),
+                        Instruction::Copy(input1, input2) => {
+                            Instruction::JumpIfNotZero(input1, input2)
+                        }
                         Instruction::Increment(input) => Instruction::Decrement(input),
                         Instruction::Decrement(input) => Instruction::Increment(input),
-                        Instruction::JumpIfNotZero(input1, input2) => Instruction::Copy(input1, input2),
+                        Instruction::JumpIfNotZero(input1, input2) => {
+                            Instruction::Copy(input1, input2)
+                        }
                         Instruction::Toogle(input) => Instruction::Increment(input),
                         Instruction::Transmit(input) => Instruction::Increment(input),
                     };
@@ -90,15 +99,18 @@ fn main() -> Result<()> {
         .map(|line| {
             let args: SmallVec<[_; 3]> = line.split_ascii_whitespace().collect();
 
-            Ok(match args[0] {
-                "cpy" => Instruction::Copy(get_input(args[1])?, get_input(args[2])?),
-                "inc" => Instruction::Increment(get_input(args[1])?),
-                "dec" => Instruction::Decrement(get_input(args[1])?),
-                "jnz" => Instruction::JumpIfNotZero(get_input(args[1])?, get_input(args[2])?),
-                "tgl" => Instruction::Toogle(get_input(args[1])?),
-                "out" => Instruction::Transmit(get_input(args[1])?),
+            match args[0] {
+                "cpy" => Ok(Instruction::Copy(get_input(args[1])?, get_input(args[2])?)),
+                "inc" => Ok(Instruction::Increment(get_input(args[1])?)),
+                "dec" => Ok(Instruction::Decrement(get_input(args[1])?)),
+                "jnz" => Ok(Instruction::JumpIfNotZero(
+                    get_input(args[1])?,
+                    get_input(args[2])?,
+                )),
+                "tgl" => Ok(Instruction::Toogle(get_input(args[1])?)),
+                "out" => Ok(Instruction::Transmit(get_input(args[1])?)),
                 other => bail!("unknown instruction: {other}"),
-            })
+            }
         })
         .try_collect()?;
 
@@ -106,7 +118,11 @@ fn main() -> Result<()> {
 
     let result = IteratorExt::try_find(&mut (0..), |&a| {
         buf.clone_from(&instructions);
-        Ok(run(&mut buf, [a, 0, 0, 0])?.into_iter().zip([0, 1].into_iter().cycle()).all(|(x, y)| x == y))
+
+        Ok(run(&mut buf, [a, 0, 0, 0])?
+            .into_iter()
+            .zip([0, 1].into_iter().cycle())
+            .all(|(x, y)| x == y))
     })?
     .value()?;
 

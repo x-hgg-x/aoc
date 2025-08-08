@@ -31,7 +31,13 @@ fn parse<T: SmallVecBool>(pattern: &str) -> T {
 }
 
 fn reduce(array: &[bool]) -> usize {
-    array.iter().copied().enumerate().filter(|&(_, x)| x).map(|(index, _)| 1 << index).sum()
+    array
+        .iter()
+        .copied()
+        .enumerate()
+        .filter(|&(_, x)| x)
+        .map(|(index, _)| 1 << index)
+        .sum()
 }
 
 fn transpose(array: &mut [bool], size: usize) -> &mut [bool] {
@@ -94,9 +100,14 @@ fn apply_rules<Src: SmallVecBool, Dst: SmallVecBool>(
 
             let new_array = rules[reduce(&array)].as_deref().value()?;
 
-            buf.chunks_exact_mut(new_grid_size).skip(i_block * new_block_size).take(new_block_size).zip(new_array.chunks_exact(new_block_size)).for_each(
-                |(buf_line, new_array_line)| buf_line[j_block * new_block_size..j_block * new_block_size + new_block_size].copy_from_slice(new_array_line),
-            );
+            buf.chunks_exact_mut(new_grid_size)
+                .skip(i_block * new_block_size)
+                .take(new_block_size)
+                .zip(new_array.chunks_exact(new_block_size))
+                .for_each(|(buf_line, new_array_line)| {
+                    buf_line[j_block * new_block_size..j_block * new_block_size + new_block_size]
+                        .copy_from_slice(new_array_line)
+                });
         }
     }
 
@@ -106,7 +117,12 @@ fn apply_rules<Src: SmallVecBool, Dst: SmallVecBool>(
     Ok(())
 }
 
-fn run(grid: &mut Grid, buf: &mut Vec<bool>, rules_2x2: &[Option<Mat3x3>], rules_3x3: &[Option<Mat4x4>]) -> Result<()> {
+fn run(
+    grid: &mut Grid,
+    buf: &mut Vec<bool>,
+    rules_2x2: &[Option<Mat3x3>],
+    rules_3x3: &[Option<Mat4x4>],
+) -> Result<()> {
     if grid.size % 2 == 0 {
         apply_rules::<Mat2x2, _>(grid, buf, rules_2x2, 2, 3)?;
     } else {

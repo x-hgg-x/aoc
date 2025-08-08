@@ -22,7 +22,12 @@ struct Intcode {
 
 impl Intcode {
     fn new(program: HashMap<usize, i64>, inputs: VecDeque<i64>) -> Self {
-        Self { program, ip: 0, relative_base: 0, inputs }
+        Self {
+            program,
+            ip: 0,
+            relative_base: 0,
+            inputs,
+        }
     }
 
     fn get_input(&mut self, arg_position: usize, instruction: i64) -> Result<i64> {
@@ -31,7 +36,10 @@ impl Intcode {
         match instruction / 10i64.pow(1 + arg_position as u32) % 10 {
             0 => Ok(*self.program.entry(usize::try_from(arg)?).or_default()),
             1 => Ok(arg),
-            2 => Ok(*self.program.entry(usize::try_from(self.relative_base + arg)?).or_default()),
+            2 => Ok(*self
+                .program
+                .entry(usize::try_from(self.relative_base + arg)?)
+                .or_default()),
             other => bail!("unknown parameter mode: {other}"),
         }
     }
@@ -41,7 +49,10 @@ impl Intcode {
 
         match instruction / 10i64.pow(1 + arg_position as u32) % 10 {
             0 => Ok(self.program.entry(usize::try_from(arg)?).or_default()),
-            2 => Ok(self.program.entry(usize::try_from(self.relative_base + arg)?).or_default()),
+            2 => Ok(self
+                .program
+                .entry(usize::try_from(self.relative_base + arg)?)
+                .or_default()),
             other => bail!("invalid parameter mode: {other}"),
         }
     }
@@ -130,7 +141,11 @@ fn main() -> Result<()> {
     let input = String::from_utf8_lossy(&input);
     let input = input.trim();
 
-    let program: HashMap<usize, i64> = input.split(',').enumerate().map(|(pos, val)| Result::Ok((pos, val.parse()?))).try_collect()?;
+    let program: HashMap<usize, i64> = input
+        .split(',')
+        .enumerate()
+        .map(|(pos, val)| Result::Ok((pos, val.parse()?)))
+        .try_collect()?;
 
     let mut computers = vec![Intcode::new(program, VecDeque::new()); 50];
     let computers: &mut [_; 50] = computers.as_mut_slice().try_into()?;
@@ -153,7 +168,7 @@ fn main() -> Result<()> {
                 State::HasOutputs(outputs) => {
                     idle = false;
 
-                    let [address, x, y] = <[_; 3]>::try_from(outputs.as_slice())?;
+                    let [address, x, y] = outputs.as_slice().try_into()?;
 
                     if address == 255 {
                         if first_y_sent_to_nat.is_none() {

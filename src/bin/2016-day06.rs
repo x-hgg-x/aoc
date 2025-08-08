@@ -12,7 +12,15 @@ fn main() -> Result<()> {
 
     let (result1, result2): (String, String) = (0..size)
         .map(|n| {
-            let counts = letters.chars().skip(n).step_by(size).sorted_unstable().dedup_with_count().sorted_unstable().collect_vec();
+            let counts = letters
+                .chars()
+                .skip(n)
+                .step_by(size)
+                .sorted_unstable()
+                .dedup_with_count()
+                .sorted_unstable()
+                .collect_vec();
+
             Ok((counts.last().value()?.1, counts.first().value()?.1))
         })
         .try_process(|iter| iter.unzip())?;

@@ -37,7 +37,11 @@ impl Vector for Vec3 {
     }
 
     fn apply(&self, matrix: &Mat3x3) -> Self {
-        [self.dot(&matrix[0]), self.dot(&matrix[1]), self.dot(&matrix[2])]
+        [
+            self.dot(&matrix[0]),
+            self.dot(&matrix[1]),
+            self.dot(&matrix[2]),
+        ]
     }
 }
 
@@ -74,7 +78,11 @@ impl Matrix for Mat3x3 {
     }
 
     fn transpose(&self) -> Self {
-        [[self[0][0], self[1][0], self[2][0]], [self[0][1], self[1][1], self[2][1]], [self[0][2], self[1][2], self[2][2]]]
+        [
+            [self[0][0], self[1][0], self[2][0]],
+            [self[0][1], self[1][1], self[2][1]],
+            [self[0][2], self[1][2], self[2][2]],
+        ]
     }
 
     fn z_axis(&self) -> Vec3 {
@@ -107,7 +115,10 @@ struct Grid {
 
 impl Grid {
     fn contains(&self, coord: Complex<i64>) -> bool {
-        0 <= coord.re && coord.re < self.size as i64 && 0 >= coord.im && coord.im > -(self.size as i64)
+        0 <= coord.re
+            && coord.re < self.size as i64
+            && 0 >= coord.im
+            && coord.im > -(self.size as i64)
     }
 
     fn get_index(&self, coord: Complex<i64>) -> Result<usize> {
@@ -139,7 +150,12 @@ impl BlockGrid {
     }
 
     fn compute_orientations(&mut self) -> Result<HashMap<Vec3, usize>> {
-        let initial_column = self.grids.iter().position(|block| block.is_some()).value()?;
+        let initial_column = self
+            .grids
+            .iter()
+            .position(|block| block.is_some())
+            .value()?;
+
         let initial_position = (0usize, initial_column);
         let initial_orientation = Mat3x3::identity();
 
@@ -149,8 +165,8 @@ impl BlockGrid {
         while let Some(((row, column), orientation)) = queue.pop() {
             queue.extend(
                 [
-                    row.checked_sub(1).map(|new_row| ((new_row, column), ROTATION_UP)),
-                    column.checked_sub(1).map(|new_column| ((row, new_column), ROTATION_LEFT)),
+                    (row.checked_sub(1)).map(|new_row| ((new_row, column), ROTATION_UP)),
+                    (column.checked_sub(1)).map(|new_column| ((row, new_column), ROTATION_LEFT)),
                     (row < self.height - 1).then_some(((row + 1, column), ROTATION_DOWN)),
                     (column < self.width - 1).then_some(((row, column + 1), ROTATION_RIGHT)),
                 ]
@@ -167,7 +183,12 @@ impl BlockGrid {
             );
         }
 
-        Ok(self.grids.iter().enumerate().flat_map(|(index, grid)| grid.as_ref().map(|grid| (grid.orientation.z_axis(), index))).collect())
+        Ok(self
+            .grids
+            .iter()
+            .enumerate()
+            .flat_map(|(index, grid)| grid.as_ref().map(|grid| (grid.orientation.z_axis(), index)))
+            .collect())
     }
 }
 
@@ -186,15 +207,38 @@ struct State<'a> {
 
 impl<'a> State<'a> {
     fn new(blocks: &'a BlockGrid) -> Result<Self> {
-        let block_index = blocks.grids.iter().position(|block| block.is_some()).value()?;
+        let block_index = blocks
+            .grids
+            .iter()
+            .position(|block| block.is_some())
+            .value()?;
+
         let grid = blocks.grids[block_index].as_ref().value()?;
-        let coord = grid.tiles.iter().position(|&tile| tile == Tile::Empty).map(|x| Complex::new(x as i64, 0)).value()?;
+
+        let coord = grid
+            .tiles
+            .iter()
+            .position(|&tile| tile == Tile::Empty)
+            .map(|x| Complex::new(x as i64, 0))
+            .value()?;
+
         let direction = Complex::new(1, 0);
 
-        Ok(Self { block_index, grid, coord, direction })
+        Ok(Self {
+            block_index,
+            grid,
+            coord,
+            direction,
+        })
     }
 
-    fn step(&mut self, instruction: &Instruction, with_3d: bool, blocks: &'a BlockGrid, faces: &HashMap<Vec3, usize>) -> Result<()> {
+    fn step(
+        &mut self,
+        instruction: &Instruction,
+        with_3d: bool,
+        blocks: &'a BlockGrid,
+        faces: &HashMap<Vec3, usize>,
+    ) -> Result<()> {
         match *instruction {
             Instruction::TurnLeft => self.direction *= Complex::new(0, 1),
             Instruction::TurnRight => self.direction *= Complex::new(0, -1),
@@ -208,9 +252,18 @@ impl<'a> State<'a> {
                         self.coord = new_coord;
                     } else {
                         let grid_size = self.grid.size as i64;
-                        let wrapped_coord = Complex::new(new_coord.re.rem_euclid(grid_size), -(-new_coord.im).rem_euclid(grid_size));
 
-                        let control_flow = if with_3d { self.wrap_3d(blocks, faces, wrapped_coord)? } else { self.wrap_2d(blocks, wrapped_coord)? };
+                        let wrapped_coord = Complex::new(
+                            new_coord.re.rem_euclid(grid_size),
+                            -(-new_coord.im).rem_euclid(grid_size),
+                        );
+
+                        let control_flow = if with_3d {
+                            self.wrap_3d(blocks, faces, wrapped_coord)?
+                        } else {
+                            self.wrap_2d(blocks, wrapped_coord)?
+                        };
+
                         if control_flow.is_break() {
                             break;
                         }
@@ -222,7 +275,11 @@ impl<'a> State<'a> {
         Ok(())
     }
 
-    fn wrap_2d(&mut self, blocks: &'a BlockGrid, wrapped_coord: Complex<i64>) -> Result<ControlFlow<()>> {
+    fn wrap_2d(
+        &mut self,
+        blocks: &'a BlockGrid,
+        wrapped_coord: Complex<i64>,
+    ) -> Result<ControlFlow<()>> {
         let (block_row, block_column) = blocks.get_position(self.block_index);
 
         let new_block_index = match self.direction {
@@ -230,11 +287,17 @@ impl<'a> State<'a> {
                 .map(|column| blocks.get_index(block_row, column))
                 .find(|&index| blocks.grids[index].is_some())
                 .value()?,
-            LEFT => ((0..blocks.width).rev().cycle().skip(blocks.width - block_column))
+            LEFT => (0..blocks.width)
+                .rev()
+                .cycle()
+                .skip(blocks.width - block_column)
                 .map(|column| blocks.get_index(block_row, column))
                 .find(|&index| blocks.grids[index].is_some())
                 .value()?,
-            UP => ((0..blocks.height).rev().cycle().skip(blocks.height - block_row))
+            UP => (0..blocks.height)
+                .rev()
+                .cycle()
+                .skip(blocks.height - block_row)
                 .map(|row| blocks.get_index(row, block_column))
                 .find(|&index| blocks.grids[index].is_some())
                 .value()?,
@@ -250,11 +313,22 @@ impl<'a> State<'a> {
             return Ok(ControlFlow::Break(()));
         }
 
-        *self = Self { block_index: new_block_index, grid: new_grid, coord: wrapped_coord, direction: self.direction };
+        *self = Self {
+            block_index: new_block_index,
+            grid: new_grid,
+            coord: wrapped_coord,
+            direction: self.direction,
+        };
+
         Ok(ControlFlow::Continue(()))
     }
 
-    fn wrap_3d(&mut self, blocks: &'a BlockGrid, faces: &HashMap<Vec3, usize>, wrapped_coord: Complex<i64>) -> Result<ControlFlow<()>> {
+    fn wrap_3d(
+        &mut self,
+        blocks: &'a BlockGrid,
+        faces: &HashMap<Vec3, usize>,
+        wrapped_coord: Complex<i64>,
+    ) -> Result<ControlFlow<()>> {
         let rotation = match self.direction {
             LEFT => ROTATION_LEFT,
             RIGHT => ROTATION_RIGHT,
@@ -268,13 +342,21 @@ impl<'a> State<'a> {
         let new_grid = blocks.grids[new_block_index].as_ref().value()?;
 
         let coord_rotation = new_grid.orientation.transpose().matmul(&rotated);
-        ensure!(coord_rotation[2] == [0, 0, 1] && coord_rotation.z_axis() == [0, 0, 1], "should be a 2D rotation");
+
+        ensure!(
+            coord_rotation[2] == [0, 0, 1] && coord_rotation.z_axis() == [0, 0, 1],
+            "should be a 2D rotation"
+        );
 
         let new_coord_vec = [wrapped_coord.re, wrapped_coord.im, 0].apply(&coord_rotation);
         let new_origin_corner_vec = [-1, 1, 0].apply(&coord_rotation).sub(&[-1, 1, 0]);
 
         let side = self.grid.size as i64 - 1;
-        let new_coord = Complex::new(new_origin_corner_vec[0].signum() * side + new_coord_vec[0], new_origin_corner_vec[1].signum() * side + new_coord_vec[1]);
+
+        let new_coord = Complex::new(
+            new_origin_corner_vec[0].signum() * side + new_coord_vec[0],
+            new_origin_corner_vec[1].signum() * side + new_coord_vec[1],
+        );
 
         if new_grid.tile(new_coord)? == Tile::Wall {
             return Ok(ControlFlow::Break(()));
@@ -283,12 +365,23 @@ impl<'a> State<'a> {
         let new_direction_vec = [self.direction.re, self.direction.im, 0].apply(&coord_rotation);
         let new_direction = Complex::new(new_direction_vec[0], new_direction_vec[1]);
 
-        *self = Self { block_index: new_block_index, grid: new_grid, coord: new_coord, direction: new_direction };
+        *self = Self {
+            block_index: new_block_index,
+            grid: new_grid,
+            coord: new_coord,
+            direction: new_direction,
+        };
+
         Ok(ControlFlow::Continue(()))
     }
 }
 
-fn compute_password(blocks: &BlockGrid, faces: &HashMap<Vec3, usize>, instructions: &[Instruction], with_3d: bool) -> Result<i64> {
+fn compute_password(
+    blocks: &BlockGrid,
+    faces: &HashMap<Vec3, usize>,
+    instructions: &[Instruction],
+    with_3d: bool,
+) -> Result<i64> {
     let mut state = State::new(blocks)?;
 
     for instruction in instructions {
@@ -318,7 +411,13 @@ fn parse_input(input: &str) -> Result<(BlockGrid, HashMap<Vec3, usize>, Vec<Inst
     let mut input_iter = input.split("\n\n");
 
     let map_lines = input_iter.next().value()?.lines().collect_vec();
-    let tile_count = map_lines.iter().flat_map(|line| line.bytes()).filter(|x| matches!(x, b'.' | b'#')).count();
+
+    let tile_count = map_lines
+        .iter()
+        .flat_map(|line| line.bytes())
+        .filter(|x| matches!(x, b'.' | b'#'))
+        .count();
+
     let block_size = ((tile_count / 6) as f64).sqrt() as usize;
 
     let map_width = map_lines.iter().map(|line| line.len()).max().value()?;
@@ -329,22 +428,34 @@ fn parse_input(input: &str) -> Result<(BlockGrid, HashMap<Vec3, usize>, Vec<Inst
 
     let mut grids = vec![None; block_grid_width * block_grid_height];
 
-    for (grid_chunk, line_chunk) in iter::zip(grids.chunks_exact_mut(block_grid_width), map_lines.chunks_exact(block_size)) {
+    for (grid_chunk, line_chunk) in iter::zip(
+        grids.chunks_exact_mut(block_grid_width),
+        map_lines.chunks_exact(block_size),
+    ) {
         for line in line_chunk {
-            for (grid, byte_chunk) in iter::zip(&mut *grid_chunk, line.as_bytes().chunks_exact(block_size)) {
+            for (grid, byte_chunk) in
+                iter::zip(&mut *grid_chunk, line.as_bytes().chunks_exact(block_size))
+            {
                 if byte_chunk.first() != Some(&b' ') {
                     let grid = grid.get_or_insert_with(|| Grid {
                         size: block_size,
                         orientation: Mat3x3::identity(),
                         tiles: Vec::with_capacity(block_size * block_size),
                     });
-                    grid.tiles.extend(byte_chunk.iter().copied().flat_map(Tile::from_ascii));
+
+                    grid.tiles
+                        .extend(byte_chunk.iter().copied().flat_map(Tile::from_ascii));
                 }
             }
         }
     }
 
-    let mut blocks = BlockGrid { width: block_grid_width, height: block_grid_height, grids };
+    let mut blocks = BlockGrid {
+        width: block_grid_width,
+        height: block_grid_height,
+        grids,
+    };
+
     let faces = blocks.compute_orientations()?;
 
     let instructions = input_iter
@@ -358,7 +469,9 @@ fn parse_input(input: &str) -> Result<(BlockGrid, HashMap<Vec3, usize>, Vec<Inst
             _ => Instruction::Forward((x - b'0').into()),
         })
         .coalesce(|x1, x2| match (&x1, &x2) {
-            (Instruction::Forward(n1), Instruction::Forward(n2)) => Ok(Instruction::Forward(n1 * 10 + n2)),
+            (Instruction::Forward(n1), Instruction::Forward(n2)) => {
+                Ok(Instruction::Forward(n1 * 10 + n2))
+            }
             _ => Err((x1, x2)),
         })
         .collect();

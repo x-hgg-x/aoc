@@ -13,29 +13,57 @@ struct Cuboid {
 
 impl Cuboid {
     fn intersect(&self, other: &Self) -> Option<Self> {
-        let start = [self.start[0].max(other.start[0]), self.start[1].max(other.start[1]), self.start[2].max(other.start[2])];
-        let end = [self.end[0].min(other.end[0]), self.end[1].min(other.end[1]), self.end[2].min(other.end[2])];
-        iter::zip(start, end).all(|(s, e)| s <= e).then_some(Cuboid { start, end })
+        let start = [
+            self.start[0].max(other.start[0]),
+            self.start[1].max(other.start[1]),
+            self.start[2].max(other.start[2]),
+        ];
+
+        let end = [
+            self.end[0].min(other.end[0]),
+            self.end[1].min(other.end[1]),
+            self.end[2].min(other.end[2]),
+        ];
+
+        (iter::zip(start, end).all(|(s, e)| s <= e)).then_some(Cuboid { start, end })
     }
 
     fn difference(&self, intersection: &Self) -> impl Iterator<Item = Cuboid> + use<> {
         [
-            (self.start[0] < intersection.start[0]).then(|| Cuboid { start: self.start, end: [intersection.start[0] - 1, self.end[1], self.end[2]] }),
+            (self.start[0] < intersection.start[0]).then(|| Cuboid {
+                start: self.start,
+                end: [intersection.start[0] - 1, self.end[1], self.end[2]],
+            }),
             (self.start[1] < intersection.start[1]).then(|| Cuboid {
                 start: [intersection.start[0], self.start[1], self.start[2]],
                 end: [intersection.end[0], intersection.start[1] - 1, self.end[2]],
             }),
             (self.start[2] < intersection.start[2]).then(|| Cuboid {
                 start: [intersection.start[0], intersection.start[1], self.start[2]],
-                end: [intersection.end[0], intersection.end[1], intersection.start[2] - 1],
+                end: [
+                    intersection.end[0],
+                    intersection.end[1],
+                    intersection.start[2] - 1,
+                ],
             }),
-            (intersection.end[0] < self.end[0]).then(|| Cuboid { start: [intersection.end[0] + 1, self.start[1], self.start[2]], end: self.end }),
+            (intersection.end[0] < self.end[0]).then(|| Cuboid {
+                start: [intersection.end[0] + 1, self.start[1], self.start[2]],
+                end: self.end,
+            }),
             (intersection.end[1] < self.end[1]).then(|| Cuboid {
-                start: [intersection.start[0], intersection.end[1] + 1, self.start[2]],
+                start: [
+                    intersection.start[0],
+                    intersection.end[1] + 1,
+                    self.start[2],
+                ],
                 end: [intersection.end[0], self.end[1], self.end[2]],
             }),
             (intersection.end[2] < self.end[2]).then(|| Cuboid {
-                start: [intersection.start[0], intersection.start[1], intersection.end[2] + 1],
+                start: [
+                    intersection.start[0],
+                    intersection.start[1],
+                    intersection.end[2] + 1,
+                ],
                 end: [intersection.end[0], intersection.end[1], self.end[2]],
             }),
         ]
@@ -44,7 +72,7 @@ impl Cuboid {
     }
 
     fn volume(&self) -> i64 {
-        iter::zip(self.start, self.end).map(|(start, end)| end - start + 1).product()
+        (iter::zip(self.start, self.end).map(|(start, end)| end - start + 1)).product()
     }
 }
 
@@ -53,7 +81,12 @@ struct Instruction {
     cuboid: Cuboid,
 }
 
-fn step(instruction: &Instruction, cuboids: &mut Vec<Cuboid>, buf: &mut Vec<Cuboid>, total_volume: &mut i64) {
+fn step(
+    instruction: &Instruction,
+    cuboids: &mut Vec<Cuboid>,
+    buf: &mut Vec<Cuboid>,
+    total_volume: &mut i64,
+) {
     if !cuboids.is_empty() {
         buf.clear();
 
@@ -87,7 +120,11 @@ fn main() -> Result<()> {
             let toogle = &cap[1] == "on";
             let start = [cap[2].parse()?, cap[4].parse()?, cap[6].parse()?];
             let end = [cap[3].parse()?, cap[5].parse()?, cap[7].parse()?];
-            Result::Ok(Instruction { toogle, cuboid: Cuboid { start, end } })
+
+            Result::Ok(Instruction {
+                toogle,
+                cuboid: Cuboid { start, end },
+            })
         })
         .try_collect()?;
 
@@ -95,7 +132,7 @@ fn main() -> Result<()> {
         .iter()
         .position(|instruction| {
             let Cuboid { start, end } = instruction.cuboid;
-            [start, end].into_iter().flatten().any(|v| !(-50..=50).contains(&v))
+            ([start, end].into_iter().flatten()).any(|v| !(-50..=50).contains(&v))
         })
         .value()?;
 

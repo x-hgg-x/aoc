@@ -4,8 +4,12 @@ use itertools::Itertools;
 use smallvec::SmallVec;
 
 use std::collections::HashMap;
+use std::iter;
 
-fn path_from_object_to_com<'a>(inverted_graph: &HashMap<&'a str, &'a str>, object: &'a str) -> Vec<&'a str> {
+fn path_from_object_to_com<'a>(
+    inverted_graph: &HashMap<&'a str, &'a str>,
+    object: &'a str,
+) -> Vec<&'a str> {
     let mut current_object = inverted_graph[object];
     let mut to_com = vec![current_object];
     while current_object != "COM" {
@@ -45,7 +49,9 @@ fn main() -> Result<()> {
     let you_to_com = path_from_object_to_com(&inverted_graph, "YOU");
     let san_to_com = path_from_object_to_com(&inverted_graph, "SAN");
 
-    let result2 = match you_to_com.iter().rev().zip(san_to_com.iter().rev()).position(|(&you_obj, &san_obj)| you_obj != san_obj) {
+    let result2 = match iter::zip(you_to_com.iter().rev(), san_to_com.iter().rev())
+        .position(|(&you_obj, &san_obj)| you_obj != san_obj)
+    {
         None => 0,
         Some(position) => you_to_com.len() + san_to_com.len() - 2 * position,
     };

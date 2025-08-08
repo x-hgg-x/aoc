@@ -47,11 +47,24 @@ fn main() -> Result<()> {
     let result1 = outside_bag_count;
 
     let mut inside_bag_counts = HashMap::new();
-    let mut queue: VecDeque<_> = graph.iter().filter(|&(_, content)| content.is_empty()).map(|(&bag, _)| bag).collect();
+
+    let mut queue: VecDeque<_> = graph
+        .iter()
+        .filter(|&(_, content)| content.is_empty())
+        .map(|(&bag, _)| bag)
+        .collect();
 
     while let Some(bag) = queue.pop_front() {
-        inside_bag_counts.insert(bag, graph[bag].iter().map(|&(bag_count, content_bag)| bag_count * (1 + inside_bag_counts[content_bag])).sum::<u64>());
-        queue.extend(inverted_graph[bag].iter().filter(|&&x| graph[x].iter().all(|&(_, content_bag)| inside_bag_counts.contains_key(content_bag))));
+        let count = graph[bag]
+            .iter()
+            .map(|&(bag_count, content_bag)| bag_count * (1 + inside_bag_counts[content_bag]))
+            .sum::<u64>();
+
+        inside_bag_counts.insert(bag, count);
+
+        queue.extend(inverted_graph[bag].iter().filter(|&&x| {
+            (graph[x].iter()).all(|&(_, content_bag)| inside_bag_counts.contains_key(content_bag))
+        }));
     }
 
     let result2 = inside_bag_counts[STARTING_BAG];

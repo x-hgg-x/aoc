@@ -22,7 +22,12 @@ fn main() -> Result<()> {
     let mut dots: Vec<(usize, usize)> = lines
         .by_ref()
         .take_while(|&line| !line.is_empty())
-        .map(|line| line.split(',').next_tuple().map(|(x, y)| Result::Ok((x.parse()?, y.parse()?))).value())
+        .map(|line| {
+            line.split(',')
+                .next_tuple()
+                .map(|(x, y)| Result::Ok((x.parse()?, y.parse()?)))
+                .value()
+        })
         .try_process(|iter| iter.try_collect())??;
 
     let folds: Vec<_> = lines
@@ -68,11 +73,17 @@ fn main() -> Result<()> {
         process_fold(fold);
     }
 
-    let (max_x, max_y) = dots.iter().fold((0, 0), |(max_x, max_y), &(x, y)| (x.max(max_x), y.max(max_y)));
+    let (max_x, max_y) = dots.iter().fold((0, 0), |(max_x, max_y), &(x, y)| {
+        (x.max(max_x), y.max(max_y))
+    });
+
     let width = max_x + 1;
     let height = max_y + 1;
 
-    let mut image = repeat_n(repeat_n(b' ', width).chain(once(b'\n')), height).flatten().collect_vec();
+    let mut image = repeat_n(repeat_n(b' ', width).chain(once(b'\n')), height)
+        .flatten()
+        .collect_vec();
+
     for (x, y) in dots {
         image[(width + 1) * y + x] = b'#';
     }

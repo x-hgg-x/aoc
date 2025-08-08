@@ -26,27 +26,33 @@ fn step(tiles: &mut Vec<Tile>, buf: &mut Vec<Tile>) -> Result<()> {
         .chunks_exact(WIDTH)
         .tuple_windows()
         .flat_map(|(row_0, row_1, row_2)| {
-            let iter = izip!(row_0.windows(3), row_1.windows(3), row_2.windows(3)).map(|(x0, x1, x2)| {
-                let center = x1[1];
+            let iter =
+                izip!(row_0.windows(3), row_1.windows(3), row_2.windows(3)).map(|(x0, x1, x2)| {
+                    let center = x1[1];
 
-                let (trees, lumberyards) = x0.iter().chain([&x1[0], &x1[2]]).chain(x2).fold((0usize, 0usize), |(trees, lumberyards), x| match x {
-                    Tile::Trees => (trees + 1, lumberyards),
-                    Tile::Lumberyard => (trees, lumberyards + 1),
-                    _ => (trees, lumberyards),
+                    let (trees, lumberyards) = x0.iter().chain([&x1[0], &x1[2]]).chain(x2).fold(
+                        (0usize, 0usize),
+                        |(trees, lumberyards), x| match x {
+                            Tile::Trees => (trees + 1, lumberyards),
+                            Tile::Lumberyard => (trees, lumberyards + 1),
+                            _ => (trees, lumberyards),
+                        },
+                    );
+
+                    match (center, trees, lumberyards) {
+                        (Tile::OpenGround, 3.., _) => Ok(Tile::Trees),
+                        (Tile::Trees, _, 3..) => Ok(Tile::Lumberyard),
+                        (Tile::Lumberyard, 0, _) | (Tile::Lumberyard, _, 0) => Ok(Tile::OpenGround),
+                        (Tile::Empty, ..) => bail!("unable to step simulation"),
+                        (tile, ..) => Ok(tile),
+                    }
                 });
 
-                Ok(match (center, trees, lumberyards) {
-                    (Tile::OpenGround, 3.., _) => Tile::Trees,
-                    (Tile::Trees, _, 3..) => Tile::Lumberyard,
-                    (Tile::Lumberyard, 0, _) | (Tile::Lumberyard, _, 0) => Tile::OpenGround,
-                    (Tile::Empty, ..) => bail!("unable to step simulation"),
-                    (tile, ..) => tile,
-                })
-            });
-
-            once(Ok(Tile::Empty)).chain(iter).chain(once(Ok(Tile::Empty)))
+            (once(Ok(Tile::Empty)).chain(iter)).chain(once(Ok(Tile::Empty)))
         })
-        .try_process(|iter| buf.extend([Tile::Empty; WIDTH].into_iter().chain(iter).chain([Tile::Empty; WIDTH])))?;
+        .try_process(|iter| {
+            buf.extend(([Tile::Empty; WIDTH].into_iter().chain(iter)).chain([Tile::Empty; WIDTH]))
+        })?;
 
     std::mem::swap(buf, tiles);
 
@@ -54,11 +60,13 @@ fn step(tiles: &mut Vec<Tile>, buf: &mut Vec<Tile>) -> Result<()> {
 }
 
 fn resource_value(tiles: &[Tile]) -> usize {
-    let (trees, lumberyards) = tiles.iter().fold((0, 0), |(trees, lumberyards), tile| match tile {
-        Tile::Trees => (trees + 1, lumberyards),
-        Tile::Lumberyard => (trees, lumberyards + 1),
-        _ => (trees, lumberyards),
-    });
+    let (trees, lumberyards) = tiles
+        .iter()
+        .fold((0, 0), |(trees, lumberyards), tile| match tile {
+            Tile::Trees => (trees + 1, lumberyards),
+            Tile::Lumberyard => (trees, lumberyards + 1),
+            _ => (trees, lumberyards),
+        });
 
     trees * lumberyards
 }
@@ -76,9 +84,15 @@ fn main() -> Result<()> {
                 b'#' => Ok(Tile::Lumberyard),
                 _ => bail!("unknown tile"),
             });
-            once(Ok(Tile::Empty)).chain(iter).chain(once(Ok(Tile::Empty)))
+            (once(Ok(Tile::Empty)).chain(iter)).chain(once(Ok(Tile::Empty)))
         })
-        .try_process(|iter| [Tile::Empty; WIDTH].into_iter().chain(iter).chain([Tile::Empty; WIDTH]).collect_vec())?;
+        .try_process(|iter| {
+            [Tile::Empty; WIDTH]
+                .into_iter()
+                .chain(iter)
+                .chain([Tile::Empty; WIDTH])
+                .collect_vec()
+        })?;
 
     ensure!(WIDTH * HEIGHT == tiles.len(), "incorrect grid dimensions");
 

@@ -22,13 +22,21 @@ struct Cave {
 
 impl Cave {
     fn add_dim_0(&mut self) -> Result<()> {
-        self.erosion_levels.first_mut().value()?.push((self.factor.0 * self.size.0 + self.depth) % GEOLOGIC_INDEX_MODULO);
+        self.erosion_levels
+            .first_mut()
+            .value()?
+            .push((self.factor.0 * self.size.0 + self.depth) % GEOLOGIC_INDEX_MODULO);
 
         let mut remaining = self.erosion_levels.as_mut_slice();
 
         for _ in 0..self.size.1 - 1 {
             let (prev_row, row) = remaining.split_at_mut(1);
-            row[0].push((prev_row[0].last().value()? * row[0].last().value()? + self.depth) % GEOLOGIC_INDEX_MODULO);
+
+            row[0].push(
+                (prev_row[0].last().value()? * row[0].last().value()? + self.depth)
+                    % GEOLOGIC_INDEX_MODULO,
+            );
+
             remaining = row;
         }
 
@@ -42,10 +50,13 @@ impl Cave {
 
         self.erosion_levels.push(
             once(first)
-                .chain(self.erosion_levels.last().value()?[1..].iter().scan(first, |left, &top| {
-                    *left = (*left * top + self.depth) % GEOLOGIC_INDEX_MODULO;
-                    Some(*left)
-                }))
+                .chain((self.erosion_levels.last().value()?[1..].iter()).scan(
+                    first,
+                    |left, &top| {
+                        *left = (*left * top + self.depth) % GEOLOGIC_INDEX_MODULO;
+                        Some(*left)
+                    },
+                ))
                 .collect(),
         );
 
@@ -107,9 +118,23 @@ struct State {
 }
 
 impl State {
-    fn new(position: (usize, usize), region: Region, current_time: usize, tool: Tool, cave: &Cave) -> Self {
-        let distance = position.0.abs_diff(cave.target_position.0) + position.1.abs_diff(cave.target_position.1);
-        Self { position, region, current_time, tool, distance }
+    fn new(
+        position: (usize, usize),
+        region: Region,
+        current_time: usize,
+        tool: Tool,
+        cave: &Cave,
+    ) -> Self {
+        let distance = position.0.abs_diff(cave.target_position.0)
+            + position.1.abs_diff(cave.target_position.1);
+
+        Self {
+            position,
+            region,
+            current_time,
+            tool,
+            distance,
+        }
     }
 
     fn estimate(&self) -> usize {
@@ -118,7 +143,9 @@ impl State {
 
     fn switchable_tool(&self) -> Result<Tool> {
         match (self.region, self.tool) {
-            (Region::Rocky, Tool::None) | (Region::Wet, Tool::Torch) | (Region::Narrow, Tool::ClimbingGear) => bail!("incorrect tool for the region"),
+            (Region::Rocky, Tool::None)
+            | (Region::Wet, Tool::Torch)
+            | (Region::Narrow, Tool::ClimbingGear) => bail!("incorrect tool for the region"),
             (Region::Rocky, Tool::Torch) => Ok(Tool::ClimbingGear),
             (Region::Rocky, Tool::ClimbingGear) => Ok(Tool::Torch),
             (Region::Wet, Tool::None) => Ok(Tool::ClimbingGear),
@@ -179,7 +206,13 @@ fn insert_new_state(
         }
     };
 
-    current_states.push(State::new(new_position, new_region, new_time, new_tool, cave));
+    current_states.push(State::new(
+        new_position,
+        new_region,
+        new_time,
+        new_tool,
+        cave,
+    ));
 }
 
 fn main() -> Result<()> {
@@ -189,11 +222,23 @@ fn main() -> Result<()> {
     let (depth_line, target_line) = input.lines().next_tuple().value()?;
 
     let depth = depth_line.split(": ").last().value()?.parse()?;
-    let (target_x, target_y) = target_line.split(": ").last().value()?.split(',').map(|x| Ok(x.parse()?)).try_process(|mut iter| iter.next_tuple())?.value()?;
+
+    let (target_x, target_y) = target_line
+        .split(": ")
+        .last()
+        .value()?
+        .split(',')
+        .map(|x| Ok(x.parse()?))
+        .try_process(|mut iter| iter.next_tuple())?
+        .value()?;
 
     let mut cave = if target_x >= target_y {
         Cave {
-            erosion_levels: vec![(0..=target_x).map(|x| (X_FACTOR * x + depth) % GEOLOGIC_INDEX_MODULO).collect()],
+            erosion_levels: vec![
+                (0..=target_x)
+                    .map(|x| (X_FACTOR * x + depth) % GEOLOGIC_INDEX_MODULO)
+                    .collect(),
+            ],
             size: (target_x + 1, 1),
             factor: (X_FACTOR, Y_FACTOR),
             target_position: (target_x, target_y),
@@ -201,7 +246,11 @@ fn main() -> Result<()> {
         }
     } else {
         Cave {
-            erosion_levels: vec![(0..=target_y).map(|y| (Y_FACTOR * y + depth) % GEOLOGIC_INDEX_MODULO).collect()],
+            erosion_levels: vec![
+                (0..=target_y)
+                    .map(|y| (Y_FACTOR * y + depth) % GEOLOGIC_INDEX_MODULO)
+                    .collect(),
+            ],
             size: (target_y + 1, 1),
             factor: (Y_FACTOR, X_FACTOR),
             target_position: (target_y, target_x),
@@ -215,13 +264,25 @@ fn main() -> Result<()> {
 
     *cave.erosion_levels.last_mut().value()?.last_mut().value()? = depth % GEOLOGIC_INDEX_MODULO;
 
-    let result1 = cave.erosion_levels.iter().flatten().map(|&level| level % 3).sum::<usize>();
+    let result1 = cave
+        .erosion_levels
+        .iter()
+        .flatten()
+        .map(|&level| level % 3)
+        .sum::<usize>();
 
     let initial_position = (0, 0);
     let initial_region = Region::Rocky;
     let initial_time = 0;
     let initial_tool = Tool::Torch;
-    let initial_state = State::new(initial_position, initial_region, initial_time, initial_tool, &cave);
+
+    let initial_state = State::new(
+        initial_position,
+        initial_region,
+        initial_time,
+        initial_tool,
+        &cave,
+    );
 
     let mut previous_positions = HashMap::from([((initial_position, initial_tool), initial_time)]);
     let mut current_states = BinaryHeap::from([initial_state]);
@@ -247,7 +308,15 @@ fn main() -> Result<()> {
                 let new_time = state.current_time + 1;
 
                 if new_region != state.inaccessible_region() {
-                    insert_new_state(&mut previous_positions, &mut current_states, new_position, new_region, new_time, state.tool, &cave);
+                    insert_new_state(
+                        &mut previous_positions,
+                        &mut current_states,
+                        new_position,
+                        new_region,
+                        new_time,
+                        state.tool,
+                        &cave,
+                    );
                 }
 
                 Result::Ok(())

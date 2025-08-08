@@ -50,14 +50,30 @@ fn compute_target_selection(
         let target = available_ids
             .iter()
             .enumerate()
-            .flat_map(|(index, &enemy_index)| enemy_army[enemy_index].as_ref().map(|enemy_group| (index, enemy_index, enemy_group)))
+            .flat_map(|(index, &enemy_index)| {
+                enemy_army[enemy_index]
+                    .as_ref()
+                    .map(|enemy_group| (index, enemy_index, enemy_group))
+            })
             .flat_map(|(index, enemy_index, enemy_group)| {
                 if enemy_group.immunities.contains(&group.attack_type) {
                     return None;
                 }
 
-                let attack_factor = if enemy_group.weaknesses.contains(&group.attack_type) { 2 } else { 1 };
-                Some(((index, enemy_index, attack_factor), (attack_factor, enemy_group.effective_power, enemy_group.initiative)))
+                let attack_factor = if enemy_group.weaknesses.contains(&group.attack_type) {
+                    2
+                } else {
+                    1
+                };
+
+                Some((
+                    (index, enemy_index, attack_factor),
+                    (
+                        attack_factor,
+                        enemy_group.effective_power,
+                        enemy_group.initiative,
+                    ),
+                ))
             })
             .max_by(|(_, x), (_, y)| x.cmp(y))
             .map(|(x, _)| x);
@@ -69,11 +85,21 @@ fn compute_target_selection(
     }
 }
 
-fn attack(army: &[Option<Group>], enemy_army: &mut [Option<Group>], group_index: usize, attacks: &[Option<(usize, i64)>], boost: i64, locked: &mut bool) {
-    if let (Some(group), Some((enemy_index, attack_factor))) = (army[group_index].as_ref(), attacks[group_index])
-        && let Some(enemy_group) = enemy_army[enemy_index].as_mut()
+fn attack(
+    army: &[Option<Group>],
+    enemy_army: &mut [Option<Group>],
+    group_index: usize,
+    attacks: &[Option<(usize, i64)>],
+    boost: i64,
+    locked: &mut bool,
+) {
+    if let (Some(group), Some((enemy_index, attack_factor))) =
+        (army[group_index].as_ref(), attacks[group_index])
+        && let Some(ref mut enemy_group) = enemy_army[enemy_index]
     {
-        let casualties = attack_factor * group.unit_count * (group.attack_damage + boost) / enemy_group.unit_hp;
+        let casualties =
+            attack_factor * group.unit_count * (group.attack_damage + boost) / enemy_group.unit_hp;
+
         enemy_group.unit_count -= casualties;
 
         if casualties > 0 {
@@ -87,19 +113,26 @@ fn attack(army: &[Option<Group>], enemy_army: &mut [Option<Group>], group_index:
 }
 
 fn run(mut battle: Battle, buffer: &mut Buffer, boost: i64) -> std::result::Result<i64, i64> {
-    battle.immune_system.iter_mut().flatten().for_each(|group| group.effective_power = group.unit_count * (group.attack_damage + boost));
+    battle
+        .immune_system
+        .iter_mut()
+        .flatten()
+        .for_each(|group| group.effective_power = group.unit_count * (group.attack_damage + boost));
 
     loop {
         buffer.available_immune_system_ids.clear();
-        buffer.available_immune_system_ids.extend(0..battle.immune_system.len());
+        (buffer.available_immune_system_ids).extend(0..battle.immune_system.len());
         buffer.available_infection_ids.clear();
-        buffer.available_infection_ids.extend(0..battle.infection.len());
+        (buffer.available_infection_ids).extend(0..battle.infection.len());
         buffer.immune_system_attacks.fill(None);
         buffer.infection_attacks.fill(None);
 
-        battle.target_selection_order.sort_unstable_by_key(|group_id| match *group_id {
-            GroupId::ImmuneSystem(index) => battle.immune_system[index].as_ref().map(|x| (Reverse(x.effective_power), Reverse(x.initiative))),
-            GroupId::Infection(index) => battle.infection[index].as_ref().map(|x| (Reverse(x.effective_power), Reverse(x.initiative))),
+        (battle.target_selection_order).sort_unstable_by_key(|group_id| {
+            let group = match *group_id {
+                GroupId::ImmuneSystem(index) => &battle.immune_system[index],
+                GroupId::Infection(index) => &battle.infection[index],
+            };
+            (group.as_ref()).map(|x| (Reverse(x.effective_power), Reverse(x.initiative)))
         });
 
         for group_id in &battle.target_selection_order {
@@ -130,10 +163,24 @@ fn run(mut battle: Battle, buffer: &mut Buffer, boost: i64) -> std::result::Resu
         for group_id in &battle.attack_order {
             match *group_id {
                 GroupId::ImmuneSystem(group_index) => {
-                    attack(&battle.immune_system, &mut battle.infection, group_index, &buffer.immune_system_attacks, boost, &mut locked);
+                    attack(
+                        &battle.immune_system,
+                        &mut battle.infection,
+                        group_index,
+                        &buffer.immune_system_attacks,
+                        boost,
+                        &mut locked,
+                    );
                 }
                 GroupId::Infection(group_index) => {
-                    attack(&battle.infection, &mut battle.immune_system, group_index, &buffer.infection_attacks, 0, &mut locked);
+                    attack(
+                        &battle.infection,
+                        &mut battle.immune_system,
+                        group_index,
+                        &buffer.infection_attacks,
+                        0,
+                        &mut locked,
+                    );
                 }
             }
         }
@@ -142,21 +189,42 @@ fn run(mut battle: Battle, buffer: &mut Buffer, boost: i64) -> std::result::Resu
             break Err(0);
         }
 
-        let iter = battle.immune_system.iter_mut().flatten().map(|group| group.effective_power = group.unit_count * (group.attack_damage + boost));
+        let iter =
+            battle.immune_system.iter_mut().flatten().map(|group| {
+                group.effective_power = group.unit_count * (group.attack_damage + boost)
+            });
+
         if iter.count() == 0 {
-            break Err(battle.infection.iter_mut().flatten().map(|group| group.unit_count).sum::<i64>());
+            break Err(battle
+                .infection
+                .iter_mut()
+                .flatten()
+                .map(|group| group.unit_count)
+                .sum::<i64>());
         }
 
-        let iter = battle.infection.iter_mut().flatten().map(|group| group.effective_power = group.unit_count * group.attack_damage);
+        let iter = battle
+            .infection
+            .iter_mut()
+            .flatten()
+            .map(|group| group.effective_power = group.unit_count * group.attack_damage);
+
         if iter.count() == 0 {
-            break Ok(battle.immune_system.iter_mut().flatten().map(|group| group.unit_count).sum::<i64>());
+            break Ok(battle
+                .immune_system
+                .iter_mut()
+                .flatten()
+                .map(|group| group.unit_count)
+                .sum::<i64>());
         }
     }
 }
 
 fn parse_initial_battle(input: &str) -> Result<Battle<'_>> {
     let regex_armies = Regex::new(r#"(?ms)^Immune System:$(.*)^Infection:$(.*)$"#)?;
-    let regex_units = Regex::new(r#"(?m)^(\d+) units each with (\d+) hit points (\(.+?\) )?with an attack that does (\d+) (\w+) damage at initiative (\d+)$"#)?;
+    let regex_units = Regex::new(
+        r#"(?m)^(\d+) units each with (\d+) hit points (\(.+?\) )?with an attack that does (\d+) (\w+) damage at initiative (\d+)$"#,
+    )?;
     let regex_defenses = Regex::new(r#"(weak|immune) to ([a-z, ]+)"#)?;
 
     let parse_army = |army| -> Result<Vec<_>> {
@@ -185,7 +253,16 @@ fn parse_initial_battle(input: &str) -> Result<Battle<'_>> {
                 let initiative = cap_unit[6].parse()?;
                 let effective_power = unit_count * attack_damage;
 
-                Ok(Some(Group { unit_count, unit_hp, weaknesses, immunities, attack_damage, attack_type, initiative, effective_power }))
+                Ok(Some(Group {
+                    unit_count,
+                    unit_hp,
+                    weaknesses,
+                    immunities,
+                    attack_damage,
+                    attack_type,
+                    initiative,
+                    effective_power,
+                }))
             })
             .try_collect()
     };
@@ -194,14 +271,27 @@ fn parse_initial_battle(input: &str) -> Result<Battle<'_>> {
 
     let immune_system = parse_army(cap_army.get(1).value()?.as_str())?;
     let infection = parse_army(cap_army.get(2).value()?.as_str())?;
-    let target_selection_order = (0..immune_system.len()).map(GroupId::ImmuneSystem).chain((0..infection.len()).map(GroupId::Infection)).collect_vec();
+
+    let target_selection_order = (0..immune_system.len())
+        .map(GroupId::ImmuneSystem)
+        .chain((0..infection.len()).map(GroupId::Infection))
+        .collect_vec();
+
     let attack_order = target_selection_order.clone();
 
-    let mut initial_battle = Battle { immune_system, infection, target_selection_order, attack_order };
+    let mut initial_battle = Battle {
+        immune_system,
+        infection,
+        target_selection_order,
+        attack_order,
+    };
 
-    initial_battle.attack_order.sort_unstable_by_key(|group_id| match *group_id {
-        GroupId::ImmuneSystem(index) => initial_battle.immune_system[index].as_ref().map(|x| Reverse(x.initiative)),
-        GroupId::Infection(index) => initial_battle.infection[index].as_ref().map(|x| Reverse(x.initiative)),
+    (initial_battle.attack_order).sort_unstable_by_key(|group_id| {
+        let group = match *group_id {
+            GroupId::ImmuneSystem(index) => &initial_battle.immune_system[index],
+            GroupId::Infection(index) => &initial_battle.infection[index],
+        };
+        group.as_ref().map(|x| Reverse(x.initiative))
     });
 
     Ok(initial_battle)

@@ -3,7 +3,10 @@ use aoc::*;
 use eyre::bail;
 use itertools::Itertools;
 
-const DIGITS: [u8; 10] = [0b1110111, 0b0100100, 0b1011101, 0b1101101, 0b0101110, 0b1101011, 0b1111011, 0b0100101, 0b1111111, 0b1101111];
+const DIGITS: [u8; 10] = [
+    0b1110111, 0b0100100, 0b1011101, 0b1101101, 0b0101110, 0b1101011, 0b1111011, 0b0100101,
+    0b1111111, 0b1101111,
+];
 
 fn compute_segments(uniques: &[(u8, u8); 10]) -> Result<[u8; 7]> {
     let [mut v1, mut v4, mut v7, mut v8] = [0; 4];
@@ -72,7 +75,11 @@ fn main() -> Result<()> {
         })
         .try_collect()?;
 
-    let result1 = signals.iter().flat_map(|(_, outputs)| outputs.iter().map(|(_, len)| len)).filter(|len| matches!(len, 2 | 3 | 4 | 7)).count();
+    let result1 = signals
+        .iter()
+        .flat_map(|(_, outputs)| outputs.iter().map(|(_, len)| len))
+        .filter(|len| matches!(len, 2 | 3 | 4 | 7))
+        .count();
 
     let result2 = signals
         .iter()
@@ -82,7 +89,12 @@ fn main() -> Result<()> {
             outputs
                 .iter()
                 .map(|&(v, _)| {
-                    let sum = segments.iter().enumerate().map(|(index, segment)| ((v & segment != 0) as u8) << index).sum::<u8>();
+                    let sum = segments
+                        .iter()
+                        .enumerate()
+                        .map(|(index, segment)| ((v & segment != 0) as u8) << index)
+                        .sum::<u8>();
+
                     DIGITS.iter().position(|&x| x == sum).value()
                 })
                 .try_process(|iter| {

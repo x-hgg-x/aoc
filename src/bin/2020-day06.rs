@@ -35,7 +35,10 @@ fn main() -> Result<()> {
             buffer.dedup();
 
             let mut buffer_iter = buffer.iter();
-            questions_intersection.retain(|&mut x| buffer_iter.take_while_ref(|&&item| item <= x).any(|&item| item == x));
+
+            questions_intersection.retain(|&mut x| {
+                (buffer_iter.take_while_ref(|&&item| item <= x)).any(|&item| item == x)
+            });
         }
 
         questions_union.sort_unstable();

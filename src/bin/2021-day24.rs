@@ -13,9 +13,24 @@ fn main() -> Result<()> {
     let mut var2 = [0i64; 14];
 
     for (v0, v1, v2) in izip!(&mut var0, &mut var1, &mut var2) {
-        *v0 = lines.nth(4).and_then(|x| x.split_ascii_whitespace().last()).value()?.parse()?;
-        *v1 = lines.next().and_then(|x| x.split_ascii_whitespace().last()).value()?.parse()?;
-        *v2 = lines.nth(9).and_then(|x| x.split_ascii_whitespace().last()).value()?.parse()?;
+        *v0 = lines
+            .nth(4)
+            .and_then(|x| x.split_ascii_whitespace().last())
+            .value()?
+            .parse()?;
+
+        *v1 = lines
+            .next()
+            .and_then(|x| x.split_ascii_whitespace().last())
+            .value()?
+            .parse()?;
+
+        *v2 = lines
+            .nth(9)
+            .and_then(|x| x.split_ascii_whitespace().last())
+            .value()?
+            .parse()?;
+
         lines.nth(1);
     }
 

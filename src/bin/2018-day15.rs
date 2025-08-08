@@ -35,8 +35,16 @@ struct Grid {
 
 impl Grid {
     fn new(width: usize, height: usize, tiles: Vec<Tile>) -> Result<Self> {
-        ensure!(width * height == tiles.len(), "unable to construct Grid: width * height != tiles.len()");
-        Ok(Self { width, height, tiles })
+        ensure!(
+            width * height == tiles.len(),
+            "unable to construct Grid: width * height != tiles.len()"
+        );
+
+        Ok(Self {
+            width,
+            height,
+            tiles,
+        })
     }
 
     fn get_index(&self, row: usize, column: usize) -> usize {
@@ -133,14 +141,30 @@ struct State {
 }
 
 impl State {
-    fn new(position: Position, steps: usize, (goal_row, goal_column): Position, start_tile_index: usize) -> Self {
+    fn new(
+        position: Position,
+        steps: usize,
+        (goal_row, goal_column): Position,
+        start_tile_index: usize,
+    ) -> Self {
         let (row, column) = position;
         let distance = row.abs_diff(goal_row) + column.abs_diff(goal_column);
-        Self { position, steps, distance, goal_position: (goal_row, goal_column), start_tile_index }
+
+        Self {
+            position,
+            steps,
+            distance,
+            goal_position: (goal_row, goal_column),
+            start_tile_index,
+        }
     }
 
     fn estimate(&self) -> (usize, Position, usize) {
-        (self.steps + self.distance, self.goal_position, self.start_tile_index)
+        (
+            self.steps + self.distance,
+            self.goal_position,
+            self.start_tile_index,
+        )
     }
 }
 
@@ -187,21 +211,37 @@ fn movement<Creature: ICreature>(
 
                 grid.adjacent_tile_indices(enemy_row, enemy_column)
                     .into_iter()
-                    .filter(|&adjacent_enemy_tile_index| grid.tiles[adjacent_enemy_tile_index].is_empty())
+                    .filter(|&adjacent_enemy_tile_index| {
+                        grid.tiles[adjacent_enemy_tile_index].is_empty()
+                    })
                     .map(move |adjacent_enemy_tile_index| {
-                        let (adjacent_enemy_row, adjacent_enemy_column) = grid.get_position(adjacent_enemy_tile_index);
+                        let (adjacent_enemy_row, adjacent_enemy_column) =
+                            grid.get_position(adjacent_enemy_tile_index);
 
-                        adjacent_tile_indices.iter().filter(|&&start_tile_index| grid.tiles[start_tile_index].is_empty()).map(move |&start_tile_index| {
-                            let position = grid.get_position(start_tile_index);
-                            State::new(position, 1, (adjacent_enemy_row, adjacent_enemy_column), start_tile_index)
-                        })
+                        adjacent_tile_indices
+                            .iter()
+                            .filter(|&&start_tile_index| grid.tiles[start_tile_index].is_empty())
+                            .map(move |&start_tile_index| {
+                                State::new(
+                                    grid.get_position(start_tile_index),
+                                    1,
+                                    (adjacent_enemy_row, adjacent_enemy_column),
+                                    start_tile_index,
+                                )
+                            })
                     })
             })
             .flatten(),
     );
 
     buffer.previous_positions.clear();
-    buffer.previous_positions.extend(buffer.current_states.iter().map(|state| (state.position, state.goal_position, state.start_tile_index)));
+
+    buffer.previous_positions.extend(
+        buffer
+            .current_states
+            .iter()
+            .map(|state| (state.position, state.goal_position, state.start_tile_index)),
+    );
 
     loop {
         match buffer.current_states.pop() {
@@ -217,8 +257,15 @@ fn movement<Creature: ICreature>(
                     let new_steps = state.steps + 1;
                     let new_key = (new_position, state.goal_position, state.start_tile_index);
 
-                    if grid.tiles[grid.get_index(new_row, new_column)].is_empty() && buffer.previous_positions.insert(new_key) {
-                        buffer.current_states.push(State::new(new_position, new_steps, state.goal_position, state.start_tile_index));
+                    if grid.tiles[grid.get_index(new_row, new_column)].is_empty()
+                        && buffer.previous_positions.insert(new_key)
+                    {
+                        buffer.current_states.push(State::new(
+                            new_position,
+                            new_steps,
+                            state.goal_position,
+                            state.start_tile_index,
+                        ));
                     }
                 };
 
@@ -241,10 +288,17 @@ fn movement<Creature: ICreature>(
     }
 }
 
-fn compute_attack_target_id<Creature: ICreature>(adjacent_tile_indices: &[usize], enemies: &[Option<Creature::EnemyType>], grid: &mut Grid) -> Option<usize> {
+fn compute_attack_target_id<Creature: ICreature>(
+    adjacent_tile_indices: &[usize],
+    enemies: &[Option<Creature::EnemyType>],
+    grid: &mut Grid,
+) -> Option<usize> {
     adjacent_tile_indices
         .iter()
-        .filter_map(|&tile_index| Creature::enemy_id(&grid.tiles[tile_index]).and_then(|id| enemies[id].as_ref().map(|enemy| (id, enemy))))
+        .filter_map(|&tile_index| {
+            Creature::enemy_id(&grid.tiles[tile_index])
+                .and_then(|id| enemies[id].as_ref().map(|enemy| (id, enemy)))
+        })
         .min_by_key(|&(_, enemy)| (enemy.hp(), enemy.tile_index()))
         .map(|(id, _)| id)
 }
@@ -288,12 +342,15 @@ fn take_turn<Creature: ICreature>(
     let adjacent_tile_indices = grid.adjacent_tile_indices(row, column);
 
     match compute_attack_target_id::<Creature>(&adjacent_tile_indices, enemies, grid) {
-        Some(enemy_id) => attack::<Creature>(&mut enemies[enemy_id], attack_power, grid, casualties)?,
+        Some(enemy_id) => {
+            attack::<Creature>(&mut enemies[enemy_id], attack_power, grid, casualties)?
+        }
         None => {
-            let (new_tile_index, in_range) = match movement::<Creature>(&adjacent_tile_indices, enemies, grid, buffer) {
-                Some(movement) => movement,
-                None => return Ok(ControlFlow::Continue(())),
-            };
+            let (new_tile_index, in_range) =
+                match movement::<Creature>(&adjacent_tile_indices, enemies, grid, buffer) {
+                    Some(movement) => movement,
+                    None => return Ok(ControlFlow::Continue(())),
+                };
 
             let old_tile_index = creature.tile_index();
             *creature.tile_index_mut() = new_tile_index;
@@ -301,7 +358,14 @@ fn take_turn<Creature: ICreature>(
 
             if in_range {
                 let (row, column) = grid.get_position(creature.tile_index());
-                let enemy_id = compute_attack_target_id::<Creature>(&grid.adjacent_tile_indices(row, column), enemies, grid).value()?;
+
+                let enemy_id = compute_attack_target_id::<Creature>(
+                    &grid.adjacent_tile_indices(row, column),
+                    enemies,
+                    grid,
+                )
+                .value()?;
+
                 attack::<Creature>(&mut enemies[enemy_id], attack_power, grid, casualties)?;
             }
         }
@@ -311,7 +375,14 @@ fn take_turn<Creature: ICreature>(
 }
 
 fn run(battle: Battle, buffer: &mut Buffer) -> Result<(i64, bool)> {
-    let Battle { elf_attack_power, goblin_attack_power, mut grid, mut fighter_ids, mut elfs, mut goblins } = battle;
+    let Battle {
+        elf_attack_power,
+        goblin_attack_power,
+        mut grid,
+        mut fighter_ids,
+        mut elfs,
+        mut goblins,
+    } = battle;
 
     let mut turns = 0;
 
@@ -320,8 +391,22 @@ fn run(battle: Battle, buffer: &mut Buffer) -> Result<(i64, bool)> {
 
         for fighter_id in &fighter_ids {
             let action = match *fighter_id {
-                FighterId::Elf(id) => take_turn(elfs[id].as_mut(), elf_attack_power, &mut goblins, &mut grid, &mut casualties, buffer)?,
-                FighterId::Goblin(id) => take_turn(goblins[id].as_mut(), goblin_attack_power, &mut elfs, &mut grid, &mut casualties, buffer)?,
+                FighterId::Elf(id) => take_turn(
+                    elfs[id].as_mut(),
+                    elf_attack_power,
+                    &mut goblins,
+                    &mut grid,
+                    &mut casualties,
+                    buffer,
+                )?,
+                FighterId::Goblin(id) => take_turn(
+                    goblins[id].as_mut(),
+                    goblin_attack_power,
+                    &mut elfs,
+                    &mut grid,
+                    &mut casualties,
+                    buffer,
+                )?,
             };
 
             if action == ControlFlow::Break(()) {
@@ -344,7 +429,13 @@ fn run(battle: Battle, buffer: &mut Buffer) -> Result<(i64, bool)> {
         turns += 1;
     }
 
-    let hp_sum = elfs.iter().flatten().map(|x| x.hp).chain(goblins.iter().flatten().map(|x| x.hp)).sum::<i64>();
+    let hp_sum = elfs
+        .iter()
+        .flatten()
+        .map(|x| x.hp)
+        .chain(goblins.iter().flatten().map(|x| x.hp))
+        .sum::<i64>();
+
     let elf_casualties = elfs.iter().any(|elf| elf.is_none());
 
     Ok((turns * hp_sum, elf_casualties))
@@ -359,7 +450,7 @@ fn parse_initial_battle(input: &str) -> Result<Battle> {
     let mut elfs = Vec::new();
     let mut goblins = Vec::new();
 
-    input.lines().map(|line| line.bytes()).enumerate().try_for_each(|(row_index, row)| {
+    (input.lines().map(|line| line.bytes()).enumerate()).try_for_each(|(row_index, row)| {
         for (column_index, x) in row.enumerate() {
             match x {
                 b'.' => tiles.push(Tile::Empty),
@@ -367,12 +458,20 @@ fn parse_initial_battle(input: &str) -> Result<Battle> {
                 b'E' => {
                     tiles.push(Tile::Elf(elfs.len()));
                     fighter_ids.push(FighterId::Elf(elfs.len()));
-                    elfs.push(Some(Elf { tile_index: row_index * width + column_index, hp: MAX_HP }));
+
+                    elfs.push(Some(Elf {
+                        tile_index: row_index * width + column_index,
+                        hp: MAX_HP,
+                    }));
                 }
                 b'G' => {
                     tiles.push(Tile::Goblin(goblins.len()));
                     fighter_ids.push(FighterId::Goblin(goblins.len()));
-                    goblins.push(Some(Goblin { tile_index: row_index * width + column_index, hp: MAX_HP }));
+
+                    goblins.push(Some(Goblin {
+                        tile_index: row_index * width + column_index,
+                        hp: MAX_HP,
+                    }));
                 }
                 _ => bail!("unknown tile"),
             };
@@ -383,7 +482,14 @@ fn parse_initial_battle(input: &str) -> Result<Battle> {
 
     let grid = Grid::new(width, height, tiles)?;
 
-    Ok(Battle { elf_attack_power: BASE_ATTACK_POWER, goblin_attack_power: BASE_ATTACK_POWER, grid, fighter_ids, elfs, goblins })
+    Ok(Battle {
+        elf_attack_power: BASE_ATTACK_POWER,
+        goblin_attack_power: BASE_ATTACK_POWER,
+        grid,
+        fighter_ids,
+        elfs,
+        goblins,
+    })
 }
 
 fn main() -> Result<()> {
@@ -401,7 +507,10 @@ fn main() -> Result<()> {
         true => (BASE_ATTACK_POWER + 1..)
             .find_map(|elf_attack_power| {
                 (|| {
-                    let battle = Battle { elf_attack_power, ..initial_battle.clone() };
+                    let battle = Battle {
+                        elf_attack_power,
+                        ..initial_battle.clone()
+                    };
                     let (outcome, elf_casualties) = run(battle, &mut buffer)?;
                     Result::Ok((!elf_casualties).then_some(outcome))
                 })()

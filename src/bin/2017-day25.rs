@@ -12,7 +12,11 @@ struct Rule<'a> {
     new_state: &'a str,
 }
 
-fn parse_rule<'a>(match_new_value: Match<'a>, match_direction: Match<'a>, match_new_state: Match<'a>) -> Result<Rule<'a>> {
+fn parse_rule<'a>(
+    match_new_value: Match<'a>,
+    match_direction: Match<'a>,
+    match_new_state: Match<'a>,
+) -> Result<Rule<'a>> {
     Ok(Rule {
         new_value: match_new_value.as_str().parse()?,
         direction: match match_direction.as_str() {
@@ -43,8 +47,16 @@ fn main() -> Result<()> {
             let current_state = cap.get(1).value()?.as_str();
 
             let state_rules = [
-                parse_rule(cap.get(2).value()?, cap.get(3).value()?, cap.get(4).value()?)?,
-                parse_rule(cap.get(5).value()?, cap.get(6).value()?, cap.get(7).value()?)?,
+                parse_rule(
+                    cap.get(2).value()?,
+                    cap.get(3).value()?,
+                    cap.get(4).value()?,
+                )?,
+                parse_rule(
+                    cap.get(5).value()?,
+                    cap.get(6).value()?,
+                    cap.get(7).value()?,
+                )?,
             ];
 
             Result::Ok((current_state, state_rules))
@@ -52,7 +64,7 @@ fn main() -> Result<()> {
         .try_collect()?;
 
     let steps = regex_steps.captures(&input).value()?[1].parse::<usize>()?;
-    let mut state = regex_begin.captures(&input).value()?.get(1).value()?.as_str();
+    let mut state = (regex_begin.captures(&input).value()?.get(1).value()?).as_str();
 
     let mut tape = HashMap::new();
     let mut current_position = 0;

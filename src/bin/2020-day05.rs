@@ -23,7 +23,12 @@ fn main() -> Result<()> {
         .try_process(|iter| iter.sorted_unstable().collect_vec())?;
 
     let result1 = seats.last().value()?;
-    let result2 = seats.windows(2).find(|x| x[1] == x[0] + 2).map(|x| x[0] + 1).value()?;
+
+    let result2 = seats
+        .windows(2)
+        .find(|x| x[1] == x[0] + 2)
+        .map(|x| x[0] + 1)
+        .value()?;
 
     println!("{result1}");
     println!("{result2}");

@@ -15,7 +15,10 @@ fn inverse_modulo(x: i64, m: i64) -> i64 {
 }
 
 fn chinese_remainder_theorem(modulos_remainders: &[(i64, i64)]) -> i64 {
-    let product = modulos_remainders.iter().map(|&(modulo, _)| modulo).product();
+    let product = modulos_remainders
+        .iter()
+        .map(|&(modulo, _)| modulo)
+        .product();
 
     modulos_remainders
         .iter()
@@ -31,7 +34,9 @@ fn main() -> Result<()> {
     let input = setup(file!())?;
     let input = String::from_utf8_lossy(&input);
 
-    let re = Regex::new(r#"(?m)^Disc #(\d+) has (\d+) positions; at time=0, it is at position (\d+).$"#)?;
+    let re = Regex::new(
+        r#"(?m)^Disc #(\d+) has (\d+) positions; at time=0, it is at position (\d+).$"#,
+    )?;
 
     let mut modulos_remainders: Vec<_> = re
         .captures_iter(&input)

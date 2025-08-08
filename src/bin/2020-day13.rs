@@ -14,7 +14,10 @@ fn inverse_modulo(x: i64, m: i64) -> i64 {
 }
 
 fn chinese_remainder_theorem(modulos_remainders: &[(i64, i64)]) -> i64 {
-    let product = modulos_remainders.iter().map(|&(modulo, _)| modulo).product();
+    let product = modulos_remainders
+        .iter()
+        .map(|&(modulo, _)| modulo)
+        .product();
 
     modulos_remainders
         .iter()
@@ -33,12 +36,26 @@ fn main() -> Result<()> {
     let (first_line, second_line) = input.lines().next_tuple().value()?;
 
     let timestamp = first_line.parse::<i64>()?;
-    let bus_list = second_line.split(',').enumerate().filter_map(|(index, x)| x.parse().ok().map(|x| (index as i64, x))).collect_vec();
 
-    let (id, minutes) = bus_list.iter().map(|&(_, id)| (id, (-timestamp).rem_euclid(id))).min_by_key(|&(_, x)| x).value()?;
+    let bus_list = second_line
+        .split(',')
+        .enumerate()
+        .filter_map(|(index, x)| x.parse().ok().map(|x| (index as i64, x)))
+        .collect_vec();
+
+    let (id, minutes) = bus_list
+        .iter()
+        .map(|&(_, id)| (id, (-timestamp).rem_euclid(id)))
+        .min_by_key(|&(_, x)| x)
+        .value()?;
+
     let result1 = id * minutes;
 
-    let modulos_remainders = bus_list.iter().map(|&(index, id)| (id, -index)).collect_vec();
+    let modulos_remainders = bus_list
+        .iter()
+        .map(|&(index, id)| (id, -index))
+        .collect_vec();
+
     let result2 = chinese_remainder_theorem(&modulos_remainders);
 
     println!("{result1}");

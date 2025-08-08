@@ -81,7 +81,11 @@ fn main() -> Result<()> {
     for (row, line) in input.lines().enumerate() {
         for (column, x) in line.bytes().enumerate() {
             if x == b'#' {
-                grid.insert(Complex::new(column as i64 - (width - 1) / 2, (height - 1) / 2 - row as i64), Node::Infected);
+                let position = Complex::new(
+                    column as i64 - (width - 1) / 2,
+                    (height - 1) / 2 - row as i64,
+                );
+                grid.insert(position, Node::Infected);
             }
         }
     }

@@ -59,11 +59,24 @@ struct Monkey {
     false_index: usize,
 }
 
-fn run(mut monkeys: Vec<Monkey>, buffer: &mut Vec<u64>, divisor_product: u64, steps: usize, relief_factor: u64) -> u64 {
+fn run(
+    mut monkeys: Vec<Monkey>,
+    buffer: &mut Vec<u64>,
+    divisor_product: u64,
+    steps: usize,
+    relief_factor: u64,
+) -> u64 {
     for _ in 0..steps {
         for i in 0..monkeys.len() {
             let monkey = &mut monkeys[i];
-            let Monkey { operation, divisor, true_index, false_index, .. } = *monkey;
+
+            let Monkey {
+                operation,
+                divisor,
+                true_index,
+                false_index,
+                ..
+            } = *monkey;
 
             buffer.clear();
             buffer.extend_from_slice(&monkey.items);
@@ -88,7 +101,15 @@ fn run(mut monkeys: Vec<Monkey>, buffer: &mut Vec<u64>, divisor_product: u64, st
         }
     }
 
-    monkeys.iter().map(|x| x.inspected).sorted_unstable().collect_vec().iter().rev().take(2).product()
+    monkeys
+        .iter()
+        .map(|x| x.inspected)
+        .sorted_unstable()
+        .collect_vec()
+        .iter()
+        .rev()
+        .take(2)
+        .product()
 }
 
 fn main() -> Result<()> {

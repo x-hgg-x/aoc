@@ -31,7 +31,11 @@ struct Grid {
 
 impl Grid {
     fn new(width: usize, height: usize, tiles: Vec<Tile>) -> Result<Self> {
-        ensure!(width * height == tiles.len(), "unable to construct Grid: width * height != tiles.len()");
+        ensure!(
+            width * height == tiles.len(),
+            "unable to construct Grid: width * height != tiles.len()"
+        );
+
         Ok(Self { width, tiles })
     }
 
@@ -56,37 +60,53 @@ fn main() -> Result<()> {
     let mut tiles = Vec::with_capacity(width * height);
     let mut cart_indices = Vec::new();
 
-    input.lines().map(|line| line.bytes().chain(repeat(b' ')).take(width)).enumerate().try_for_each(|(row_index, row)| {
-        for (column_index, x) in row.enumerate() {
-            match x {
-                b' ' => tiles.push(Tile::Empty),
-                b'-' => tiles.push(Tile::HorizontalLine(None)),
-                b'|' => tiles.push(Tile::VerticalLine(None)),
-                b'\\' => tiles.push(Tile::LeftCurve(None)),
-                b'/' => tiles.push(Tile::RightCurve(None)),
-                b'+' => tiles.push(Tile::Intersection(None)),
-                b'<' => {
-                    cart_indices.push(row_index * width + column_index);
-                    tiles.push(Tile::HorizontalLine(Some(Cart { direction: Complex::new(-1, 0), turn_index: 0 })));
-                }
-                b'>' => {
-                    cart_indices.push(row_index * width + column_index);
-                    tiles.push(Tile::HorizontalLine(Some(Cart { direction: Complex::new(1, 0), turn_index: 0 })));
-                }
-                b'^' => {
-                    cart_indices.push(row_index * width + column_index);
-                    tiles.push(Tile::VerticalLine(Some(Cart { direction: Complex::new(0, 1), turn_index: 0 })));
-                }
-                b'v' => {
-                    cart_indices.push(row_index * width + column_index);
-                    tiles.push(Tile::VerticalLine(Some(Cart { direction: Complex::new(0, -1), turn_index: 0 })));
-                }
-                _ => bail!("unknown tile"),
-            };
-        }
+    input
+        .lines()
+        .map(|line| line.bytes().chain(repeat(b' ')).take(width))
+        .enumerate()
+        .try_for_each(|(row_index, row)| {
+            for (column_index, x) in row.enumerate() {
+                match x {
+                    b' ' => tiles.push(Tile::Empty),
+                    b'-' => tiles.push(Tile::HorizontalLine(None)),
+                    b'|' => tiles.push(Tile::VerticalLine(None)),
+                    b'\\' => tiles.push(Tile::LeftCurve(None)),
+                    b'/' => tiles.push(Tile::RightCurve(None)),
+                    b'+' => tiles.push(Tile::Intersection(None)),
+                    b'<' => {
+                        cart_indices.push(row_index * width + column_index);
+                        tiles.push(Tile::HorizontalLine(Some(Cart {
+                            direction: Complex::new(-1, 0),
+                            turn_index: 0,
+                        })));
+                    }
+                    b'>' => {
+                        cart_indices.push(row_index * width + column_index);
+                        tiles.push(Tile::HorizontalLine(Some(Cart {
+                            direction: Complex::new(1, 0),
+                            turn_index: 0,
+                        })));
+                    }
+                    b'^' => {
+                        cart_indices.push(row_index * width + column_index);
+                        tiles.push(Tile::VerticalLine(Some(Cart {
+                            direction: Complex::new(0, 1),
+                            turn_index: 0,
+                        })));
+                    }
+                    b'v' => {
+                        cart_indices.push(row_index * width + column_index);
+                        tiles.push(Tile::VerticalLine(Some(Cart {
+                            direction: Complex::new(0, -1),
+                            turn_index: 0,
+                        })));
+                    }
+                    _ => bail!("unknown tile"),
+                };
+            }
 
-        Ok(())
-    })?;
+            Ok(())
+        })?;
 
     let mut grid = Grid::new(width, height, tiles)?;
 
@@ -100,7 +120,11 @@ fn main() -> Result<()> {
 
             let mut cart = match &mut grid.tiles[*cart_index] {
                 Tile::Empty => bail!("empty tile at ({cart_row}, {cart_column})"),
-                Tile::HorizontalLine(x) | Tile::VerticalLine(x) | Tile::LeftCurve(x) | Tile::RightCurve(x) | Tile::Intersection(x) => match x.take() {
+                Tile::HorizontalLine(x)
+                | Tile::VerticalLine(x)
+                | Tile::LeftCurve(x)
+                | Tile::RightCurve(x)
+                | Tile::Intersection(x) => match x.take() {
                     Some(cart) => cart,
                     None => continue,
                 },
@@ -170,7 +194,10 @@ fn main() -> Result<()> {
         }
     };
 
-    let (x1, y1) = first_crash_position.map(|(row, column)| (column, row)).value()?;
+    let (x1, y1) = first_crash_position
+        .map(|(row, column)| (column, row))
+        .value()?;
+
     let (x2, y2) = (last_position.1, last_position.0);
 
     let result1 = format!("{x1},{y1}");

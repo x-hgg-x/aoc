@@ -19,7 +19,11 @@ impl HashGenerator {
         let mut data = SmallVec::from_slice(input);
         data.push(b'0');
 
-        Self { data, input_len: input.len(), index: 0 }
+        Self {
+            data,
+            input_len: input.len(),
+            index: 0,
+        }
     }
 }
 
@@ -66,7 +70,12 @@ struct Queue {
 
 impl Queue {
     fn new(input: &[u8], additional_hashs: usize) -> Self {
-        Self { additional_hashs, hash_generator: HashGenerator::new(input), hash_infos: VecDeque::new(), quintuples_count: [0; 16] }
+        Self {
+            additional_hashs,
+            hash_generator: HashGenerator::new(input),
+            hash_infos: VecDeque::new(),
+            quintuples_count: [0; 16],
+        }
     }
 
     fn is_empty(&self) -> bool {
@@ -74,27 +83,44 @@ impl Queue {
     }
 
     fn compute_next_hash(&mut self) -> Result<()> {
-        let mut hex: SmallVec<[u8; 32]> = self.hash_generator.next().as_deref().into_iter().flatten().flat_map(|x| [x >> 4, x & 0x0F]).collect();
+        let mut hex: SmallVec<[u8; 32]> = self
+            .hash_generator
+            .next()
+            .as_deref()
+            .into_iter()
+            .flatten()
+            .flat_map(|x| [x >> 4, x & 0x0F])
+            .collect();
 
         for _ in 0..self.additional_hashs {
             for byte in &mut hex {
                 *byte = char::from_digit(*byte as u32, 16).value()? as u8;
             }
-            hex = md5::compute(hex).iter().flat_map(|x| [x >> 4, x & 0x0F]).collect();
+
+            hex = md5::compute(hex)
+                .iter()
+                .flat_map(|x| [x >> 4, x & 0x0F])
+                .collect();
         }
 
         if let Some(triple) = hex.windows(3).find(|x| x.iter().all_equal()).map(|x| x[0]) {
             let mut quintuples = [false; 16];
 
-            hex.windows(5).filter(|x| x.iter().all_equal()).for_each(|x| {
-                quintuples[x[0] as usize] = true;
-            });
+            hex.windows(5)
+                .filter(|x| x.iter().all_equal())
+                .for_each(|x| {
+                    quintuples[x[0] as usize] = true;
+                });
 
             for (count, flag) in self.quintuples_count.iter_mut().zip(quintuples) {
                 *count += flag as u16;
             }
 
-            self.hash_infos.push_back(HashInfo { index: self.hash_generator.index - 1, triple, quintuples });
+            self.hash_infos.push_back(HashInfo {
+                index: self.hash_generator.index - 1,
+                triple,
+                quintuples,
+            });
         }
 
         Ok(())

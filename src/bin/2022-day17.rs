@@ -9,11 +9,41 @@ use std::collections::hash_map::{Entry, HashMap};
 const WIDTH: usize = 7;
 
 const SHAPES: &[[Complex<u64>; 5]; 5] = &[
-    [Complex::new(2, 0), Complex::new(2, 0), Complex::new(3, 0), Complex::new(4, 0), Complex::new(5, 0)],
-    [Complex::new(2, 1), Complex::new(3, 1), Complex::new(3, 2), Complex::new(3, 0), Complex::new(4, 1)],
-    [Complex::new(2, 0), Complex::new(3, 0), Complex::new(4, 0), Complex::new(4, 1), Complex::new(4, 2)],
-    [Complex::new(2, 0), Complex::new(2, 0), Complex::new(2, 1), Complex::new(2, 2), Complex::new(2, 3)],
-    [Complex::new(2, 0), Complex::new(2, 0), Complex::new(3, 0), Complex::new(2, 1), Complex::new(3, 1)],
+    [
+        Complex::new(2, 0),
+        Complex::new(2, 0),
+        Complex::new(3, 0),
+        Complex::new(4, 0),
+        Complex::new(5, 0),
+    ],
+    [
+        Complex::new(2, 1),
+        Complex::new(3, 1),
+        Complex::new(3, 2),
+        Complex::new(3, 0),
+        Complex::new(4, 1),
+    ],
+    [
+        Complex::new(2, 0),
+        Complex::new(3, 0),
+        Complex::new(4, 0),
+        Complex::new(4, 1),
+        Complex::new(4, 2),
+    ],
+    [
+        Complex::new(2, 0),
+        Complex::new(2, 0),
+        Complex::new(2, 1),
+        Complex::new(2, 2),
+        Complex::new(2, 3),
+    ],
+    [
+        Complex::new(2, 0),
+        Complex::new(2, 0),
+        Complex::new(3, 0),
+        Complex::new(2, 1),
+        Complex::new(3, 1),
+    ],
 ];
 
 #[derive(Copy, Clone)]
@@ -53,14 +83,22 @@ impl State {
         loop {
             match jets[self.jet_index % jets.len()] {
                 Direction::Left => {
-                    if rocks[0].re > 0 && rocks.iter().all(|rock| !chamber.contains(&(rock - Complex::new(1, 0)))) {
+                    if rocks[0].re > 0
+                        && rocks
+                            .iter()
+                            .all(|rock| !chamber.contains(&(rock - Complex::new(1, 0))))
+                    {
                         for rock in &mut rocks {
                             rock.re -= 1;
                         }
                     }
                 }
                 Direction::Right => {
-                    if rocks[4].re < 6 && rocks.iter().all(|rock| !chamber.contains(&(rock + Complex::new(1, 0)))) {
+                    if rocks[4].re < 6
+                        && rocks
+                            .iter()
+                            .all(|rock| !chamber.contains(&(rock + Complex::new(1, 0))))
+                    {
                         for rock in &mut rocks {
                             rock.re += 1;
                         }
@@ -70,7 +108,7 @@ impl State {
 
             self.jet_index += 1;
 
-            if rocks.iter().all(|rock| !chamber.contains(&(rock - Complex::new(0, 1)))) {
+            if (rocks.iter()).all(|rock| !chamber.contains(&(rock - Complex::new(0, 1)))) {
                 for rock in &mut rocks {
                     rock.im -= 1;
                 }
@@ -80,7 +118,10 @@ impl State {
                     let max_height = &mut self.max_heights[rock.re as usize];
                     *max_height = rock.im.max(*max_height);
                 }
-                self.highest = rocks.iter().fold(self.highest, |max_height, rock| max_height.max(rock.im));
+
+                self.highest =
+                    (rocks.iter()).fold(self.highest, |max_height, rock| max_height.max(rock.im));
+
                 break;
             }
         }
@@ -108,11 +149,18 @@ fn run(jets: &[Direction], count: usize, cycle_detection: bool) -> u64 {
                 *x -= min_height;
             }
 
-            let cycle_state = CycleState { relative_heights, shape_index: state.total_shapes % SHAPES.len(), jet_index: state.jet_index % jets.len() };
+            let cycle_state = CycleState {
+                relative_heights,
+                shape_index: state.total_shapes % SHAPES.len(),
+                jet_index: state.jet_index % jets.len(),
+            };
 
             match cycle_states.entry(cycle_state) {
                 Entry::Vacant(entry) => {
-                    entry.insert(CycleInfos { highest: state.highest, total_shapes: state.total_shapes });
+                    entry.insert(CycleInfos {
+                        highest: state.highest,
+                        total_shapes: state.total_shapes,
+                    });
                 }
                 Entry::Occupied(entry) => {
                     let cycle_infos = entry.get();

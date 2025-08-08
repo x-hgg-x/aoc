@@ -4,7 +4,11 @@ use itertools::Itertools;
 use regex::bytes::Regex;
 
 fn compute_new_recipes(scoreboard: &mut Vec<u8>, current_recipes: &mut [usize; 2]) {
-    let scores = [scoreboard[current_recipes[0]], scoreboard[current_recipes[1]]];
+    let scores = [
+        scoreboard[current_recipes[0]],
+        scoreboard[current_recipes[1]],
+    ];
+
     let new_score = scores[0] + scores[1];
 
     if new_score >= 10 {
@@ -31,7 +35,10 @@ fn main() -> Result<()> {
         compute_new_recipes(&mut scoreboard, &mut current_recipes);
     }
 
-    let result1: String = scoreboard[recipes_count..recipes_count + 10].iter().filter_map(|&score| char::from_digit(score.into(), 10)).collect();
+    let result1: String = scoreboard[recipes_count..recipes_count + 10]
+        .iter()
+        .filter_map(|&score| char::from_digit(score.into(), 10))
+        .collect();
 
     let sub_slice = input.bytes().map(|x| x - b'0').collect_vec();
     let re = Regex::new(&String::from_utf8_lossy(&sub_slice))?;

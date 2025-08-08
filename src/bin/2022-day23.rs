@@ -13,7 +13,10 @@ const NORTH_WEST: Complex<i64> = Complex::new(-1, 1);
 const NORTH_EAST: Complex<i64> = Complex::new(1, 1);
 const SOUTH_WEST: Complex<i64> = Complex::new(-1, -1);
 const SOUTH_EAST: Complex<i64> = Complex::new(1, -1);
-const ALL_DIRECTIONS: &[Complex<i64>; 8] = &[NORTH, SOUTH, WEST, EAST, NORTH_WEST, NORTH_EAST, SOUTH_WEST, SOUTH_EAST];
+
+const ALL_DIRECTIONS: &[Complex<i64>; 8] = &[
+    NORTH, SOUTH, WEST, EAST, NORTH_WEST, NORTH_EAST, SOUTH_WEST, SOUTH_EAST,
+];
 
 fn main() -> Result<()> {
     let input = setup(file!())?;
@@ -22,7 +25,12 @@ fn main() -> Result<()> {
     let mut elves: HashSet<_> = input
         .lines()
         .enumerate()
-        .flat_map(|(i_row, line)| line.bytes().enumerate().filter(|&(_, x)| x == b'#').map(move |(i_col, _)| Complex::new(i_col as i64, -(i_row as i64))))
+        .flat_map(|(i_row, line)| {
+            line.bytes()
+                .enumerate()
+                .filter(|&(_, x)| x == b'#')
+                .map(move |(i_col, _)| Complex::new(i_col as i64, -(i_row as i64)))
+        })
         .collect();
 
     let mut checks = [NORTH, SOUTH, WEST, EAST];
@@ -37,7 +45,9 @@ fn main() -> Result<()> {
         let mut locked = true;
 
         for &coord in &elves {
-            iter::zip(&mut neighbours, ALL_DIRECTIONS).for_each(|(neighbour, direction)| *neighbour = elves.contains(&(coord + direction)));
+            iter::zip(&mut neighbours, ALL_DIRECTIONS).for_each(|(neighbour, direction)| {
+                *neighbour = elves.contains(&(coord + direction))
+            });
 
             if !neighbours.iter().any(|&x| x) {
                 continue;
@@ -54,7 +64,7 @@ fn main() -> Result<()> {
             });
 
             if let Some(direction) = proposed_direction {
-                proposed_coords.entry(coord + direction).or_default().push(coord);
+                (proposed_coords.entry(coord + direction).or_default()).push(coord);
             }
         }
 
@@ -72,9 +82,13 @@ fn main() -> Result<()> {
             let initial_min = Complex::new(i64::MIN, i64::MIN);
             let initial_max = Complex::new(i64::MAX, i64::MAX);
 
-            let (min, max) = elves.iter().fold((initial_max, initial_min), |(min, max), coord| {
-                (Complex::new(min.re.min(coord.re), min.im.min(coord.im)), Complex::new(max.re.max(coord.re), max.im.max(coord.im)))
-            });
+            let (min, max) =
+                (elves.iter()).fold((initial_max, initial_min), |(min, max), coord| {
+                    (
+                        Complex::new(min.re.min(coord.re), min.im.min(coord.im)),
+                        Complex::new(max.re.max(coord.re), max.im.max(coord.im)),
+                    )
+                });
 
             let rect = max - min + Complex::new(1, 1);
             round_10_empty_tiles = rect.re * rect.im - elves.len() as i64;

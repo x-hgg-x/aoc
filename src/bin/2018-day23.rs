@@ -7,7 +7,16 @@ use std::cmp::{Ordering, Reverse};
 use std::collections::BinaryHeap;
 use std::iter;
 
-const OCTANTS: [[i64; 3]; 8] = [[0, 0, 0], [0, 0, 1], [0, 1, 0], [0, 1, 1], [1, 0, 0], [1, 0, 1], [1, 1, 0], [1, 1, 1]];
+const OCTANTS: [[i64; 3]; 8] = [
+    [0, 0, 0],
+    [0, 0, 1],
+    [0, 1, 0],
+    [0, 1, 1],
+    [1, 0, 0],
+    [1, 0, 1],
+    [1, 1, 0],
+    [1, 1, 1],
+];
 
 struct Nanobot {
     position: [i64; 3],
@@ -23,11 +32,20 @@ struct State {
 
 impl State {
     fn new(intersecting_bots: usize, box_corner: [i64; 3], box_size: i64) -> Self {
-        Self { intersecting_bots, box_corner, box_size, box_corner_distance: box_corner.into_iter().map(i64::abs).sum() }
+        Self {
+            intersecting_bots,
+            box_corner,
+            box_size,
+            box_corner_distance: box_corner.into_iter().map(i64::abs).sum(),
+        }
     }
 
     fn estimate(&self) -> (Reverse<usize>, Reverse<i64>, i64) {
-        (Reverse(self.intersecting_bots), Reverse(self.box_size), self.box_corner_distance)
+        (
+            Reverse(self.intersecting_bots),
+            Reverse(self.box_size),
+            self.box_corner_distance,
+        )
     }
 }
 
@@ -77,26 +95,53 @@ fn main() -> Result<()> {
 
     let nanobots: Vec<_> = re
         .captures_iter(&input)
-        .map(|cap| Result::Ok(Nanobot { position: [cap[1].trim().parse()?, cap[2].trim().parse()?, cap[3].trim().parse()?], radius: cap[4].trim().parse()? }))
+        .map(|cap| {
+            Result::Ok(Nanobot {
+                position: [
+                    cap[1].trim().parse()?,
+                    cap[2].trim().parse()?,
+                    cap[3].trim().parse()?,
+                ],
+                radius: cap[4].trim().parse()?,
+            })
+        })
         .try_collect()?;
 
-    let largest_signal_nanobot = nanobots.iter().max_by_key(|nanobot| nanobot.radius).value()?;
+    let largest_signal_nanobot = nanobots
+        .iter()
+        .max_by_key(|nanobot| nanobot.radius)
+        .value()?;
 
     let result1 = nanobots
         .iter()
         .filter(|&nanobot| {
-            let distance = nanobot.position.into_iter().zip(largest_signal_nanobot.position).map(|(p1, p2)| (p1 - p2).abs()).sum::<i64>();
+            let distance = nanobot
+                .position
+                .into_iter()
+                .zip(largest_signal_nanobot.position)
+                .map(|(p1, p2)| (p1 - p2).abs())
+                .sum::<i64>();
             distance <= largest_signal_nanobot.radius
         })
         .count();
 
-    let bounding_box = nanobots.iter().flat_map(|nanobot| nanobot.position.into_iter().map(|x| x.unsigned_abs())).max().value()?;
+    let bounding_box = nanobots
+        .iter()
+        .flat_map(|nanobot| nanobot.position.into_iter().map(|x| x.unsigned_abs()))
+        .max()
+        .value()?;
+
     let max_box_size = i64::try_from(bounding_box.next_power_of_two())?;
 
     let initial_intersecting_bots = nanobots.len();
     let initial_box_corner = [-max_box_size; 3];
     let initial_box_size = 2 * max_box_size;
-    let initial_state = State::new(initial_intersecting_bots, initial_box_corner, initial_box_size);
+
+    let initial_state = State::new(
+        initial_intersecting_bots,
+        initial_box_corner,
+        initial_box_size,
+    );
 
     let mut current_states = BinaryHeap::from([initial_state]);
 
@@ -110,11 +155,20 @@ fn main() -> Result<()> {
 
             for octant in OCTANTS {
                 let mut new_box_corner = state.box_corner;
-                new_box_corner.iter_mut().zip(octant).for_each(|(x, o)| *x += new_box_size * o);
 
-                let new_intersecting_bots = intersecting_bots(new_box_corner, new_box_size, &nanobots);
+                new_box_corner
+                    .iter_mut()
+                    .zip(octant)
+                    .for_each(|(x, o)| *x += new_box_size * o);
 
-                current_states.push(State::new(new_intersecting_bots, new_box_corner, new_box_size));
+                let new_intersecting_bots =
+                    intersecting_bots(new_box_corner, new_box_size, &nanobots);
+
+                current_states.push(State::new(
+                    new_intersecting_bots,
+                    new_box_corner,
+                    new_box_size,
+                ));
             }
         }
     };

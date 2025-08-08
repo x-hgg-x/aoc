@@ -19,7 +19,12 @@ fn main() -> Result<()> {
     let asteroids = input
         .lines()
         .enumerate()
-        .flat_map(|(y, line)| line.bytes().enumerate().filter(|&(_, pixel)| pixel == b'#').map(move |(x, _)| Complex::new(x as i64, y as i64)))
+        .flat_map(|(y, line)| {
+            line.bytes()
+                .enumerate()
+                .filter(|&(_, pixel)| pixel == b'#')
+                .map(move |(x, _)| Complex::new(x as i64, y as i64))
+        })
         .collect_vec();
 
     let (index_best, count) = asteroids
@@ -61,7 +66,9 @@ fn main() -> Result<()> {
 
             (asteroid, angle, gcd)
         })
-        .sorted_unstable_by(|&(_, angle_1, gcd_1), &(_, angle_2, gcd_2)| (angle_1, gcd_1).partial_cmp(&(angle_2, gcd_2)).unwrap())
+        .sorted_unstable_by(|&(_, angle_1, gcd_1), &(_, angle_2, gcd_2)| {
+            (angle_1, gcd_1).partial_cmp(&(angle_2, gcd_2)).unwrap()
+        })
         .collect_vec();
 
     let mut current_angle = f64::NAN;

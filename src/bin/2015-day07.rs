@@ -74,7 +74,14 @@ impl ParseRegex {
     const REGEX_LSHIFT: usize = 4;
     const REGEX_RSHIFT: usize = 5;
 
-    fn new(regex_identity: Regex, regex_and: Regex, regex_or: Regex, regex_not: Regex, regex_lshift: Regex, regex_rshift: Regex) -> Result<Self> {
+    fn new(
+        regex_identity: Regex,
+        regex_and: Regex,
+        regex_or: Regex,
+        regex_not: Regex,
+        regex_lshift: Regex,
+        regex_rshift: Regex,
+    ) -> Result<Self> {
         Ok(Self {
             set: RegexSet::new([
                 regex_identity.as_str(),
@@ -99,41 +106,67 @@ impl ParseRegex {
                 let cap = self.regex_identity.captures(line).value()?;
                 let name = cap.name("name").value()?.as_str();
                 let op = Operand::parse_new(cap.name("op").value()?.as_str());
-                Ok((name, [op.dependency()].into_iter().flatten().collect(), Operation::Identity(op)))
+                let dependencies = [op.dependency()].into_iter().flatten().collect();
+                Ok((name, dependencies, Operation::Identity(op)))
             }
             Some(Self::REGEX_AND) => {
                 let cap = self.regex_and.captures(line).value()?;
                 let name = cap.name("name").value()?.as_str();
                 let op1 = Operand::parse_new(cap.name("op1").value()?.as_str());
                 let op2 = Operand::parse_new(cap.name("op2").value()?.as_str());
-                Ok((name, [op1.dependency(), op2.dependency()].into_iter().flatten().collect(), Operation::And(op1, op2)))
+
+                let dependencies = [op1.dependency(), op2.dependency()]
+                    .into_iter()
+                    .flatten()
+                    .collect();
+
+                Ok((name, dependencies, Operation::And(op1, op2)))
             }
             Some(Self::REGEX_OR) => {
                 let cap = self.regex_or.captures(line).value()?;
                 let name = cap.name("name").value()?.as_str();
                 let op1 = Operand::parse_new(cap.name("op1").value()?.as_str());
                 let op2 = Operand::parse_new(cap.name("op2").value()?.as_str());
-                Ok((name, [op1.dependency(), op2.dependency()].into_iter().flatten().collect(), Operation::Or(op1, op2)))
+
+                let dependencies = [op1.dependency(), op2.dependency()]
+                    .into_iter()
+                    .flatten()
+                    .collect();
+
+                Ok((name, dependencies, Operation::Or(op1, op2)))
             }
             Some(Self::REGEX_NOT) => {
                 let cap = self.regex_not.captures(line).value()?;
                 let name = cap.name("name").value()?.as_str();
                 let op = Operand::parse_new(cap.name("op").value()?.as_str());
-                Ok((name, [op.dependency()].into_iter().flatten().collect(), Operation::Not(op)))
+                let dependencies = op.dependency().into_iter().collect();
+                Ok((name, dependencies, Operation::Not(op)))
             }
             Some(Self::REGEX_LSHIFT) => {
                 let cap = self.regex_lshift.captures(line).value()?;
                 let name = cap.name("name").value()?.as_str();
                 let op1 = Operand::parse_new(cap.name("op1").value()?.as_str());
                 let op2 = Operand::parse_new(cap.name("op2").value()?.as_str());
-                Ok((name, [op1.dependency(), op2.dependency()].into_iter().flatten().collect(), Operation::LShift(op1, op2)))
+
+                let dependencies = [op1.dependency(), op2.dependency()]
+                    .into_iter()
+                    .flatten()
+                    .collect();
+
+                Ok((name, dependencies, Operation::LShift(op1, op2)))
             }
             Some(Self::REGEX_RSHIFT) => {
                 let cap = self.regex_rshift.captures(line).value()?;
                 let name = cap.name("name").value()?.as_str();
                 let op1 = Operand::parse_new(cap.name("op1").value()?.as_str());
                 let op2 = Operand::parse_new(cap.name("op2").value()?.as_str());
-                Ok((name, [op1.dependency(), op2.dependency()].into_iter().flatten().collect(), Operation::RShift(op1, op2)))
+
+                let dependencies = [op1.dependency(), op2.dependency()]
+                    .into_iter()
+                    .flatten()
+                    .collect();
+
+                Ok((name, dependencies, Operation::RShift(op1, op2)))
             }
             _ => bail!("unknown instruction: {line}"),
         }
@@ -145,11 +178,17 @@ fn compute_values<'a>(
     graph: &HashMap<&'a str, (Operation<'a>, SmallVec<[&'a str; 2]>)>,
     inverted_graph: &HashMap<&'a str, Vec<&'a str>>,
 ) {
-    let mut queue: VecDeque<_> = graph.iter().filter(|&(_, (_, dependencies))| dependencies.is_empty()).map(|(&name, _)| name).collect();
+    let mut queue: VecDeque<_> = graph
+        .iter()
+        .filter(|&(_, (_, dependencies))| dependencies.is_empty())
+        .map(|(&name, _)| name)
+        .collect();
 
     while let Some(name) = queue.pop_front() {
         values.insert(name, graph[name].0.value(values));
-        queue.extend(inverted_graph[name].iter().copied().filter(|&x| graph[x].1.iter().all(|&dependencies| values.contains_key(dependencies))));
+        queue.extend(inverted_graph[name].iter().copied().filter(|&x| {
+            (graph[x].1.iter()).all(|&dependencies| values.contains_key(dependencies))
+        }));
     }
 }
 
@@ -191,7 +230,8 @@ fn main() -> Result<()> {
             parent.remove(position);
         }
     }
-    graph.insert("b", (Operation::Identity(Operand::Constant(result1)), SmallVec::new()));
+    let op = Operation::Identity(Operand::Constant(result1));
+    graph.insert("b", (op, SmallVec::new()));
 
     compute_values(&mut values, &graph, &inverted_graph);
     let result2 = values["a"];

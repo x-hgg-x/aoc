@@ -23,7 +23,14 @@ fn main() -> Result<()> {
     let result1 = replacements
         .iter()
         .flat_map(|(regex_old, new)| {
-            regex_old.find_iter(molecule).map(move |m| molecule[..m.start()].iter().chain(&**new).chain(&molecule[m.end()..]).copied().collect_vec())
+            regex_old.find_iter(molecule).map(move |m| {
+                molecule[..m.start()]
+                    .iter()
+                    .chain(&**new)
+                    .chain(&molecule[m.end()..])
+                    .copied()
+                    .collect_vec()
+            })
         })
         .sorted_unstable()
         .dedup()

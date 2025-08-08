@@ -17,9 +17,22 @@ struct Map {
 }
 
 impl Map {
-    fn new(width: usize, height: usize, tiles: Vec<u8>, portals: HashMap<Point, Point>) -> Result<Self> {
-        ensure!(width * height == tiles.len(), "unable to construct Map: width * height != tiles.len()");
-        Ok(Self { width, tiles, portals })
+    fn new(
+        width: usize,
+        height: usize,
+        tiles: Vec<u8>,
+        portals: HashMap<Point, Point>,
+    ) -> Result<Self> {
+        ensure!(
+            width * height == tiles.len(),
+            "unable to construct Map: width * height != tiles.len()"
+        );
+
+        Ok(Self {
+            width,
+            tiles,
+            portals,
+        })
     }
 
     fn get_index(&self, (row, column): Point) -> usize {
@@ -31,59 +44,153 @@ fn parse_map(input: &str) -> Result<(Map, Point, Point)> {
     let lines = input.lines().collect_vec();
 
     let is_inside = |x| matches!(x, b'#' | b'.');
-    let is_inside_at = |line: &str, index| line.as_bytes().get(index).map(|&x| is_inside(x)) == Some(true);
+
+    let is_inside_at =
+        |line: &str, index| line.as_bytes().get(index).map(|&x| is_inside(x)) == Some(true);
 
     let mut line_iter = lines[lines.len() / 2].bytes().enumerate();
-    let min_x_left = line_iter.find(|&(_, x)| is_inside(x)).map(|(index, _)| index).value()?;
-    let max_x_left = line_iter.find(|&(_, x)| !is_inside(x)).map(|(index, _)| index).value()? - 1;
-    let min_x_right = line_iter.find(|&(_, x)| is_inside(x)).map(|(index, _)| index).value()?;
-    let max_x_right = line_iter.rev().find(|&(_, x)| is_inside(x)).map(|(index, _)| index).value()?;
+
+    let min_x_left = line_iter
+        .find(|&(_, x)| is_inside(x))
+        .map(|(index, _)| index)
+        .value()?;
+
+    let max_x_left = line_iter
+        .find(|&(_, x)| !is_inside(x))
+        .map(|(index, _)| index)
+        .value()?
+        - 1;
+
+    let min_x_right = line_iter
+        .find(|&(_, x)| is_inside(x))
+        .map(|(index, _)| index)
+        .value()?;
+
+    let max_x_right = line_iter
+        .rev()
+        .find(|&(_, x)| is_inside(x))
+        .map(|(index, _)| index)
+        .value()?;
 
     let mut lines_iter = lines.iter().enumerate();
-    let min_y_top = lines_iter.find(|&(_, &line)| is_inside_at(line, min_x_left)).map(|(index, _)| index).value()?;
-    let max_y_top = lines_iter.find(|&(_, &line)| !is_inside_at(line, max_x_left + 1)).map(|(index, _)| index).value()? - 1;
-    let min_y_bottom = lines_iter.find(|&(_, &line)| is_inside_at(line, max_x_left + 1)).map(|(index, _)| index).value()?;
-    let max_y_bottom = lines_iter.rev().find(|&(_, &line)| is_inside_at(line, min_x_left)).map(|(index, _)| index).value()?;
+
+    let min_y_top = lines_iter
+        .find(|&(_, &line)| is_inside_at(line, min_x_left))
+        .map(|(index, _)| index)
+        .value()?;
+
+    let max_y_top = lines_iter
+        .find(|&(_, &line)| !is_inside_at(line, max_x_left + 1))
+        .map(|(index, _)| index)
+        .value()?
+        - 1;
+
+    let min_y_bottom = lines_iter
+        .find(|&(_, &line)| is_inside_at(line, max_x_left + 1))
+        .map(|(index, _)| index)
+        .value()?;
+
+    let max_y_bottom = lines_iter
+        .rev()
+        .find(|&(_, &line)| is_inside_at(line, min_x_left))
+        .map(|(index, _)| index)
+        .value()?;
 
     let width = lines.iter().map(|&line| line.len()).max().value()?;
     let height = lines.len();
-    let tiles = lines.iter().flat_map(|&line| line.bytes().chain(repeat(b' ')).take(width)).collect_vec();
+
+    let tiles = lines
+        .iter()
+        .flat_map(|&line| line.bytes().chain(repeat(b' ')).take(width))
+        .collect_vec();
 
     let mut map = Map::new(width, height, tiles, HashMap::new())?;
 
     let mut portals_entries = HashMap::<_, SmallVec<[_; 2]>>::new();
 
-    map.tiles.chunks_exact_mut(width).skip(min_y_top - 2).next_tuple().into_iter().for_each(|(row_0, row_1, row_2)| {
-        for (i_col, tile) in row_2.iter_mut().enumerate().filter(|(_, tile)| **tile == b'.') {
-            *tile = b'-';
-            portals_entries.entry([row_0[i_col], row_1[i_col]]).or_default().push((min_y_top, i_col));
-        }
-    });
-    map.tiles.chunks_exact_mut(width).skip(max_y_bottom).next_tuple().into_iter().for_each(|(row_0, row_1, row_2)| {
-        for (i_col, tile) in row_0.iter_mut().enumerate().filter(|(_, tile)| **tile == b'.') {
-            *tile = b'-';
-            portals_entries.entry([row_1[i_col], row_2[i_col]]).or_default().push((max_y_bottom, i_col));
-        }
-    });
-    map.tiles.chunks_exact_mut(width).skip(min_y_bottom - 2).next_tuple().into_iter().for_each(|(row_0, row_1, row_2)| {
-        for (i_col, tile) in row_2.iter_mut().enumerate().skip(max_x_left + 1).take(min_x_right - max_x_left - 1).filter(|(_, tile)| **tile == b'.') {
-            *tile = b'+';
-            portals_entries.entry([row_0[i_col], row_1[i_col]]).or_default().push((min_y_bottom, i_col));
-        }
-    });
-    map.tiles.chunks_exact_mut(width).skip(max_y_top).next_tuple().into_iter().for_each(|(row_0, row_1, row_2)| {
-        for (i_col, tile) in row_0.iter_mut().enumerate().skip(max_x_left + 1).take(min_x_right - max_x_left - 1).filter(|(_, tile)| **tile == b'.') {
-            *tile = b'+';
-            portals_entries.entry([row_1[i_col], row_2[i_col]]).or_default().push((max_y_top, i_col));
-        }
-    });
+    map.tiles
+        .chunks_exact_mut(width)
+        .skip(min_y_top - 2)
+        .next_tuple()
+        .into_iter()
+        .for_each(|(row_0, row_1, row_2)| {
+            for (i_col, tile) in (row_2.iter_mut().enumerate()).filter(|(_, tile)| **tile == b'.') {
+                *tile = b'-';
+
+                portals_entries
+                    .entry([row_0[i_col], row_1[i_col]])
+                    .or_default()
+                    .push((min_y_top, i_col));
+            }
+        });
+    map.tiles
+        .chunks_exact_mut(width)
+        .skip(max_y_bottom)
+        .next_tuple()
+        .into_iter()
+        .for_each(|(row_0, row_1, row_2)| {
+            for (i_col, tile) in (row_0.iter_mut().enumerate()).filter(|(_, tile)| **tile == b'.') {
+                *tile = b'-';
+
+                portals_entries
+                    .entry([row_1[i_col], row_2[i_col]])
+                    .or_default()
+                    .push((max_y_bottom, i_col));
+            }
+        });
+    map.tiles
+        .chunks_exact_mut(width)
+        .skip(min_y_bottom - 2)
+        .next_tuple()
+        .into_iter()
+        .for_each(|(row_0, row_1, row_2)| {
+            for (i_col, tile) in row_2
+                .iter_mut()
+                .enumerate()
+                .skip(max_x_left + 1)
+                .take(min_x_right - max_x_left - 1)
+                .filter(|(_, tile)| **tile == b'.')
+            {
+                *tile = b'+';
+
+                portals_entries
+                    .entry([row_0[i_col], row_1[i_col]])
+                    .or_default()
+                    .push((min_y_bottom, i_col));
+            }
+        });
+    map.tiles
+        .chunks_exact_mut(width)
+        .skip(max_y_top)
+        .next_tuple()
+        .into_iter()
+        .for_each(|(row_0, row_1, row_2)| {
+            for (i_col, tile) in row_0
+                .iter_mut()
+                .enumerate()
+                .skip(max_x_left + 1)
+                .take(min_x_right - max_x_left - 1)
+                .filter(|(_, tile)| **tile == b'.')
+            {
+                *tile = b'+';
+
+                portals_entries
+                    .entry([row_1[i_col], row_2[i_col]])
+                    .or_default()
+                    .push((max_y_top, i_col));
+            }
+        });
 
     for y in min_y_top..=max_y_bottom {
         let index = map.get_index((y, min_x_left));
         let tile = map.tiles.get_mut(index).value()?;
         if *tile == b'.' {
             *tile = b'-';
-            portals_entries.entry([map.tiles[index - 2], map.tiles[index - 1]]).or_default().push((y, min_x_left));
+
+            portals_entries
+                .entry([map.tiles[index - 2], map.tiles[index - 1]])
+                .or_default()
+                .push((y, min_x_left));
         }
     }
     for y in min_y_top..=max_y_bottom {
@@ -91,7 +198,11 @@ fn parse_map(input: &str) -> Result<(Map, Point, Point)> {
         let tile = map.tiles.get_mut(index).value()?;
         if *tile == b'.' {
             *tile = b'-';
-            portals_entries.entry([map.tiles[index + 1], map.tiles[index + 2]]).or_default().push((y, max_x_right));
+
+            portals_entries
+                .entry([map.tiles[index + 1], map.tiles[index + 2]])
+                .or_default()
+                .push((y, max_x_right));
         }
     }
     for y in max_y_top + 1..=min_y_bottom - 1 {
@@ -99,7 +210,11 @@ fn parse_map(input: &str) -> Result<(Map, Point, Point)> {
         let tile = map.tiles.get_mut(index).value()?;
         if *tile == b'.' {
             *tile = b'+';
-            portals_entries.entry([map.tiles[index - 2], map.tiles[index - 1]]).or_default().push((y, min_x_right));
+
+            portals_entries
+                .entry([map.tiles[index - 2], map.tiles[index - 1]])
+                .or_default()
+                .push((y, min_x_right));
         }
     }
     for y in max_y_top + 1..=min_y_bottom - 1 {
@@ -107,7 +222,11 @@ fn parse_map(input: &str) -> Result<(Map, Point, Point)> {
         let tile = map.tiles.get_mut(index).value()?;
         if *tile == b'.' {
             *tile = b'+';
-            portals_entries.entry([map.tiles[index + 1], map.tiles[index + 2]]).or_default().push((y, max_x_left));
+
+            portals_entries
+                .entry([map.tiles[index + 1], map.tiles[index + 2]])
+                .or_default()
+                .push((y, max_x_left));
         }
     }
 
@@ -153,7 +272,12 @@ fn solve(map: &Map, start_position: Point, goal_position: Point, has_depth: bool
             _ => (),
         }
 
-        for new_position in [(position.0 - 1, position.1), (position.0 + 1, position.1), (position.0, position.1 - 1), (position.0, position.1 + 1)] {
+        for new_position in [
+            (position.0 - 1, position.1),
+            (position.0 + 1, position.1),
+            (position.0, position.1 - 1),
+            (position.0, position.1 + 1),
+        ] {
             if matches!(map.tiles[map.get_index(new_position)], b'.' | b'+' | b'-') {
                 queue.push(Reverse((depth, distance + 1, new_position)));
             }

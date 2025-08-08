@@ -61,17 +61,26 @@ fn main() -> Result<()> {
     let instructions: Vec<_> = input
         .lines()
         .map(|line| {
-            let args = <SmallVec<[_; 3]>>::from_iter(line.split(|c: char| c.is_ascii_whitespace() || c == ',').filter(|s| !s.is_empty()));
+            let args: SmallVec<[_; 3]> = line
+                .split(|c: char| c.is_ascii_whitespace() || c == ',')
+                .filter(|s| !s.is_empty())
+                .collect();
 
-            Ok(match args[0] {
-                "hlf" => Instruction::Half(get_register(args[1])?),
-                "tpl" => Instruction::Triple(get_register(args[1])?),
-                "inc" => Instruction::Increment(get_register(args[1])?),
-                "jmp" => Instruction::Jump(args[1].parse()?),
-                "jie" => Instruction::JumpIfEven(get_register(args[1])?, args[2].parse()?),
-                "jio" => Instruction::JumpIfOne(get_register(args[1])?, args[2].parse()?),
+            match args[0] {
+                "hlf" => Ok(Instruction::Half(get_register(args[1])?)),
+                "tpl" => Ok(Instruction::Triple(get_register(args[1])?)),
+                "inc" => Ok(Instruction::Increment(get_register(args[1])?)),
+                "jmp" => Ok(Instruction::Jump(args[1].parse()?)),
+                "jie" => Ok(Instruction::JumpIfEven(
+                    get_register(args[1])?,
+                    args[2].parse()?,
+                )),
+                "jio" => Ok(Instruction::JumpIfOne(
+                    get_register(args[1])?,
+                    args[2].parse()?,
+                )),
                 other => bail!("unknown instruction: {other}"),
-            })
+            }
         })
         .try_collect()?;
 

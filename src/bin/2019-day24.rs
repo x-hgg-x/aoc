@@ -33,15 +33,26 @@ const DOWN_CENTER_BUGS_LIST: [u32; 3] = [1 << 21, 1 << 22, 1 << 23];
 const LEFT_CENTER_BUGS_LIST: [u32; 3] = [1 << 5, 1 << 10, 1 << 15];
 const RIGHT_CENTER_BUGS_LIST: [u32; 3] = [1 << 9, 1 << 14, 1 << 19];
 
-const CENTER_UP_BUG_NEIGHBORS: u32 = CENTER_UP_BUG >> SIZE | CENTER_UP_BUG >> 1 | CENTER_UP_BUG << 1;
-const CENTER_DOWN_BUG_NEIGHBORS: u32 = CENTER_DOWN_BUG >> 1 | CENTER_DOWN_BUG << 1 | CENTER_DOWN_BUG << SIZE;
-const CENTER_LEFT_BUG_NEIGHBORS: u32 = CENTER_LEFT_BUG >> SIZE | CENTER_LEFT_BUG >> 1 | CENTER_LEFT_BUG << SIZE;
-const CENTER_RIGHT_BUG_NEIGHBORS: u32 = CENTER_RIGHT_BUG >> SIZE | CENTER_RIGHT_BUG << 1 | CENTER_RIGHT_BUG << SIZE;
+const CENTER_UP_BUG_NEIGHBORS: u32 =
+    CENTER_UP_BUG >> SIZE | CENTER_UP_BUG >> 1 | CENTER_UP_BUG << 1;
+
+const CENTER_DOWN_BUG_NEIGHBORS: u32 =
+    CENTER_DOWN_BUG >> 1 | CENTER_DOWN_BUG << 1 | CENTER_DOWN_BUG << SIZE;
+
+const CENTER_LEFT_BUG_NEIGHBORS: u32 =
+    CENTER_LEFT_BUG >> SIZE | CENTER_LEFT_BUG >> 1 | CENTER_LEFT_BUG << SIZE;
+
+const CENTER_RIGHT_BUG_NEIGHBORS: u32 =
+    CENTER_RIGHT_BUG >> SIZE | CENTER_RIGHT_BUG << 1 | CENTER_RIGHT_BUG << SIZE;
 
 const UP_LEFT_CORNER_BUG_NEIGHBORS: u32 = UP_LEFT_CORNER_BUG << 1 | UP_LEFT_CORNER_BUG << SIZE;
 const UP_RIGHT_CORNER_BUG_NEIGHBORS: u32 = UP_RIGHT_CORNER_BUG >> 1 | UP_RIGHT_CORNER_BUG << SIZE;
-const DOWN_LEFT_CORNER_BUG_NEIGHBORS: u32 = DOWN_LEFT_CORNER_BUG >> SIZE | DOWN_LEFT_CORNER_BUG << 1;
-const DOWN_RIGHT_CORNER_BUG_NEIGHBORS: u32 = DOWN_RIGHT_CORNER_BUG >> SIZE | DOWN_RIGHT_CORNER_BUG >> 1;
+
+const DOWN_LEFT_CORNER_BUG_NEIGHBORS: u32 =
+    DOWN_LEFT_CORNER_BUG >> SIZE | DOWN_LEFT_CORNER_BUG << 1;
+
+const DOWN_RIGHT_CORNER_BUG_NEIGHBORS: u32 =
+    DOWN_RIGHT_CORNER_BUG >> SIZE | DOWN_RIGHT_CORNER_BUG >> 1;
 
 fn update_bug(mut buffer: u32, bug: u32, neighbors_count: u32) -> u32 {
     if (buffer & bug) != 0 {
@@ -84,7 +95,11 @@ fn step_without_recursion(grid: u32) -> u32 {
 fn step_with_recursion(grids: &mut VecDeque<u32>, buffers: &mut VecDeque<u32>) -> Result<()> {
     for (depth_index, (&grid, buffer)) in grids.iter().zip(&mut *buffers).enumerate() {
         let grid_inside = *grids.get(depth_index + 1).unwrap_or(&0);
-        let grid_outside = *depth_index.checked_sub(1).and_then(|x| grids.get(x)).unwrap_or(&0);
+
+        let grid_outside = *depth_index
+            .checked_sub(1)
+            .and_then(|x| grids.get(x))
+            .unwrap_or(&0);
 
         let inside_up_bugs_count = (grid_inside & UP_BUGS).count_ones();
         let inside_down_bugs_count = (grid_inside & DOWN_BUGS).count_ones();
@@ -108,30 +123,88 @@ fn step_with_recursion(grids: &mut VecDeque<u32>, buffers: &mut VecDeque<u32>) -
 
         for bug in UP_CENTER_BUGS_LIST {
             let neighbors = bug >> 1 | bug << 1 | bug << SIZE;
-            *buffer = update_bug(*buffer, bug, (grid & neighbors).count_ones() + outside_center_up_bug);
+
+            *buffer = update_bug(
+                *buffer,
+                bug,
+                (grid & neighbors).count_ones() + outside_center_up_bug,
+            );
         }
         for bug in DOWN_CENTER_BUGS_LIST {
             let neighbors = bug >> SIZE | bug >> 1 | bug << 1;
-            *buffer = update_bug(*buffer, bug, (grid & neighbors).count_ones() + outside_center_down_bug);
+
+            *buffer = update_bug(
+                *buffer,
+                bug,
+                (grid & neighbors).count_ones() + outside_center_down_bug,
+            );
         }
         for bug in LEFT_CENTER_BUGS_LIST {
             let neighbors = bug >> SIZE | bug << 1 | bug << SIZE;
-            *buffer = update_bug(*buffer, bug, (grid & neighbors).count_ones() + outside_center_left_bug);
+
+            *buffer = update_bug(
+                *buffer,
+                bug,
+                (grid & neighbors).count_ones() + outside_center_left_bug,
+            );
         }
         for bug in RIGHT_CENTER_BUGS_LIST {
             let neighbors = bug >> SIZE | bug >> 1 | bug << SIZE;
-            *buffer = update_bug(*buffer, bug, (grid & neighbors).count_ones() + outside_center_right_bug);
+
+            *buffer = update_bug(
+                *buffer,
+                bug,
+                (grid & neighbors).count_ones() + outside_center_right_bug,
+            );
         }
 
-        *buffer = update_bug(*buffer, CENTER_UP_BUG, (grid & CENTER_UP_BUG_NEIGHBORS).count_ones() + inside_up_bugs_count);
-        *buffer = update_bug(*buffer, CENTER_DOWN_BUG, (grid & CENTER_DOWN_BUG_NEIGHBORS).count_ones() + inside_down_bugs_count);
-        *buffer = update_bug(*buffer, CENTER_LEFT_BUG, (grid & CENTER_LEFT_BUG_NEIGHBORS).count_ones() + inside_left_bugs_count);
-        *buffer = update_bug(*buffer, CENTER_RIGHT_BUG, (grid & CENTER_RIGHT_BUG_NEIGHBORS).count_ones() + inside_right_bugs_count);
+        *buffer = update_bug(
+            *buffer,
+            CENTER_UP_BUG,
+            (grid & CENTER_UP_BUG_NEIGHBORS).count_ones() + inside_up_bugs_count,
+        );
 
-        *buffer = update_bug(*buffer, UP_LEFT_CORNER_BUG, (grid & UP_LEFT_CORNER_BUG_NEIGHBORS).count_ones() + outside_center_up_left_count);
-        *buffer = update_bug(*buffer, UP_RIGHT_CORNER_BUG, (grid & UP_RIGHT_CORNER_BUG_NEIGHBORS).count_ones() + outside_center_up_right_count);
-        *buffer = update_bug(*buffer, DOWN_LEFT_CORNER_BUG, (grid & DOWN_LEFT_CORNER_BUG_NEIGHBORS).count_ones() + outside_center_down_left_count);
-        *buffer = update_bug(*buffer, DOWN_RIGHT_CORNER_BUG, (grid & DOWN_RIGHT_CORNER_BUG_NEIGHBORS).count_ones() + outside_center_down_right_count);
+        *buffer = update_bug(
+            *buffer,
+            CENTER_DOWN_BUG,
+            (grid & CENTER_DOWN_BUG_NEIGHBORS).count_ones() + inside_down_bugs_count,
+        );
+
+        *buffer = update_bug(
+            *buffer,
+            CENTER_LEFT_BUG,
+            (grid & CENTER_LEFT_BUG_NEIGHBORS).count_ones() + inside_left_bugs_count,
+        );
+
+        *buffer = update_bug(
+            *buffer,
+            CENTER_RIGHT_BUG,
+            (grid & CENTER_RIGHT_BUG_NEIGHBORS).count_ones() + inside_right_bugs_count,
+        );
+
+        *buffer = update_bug(
+            *buffer,
+            UP_LEFT_CORNER_BUG,
+            (grid & UP_LEFT_CORNER_BUG_NEIGHBORS).count_ones() + outside_center_up_left_count,
+        );
+
+        *buffer = update_bug(
+            *buffer,
+            UP_RIGHT_CORNER_BUG,
+            (grid & UP_RIGHT_CORNER_BUG_NEIGHBORS).count_ones() + outside_center_up_right_count,
+        );
+
+        *buffer = update_bug(
+            *buffer,
+            DOWN_LEFT_CORNER_BUG,
+            (grid & DOWN_LEFT_CORNER_BUG_NEIGHBORS).count_ones() + outside_center_down_left_count,
+        );
+
+        *buffer = update_bug(
+            *buffer,
+            DOWN_RIGHT_CORNER_BUG,
+            (grid & DOWN_RIGHT_CORNER_BUG_NEIGHBORS).count_ones() + outside_center_down_right_count,
+        );
     }
 
     let most_outside = *grids.front().value()?;

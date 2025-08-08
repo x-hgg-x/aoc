@@ -14,7 +14,12 @@ struct Intcode {
 
 impl Intcode {
     fn new(program: HashMap<usize, i64>, inputs: VecDeque<i64>) -> Self {
-        Self { program, ip: 0, relative_base: 0, inputs }
+        Self {
+            program,
+            ip: 0,
+            relative_base: 0,
+            inputs,
+        }
     }
 
     fn get_input(&mut self, arg_position: usize, instruction: i64) -> Result<i64> {
@@ -23,7 +28,10 @@ impl Intcode {
         match instruction / 10i64.pow(1 + arg_position as u32) % 10 {
             0 => Ok(*self.program.entry(usize::try_from(arg)?).or_default()),
             1 => Ok(arg),
-            2 => Ok(*self.program.entry(usize::try_from(self.relative_base + arg)?).or_default()),
+            2 => Ok(*self
+                .program
+                .entry(usize::try_from(self.relative_base + arg)?)
+                .or_default()),
             other => bail!("unknown parameter mode: {other}"),
         }
     }
@@ -33,7 +41,10 @@ impl Intcode {
 
         match instruction / 10i64.pow(1 + arg_position as u32) % 10 {
             0 => Ok(self.program.entry(usize::try_from(arg)?).or_default()),
-            2 => Ok(self.program.entry(usize::try_from(self.relative_base + arg)?).or_default()),
+            2 => Ok(self
+                .program
+                .entry(usize::try_from(self.relative_base + arg)?)
+                .or_default()),
             other => bail!("invalid parameter mode: {other}"),
         }
     }
@@ -120,12 +131,27 @@ fn main() -> Result<()> {
     let input = String::from_utf8_lossy(&input);
     let input = input.trim();
 
-    let program: HashMap<usize, i64> = input.split(',').enumerate().map(|(pos, val)| Result::Ok((pos, val.parse()?))).try_collect()?;
+    let program: HashMap<usize, i64> = input
+        .split(',')
+        .enumerate()
+        .map(|(pos, val)| Result::Ok((pos, val.parse()?)))
+        .try_collect()?;
 
-    let inputs1 = (*b"NOT A J\nNOT B T\nOR T J\nNOT C T\nOR T J\nAND D J\nWALK\n").into_iter().map_into().collect();
-    let result1 = *Intcode::new(program.clone(), inputs1).run()?.last().value()?;
+    let inputs1 = (*b"NOT A J\nNOT B T\nOR T J\nNOT C T\nOR T J\nAND D J\nWALK\n")
+        .into_iter()
+        .map_into()
+        .collect();
 
-    let inputs2 = (*b"NOT A J\nNOT B T\nOR T J\nNOT C T\nOR T J\nAND D J\nNOT E T\nNOT T T\nOR H T\nAND T J\nRUN\n").into_iter().map_into().collect();
+    let result1 = *Intcode::new(program.clone(), inputs1)
+        .run()?
+        .last()
+        .value()?;
+
+    let inputs2 = (*b"NOT A J\nNOT B T\nOR T J\nNOT C T\nOR T J\nAND D J\nNOT E T\nNOT T T\nOR H T\nAND T J\nRUN\n")
+        .into_iter()
+        .map_into()
+        .collect();
+
     let result2 = *Intcode::new(program, inputs2).run()?.last().value()?;
 
     println!("{result1}");

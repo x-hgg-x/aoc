@@ -25,8 +25,16 @@ struct Grid<const N: usize> {
 
 impl<const N: usize> Grid<N> {
     fn new(dims: [usize; N], tiles: Vec<bool>) -> Result<Self> {
-        ensure!(dims.iter().product::<usize>() == tiles.len(), "unable to construct Grid: invalid length");
-        Ok(Self { dims, tiles, turn: 0 })
+        ensure!(
+            dims.iter().product::<usize>() == tiles.len(),
+            "unable to construct Grid: invalid length"
+        );
+
+        Ok(Self {
+            dims,
+            tiles,
+            turn: 0,
+        })
     }
 
     fn get_index(&self, coords: [usize; N]) -> usize {
@@ -43,14 +51,16 @@ impl<const N: usize> Grid<N> {
         let mut ranges = [(0, 0); N];
         ranges[0] = (MAX_TURNS - self.turn, self.dims[0] - MAX_TURNS + self.turn);
         ranges[1] = (MAX_TURNS - self.turn, self.dims[1] - MAX_TURNS + self.turn);
-        ranges[2..].iter_mut().for_each(|range| *range = (0, self.turn + 1));
+        (ranges[2..].iter_mut()).for_each(|range| *range = (0, self.turn + 1));
         ranges
     }
 
     fn init(mut self, initial_tiles: &[bool]) -> Self {
         let ranges = self.get_ranges();
 
-        for ((x1, x0), &tile) in iproduct!(ranges[1].to_range(), ranges[0].to_range()).zip(initial_tiles) {
+        for ((x1, x0), &tile) in
+            iproduct!(ranges[1].to_range(), ranges[0].to_range()).zip(initial_tiles)
+        {
             let mut coords = [0; N];
             coords[0] = x0;
             coords[1] = x1;
@@ -67,19 +77,33 @@ impl<const N: usize> Grid<N> {
 impl Grid<3> {
     fn step3(&mut self, buffer: &mut Vec<bool>) {
         let ranges = self.get_ranges();
-        let [range0, range1, range2] = [ranges[0].to_range(), ranges[1].to_range(), ranges[2].to_range()];
+
+        let [range0, range1, range2] = [
+            ranges[0].to_range(),
+            ranges[1].to_range(),
+            ranges[2].to_range(),
+        ];
+
         let ranges_iter = iproduct!(range2.clone(), range1.clone(), range0.clone());
 
         buffer.clear();
         buffer.extend(ranges_iter.clone().map(|(x2, x1, x0)| {
             let neighbors_iter = iproduct!(
-                [(x2 as isize - 1).unsigned_abs(), x2, (x2 + 1).min(range2.end - 1)],
+                [
+                    (x2 as isize - 1).unsigned_abs(),
+                    x2,
+                    (x2 + 1).min(range2.end - 1)
+                ],
                 x1.saturating_sub(1).max(range1.start)..(x1 + 2).min(range1.end),
                 x0.saturating_sub(1).max(range0.start)..(x0 + 2).min(range0.end)
             );
 
             let center = self.tiles[self.get_index([x0, x1, x2])];
-            let neighbors_count = neighbors_iter.filter(|&(y2, y1, y0)| self.tiles[self.get_index([y0, y1, y2])]).count() - center as usize;
+
+            let neighbors_count = neighbors_iter
+                .filter(|&(y2, y1, y0)| self.tiles[self.get_index([y0, y1, y2])])
+                .count()
+                - center as usize;
 
             matches!((center, neighbors_count), (true, 2 | 3) | (false, 3))
         }));
@@ -96,20 +120,44 @@ impl Grid<3> {
 impl Grid<4> {
     fn step4(&mut self, buffer: &mut Vec<bool>) {
         let ranges = self.get_ranges();
-        let [range0, range1, range2, range3] = [ranges[0].to_range(), ranges[1].to_range(), ranges[2].to_range(), ranges[3].to_range()];
-        let ranges_iter = iproduct!(range3.clone(), range2.clone(), range1.clone(), range0.clone());
+
+        let [range0, range1, range2, range3] = [
+            ranges[0].to_range(),
+            ranges[1].to_range(),
+            ranges[2].to_range(),
+            ranges[3].to_range(),
+        ];
+
+        let ranges_iter = iproduct!(
+            range3.clone(),
+            range2.clone(),
+            range1.clone(),
+            range0.clone()
+        );
 
         buffer.clear();
+
         buffer.extend(ranges_iter.clone().map(|(x3, x2, x1, x0)| {
             let neighbors_iter = iproduct!(
-                [(x3 as isize - 1).unsigned_abs(), x3, (x3 + 1).min(range3.end - 1)],
-                [(x2 as isize - 1).unsigned_abs(), x2, (x2 + 1).min(range2.end - 1)],
+                [
+                    (x3 as isize - 1).unsigned_abs(),
+                    x3,
+                    (x3 + 1).min(range3.end - 1)
+                ],
+                [
+                    (x2 as isize - 1).unsigned_abs(),
+                    x2,
+                    (x2 + 1).min(range2.end - 1)
+                ],
                 x1.saturating_sub(1).max(range1.start)..(x1 + 2).min(range1.end),
                 x0.saturating_sub(1).max(range0.start)..(x0 + 2).min(range0.end)
             );
 
             let center = self.tiles[self.get_index([x0, x1, x2, x3])];
-            let neighbors_count = neighbors_iter.filter(|&(y3, y2, y1, y0)| self.tiles[self.get_index([y0, y1, y2, y3])]).count() - center as usize;
+            let neighbors_count = neighbors_iter
+                .filter(|&(y3, y2, y1, y0)| self.tiles[self.get_index([y0, y1, y2, y3])])
+                .count()
+                - center as usize;
 
             matches!((center, neighbors_count), (true, 2 | 3) | (false, 3))
         }));
@@ -142,7 +190,13 @@ fn main() -> Result<()> {
     let mut buffer = Vec::new();
 
     let dims3 = [2 * MAX_TURNS + width, 2 * MAX_TURNS + height, MAX_TURNS + 1];
-    let dims4 = [2 * MAX_TURNS + width, 2 * MAX_TURNS + height, MAX_TURNS + 1, MAX_TURNS + 1];
+
+    let dims4 = [
+        2 * MAX_TURNS + width,
+        2 * MAX_TURNS + height,
+        MAX_TURNS + 1,
+        MAX_TURNS + 1,
+    ];
 
     let tiles3 = vec![false; dims3.iter().product()];
     let tiles4 = vec![false; dims4.iter().product()];

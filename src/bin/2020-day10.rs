@@ -8,7 +8,11 @@ fn main() -> Result<()> {
     let input = setup(file!())?;
     let input = String::from_utf8_lossy(&input);
 
-    let mut joltages: Vec<usize> = input.split_ascii_whitespace().map(|x| x.parse()).try_collect()?;
+    let mut joltages: Vec<usize> = input
+        .split_ascii_whitespace()
+        .map(|x| x.parse())
+        .try_collect()?;
+
     joltages.push(0);
     joltages.sort_unstable();
     joltages.dedup();
@@ -27,7 +31,10 @@ fn main() -> Result<()> {
 
     let result1 = diff_1_count * diff_3_count;
 
-    let mut counts = once(1u64).chain(repeat_n(0, *joltages.last().value()?)).collect_vec();
+    let mut counts = once(1u64)
+        .chain(repeat_n(0, *joltages.last().value()?))
+        .collect_vec();
+
     for &joltage in &joltages[1..] {
         counts[joltage] = counts[joltage.saturating_sub(3)..joltage].iter().sum();
     }

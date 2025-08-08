@@ -8,7 +8,12 @@ use std::cmp::Ordering;
 const WINDOW_SIZE: usize = 25;
 
 fn find_invalid_number(list: &[i64]) -> Option<i64> {
-    let mut sums = list[..WINDOW_SIZE].iter().enumerate().flat_map(|(index_x, x)| list[index_x + 1..WINDOW_SIZE].iter().map(move |y| x + y)).collect_vec();
+    let mut sums = list[..WINDOW_SIZE]
+        .iter()
+        .enumerate()
+        .flat_map(|(index_x, x)| list[index_x + 1..WINDOW_SIZE].iter().map(move |y| x + y))
+        .collect_vec();
+
     let mut buffer = Vec::with_capacity(sums.len());
 
     let number = list[WINDOW_SIZE];
@@ -48,7 +53,12 @@ fn find_encryption_weakness(list: &[i64], invalid_number: i64) -> Result<i64> {
 
         match sum.cmp(&invalid_number) {
             Ordering::Equal => {
-                let (min, max) = list[start_index..=end_index].iter().minmax().into_option().value()?;
+                let (min, max) = list[start_index..=end_index]
+                    .iter()
+                    .minmax()
+                    .into_option()
+                    .value()?;
+
                 return Ok(min + max);
             }
             Ordering::Less => {
@@ -67,7 +77,10 @@ fn main() -> Result<()> {
     let input = setup(file!())?;
     let input = String::from_utf8_lossy(&input);
 
-    let list: Vec<i64> = input.split_ascii_whitespace().map(|x| x.parse()).try_collect()?;
+    let list: Vec<i64> = input
+        .split_ascii_whitespace()
+        .map(|x| x.parse())
+        .try_collect()?;
 
     let invalid_number = find_invalid_number(&list).value()?;
     let encryption_weakness = find_encryption_weakness(&list, invalid_number)?;

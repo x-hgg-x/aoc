@@ -12,8 +12,16 @@ struct Grid {
 
 impl Grid {
     fn new(width: usize, height: usize, tiles: Vec<Option<bool>>) -> Result<Self> {
-        ensure!(width * height == tiles.len(), "unable to construct Grid: width * height != tiles.len()");
-        Ok(Self { width, height, tiles })
+        ensure!(
+            width * height == tiles.len(),
+            "unable to construct Grid: width * height != tiles.len()"
+        );
+
+        Ok(Self {
+            width,
+            height,
+            tiles,
+        })
     }
 
     fn get_index(&self, row: usize, column: usize) -> usize {
@@ -21,7 +29,12 @@ impl Grid {
     }
 }
 
-fn simulate(mut grid: Grid, buffer: &mut Vec<Option<bool>>, min_neighbors: usize, max_diff: usize) -> usize {
+fn simulate(
+    mut grid: Grid,
+    buffer: &mut Vec<Option<bool>>,
+    min_neighbors: usize,
+    max_diff: usize,
+) -> usize {
     let mut locked = false;
 
     while !locked {
@@ -46,14 +59,38 @@ fn simulate(mut grid: Grid, buffer: &mut Vec<Option<bool>>, min_neighbors: usize
             let bottom = grid.height - i_row;
 
             let mut count = 0;
-            count += (1..top.min(max_diff)).find_map(|diff| grid.tiles[grid.get_index(i_row - diff, i_col)]).unwrap_or_default() as usize;
-            count += (1..left.min(max_diff)).find_map(|diff| grid.tiles[grid.get_index(i_row, i_col - diff)]).unwrap_or_default() as usize;
-            count += (1..right.min(max_diff)).find_map(|diff| grid.tiles[grid.get_index(i_row, i_col + diff)]).unwrap_or_default() as usize;
-            count += (1..bottom.min(max_diff)).find_map(|diff| grid.tiles[grid.get_index(i_row + diff, i_col)]).unwrap_or_default() as usize;
-            count += (1..top.min(left).min(max_diff)).find_map(|diff| grid.tiles[grid.get_index(i_row - diff, i_col - diff)]).unwrap_or_default() as usize;
-            count += (1..top.min(right).min(max_diff)).find_map(|diff| grid.tiles[grid.get_index(i_row - diff, i_col + diff)]).unwrap_or_default() as usize;
-            count += (1..bottom.min(left).min(max_diff)).find_map(|diff| grid.tiles[grid.get_index(i_row + diff, i_col - diff)]).unwrap_or_default() as usize;
-            count += (1..bottom.min(right).min(max_diff)).find_map(|diff| grid.tiles[grid.get_index(i_row + diff, i_col + diff)]).unwrap_or_default() as usize;
+
+            count += (1..top.min(max_diff))
+                .find_map(|diff| grid.tiles[grid.get_index(i_row - diff, i_col)])
+                .unwrap_or_default() as usize;
+
+            count += (1..left.min(max_diff))
+                .find_map(|diff| grid.tiles[grid.get_index(i_row, i_col - diff)])
+                .unwrap_or_default() as usize;
+
+            count += (1..right.min(max_diff))
+                .find_map(|diff| grid.tiles[grid.get_index(i_row, i_col + diff)])
+                .unwrap_or_default() as usize;
+
+            count += (1..bottom.min(max_diff))
+                .find_map(|diff| grid.tiles[grid.get_index(i_row + diff, i_col)])
+                .unwrap_or_default() as usize;
+
+            count += (1..top.min(left).min(max_diff))
+                .find_map(|diff| grid.tiles[grid.get_index(i_row - diff, i_col - diff)])
+                .unwrap_or_default() as usize;
+
+            count += (1..top.min(right).min(max_diff))
+                .find_map(|diff| grid.tiles[grid.get_index(i_row - diff, i_col + diff)])
+                .unwrap_or_default() as usize;
+
+            count += (1..bottom.min(left).min(max_diff))
+                .find_map(|diff| grid.tiles[grid.get_index(i_row + diff, i_col - diff)])
+                .unwrap_or_default() as usize;
+
+            count += (1..bottom.min(right).min(max_diff))
+                .find_map(|diff| grid.tiles[grid.get_index(i_row + diff, i_col + diff)])
+                .unwrap_or_default() as usize;
 
             if is_occupied && count >= min_neighbors || !is_occupied && count == 0 {
                 locked = false;
@@ -66,7 +103,7 @@ fn simulate(mut grid: Grid, buffer: &mut Vec<Option<bool>>, min_neighbors: usize
         std::mem::swap(buffer, &mut grid.tiles);
     }
 
-    grid.tiles.iter().map(|x| x.unwrap_or_default() as usize).sum()
+    (grid.tiles.iter().map(|x| x.unwrap_or_default() as usize)).sum()
 }
 
 fn main() -> Result<()> {

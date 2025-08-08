@@ -25,7 +25,9 @@ fn main() -> Result<()> {
         .map(|time| {
             reindeers
                 .iter()
-                .map(|&(v_fly, t_fly, t_rest)| v_fly * (time / (t_fly + t_rest) * t_fly + t_fly.min(time % (t_fly + t_rest))))
+                .map(|&(v_fly, t_fly, t_rest)| {
+                    v_fly * (time / (t_fly + t_rest) * t_fly + t_fly.min(time % (t_fly + t_rest)))
+                })
                 .enumerate()
                 .max_by_key(|&(_, d)| d)
                 .value()
@@ -33,7 +35,15 @@ fn main() -> Result<()> {
         .try_collect()?;
 
     let result1 = race.last().value()?.1;
-    let result2 = race.iter().map(|(pos, _)| pos).sorted_unstable().dedup_with_count().map(|(count, _)| count).max().value()?;
+
+    let result2 = race
+        .iter()
+        .map(|(pos, _)| pos)
+        .sorted_unstable()
+        .dedup_with_count()
+        .map(|(count, _)| count)
+        .max()
+        .value()?;
 
     println!("{result1}");
     println!("{result2}");

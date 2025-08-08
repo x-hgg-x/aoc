@@ -15,13 +15,27 @@ fn main() -> Result<()> {
     let layers: Vec<_> = input
         .lines()
         .map(|line| {
-            let (depth, range) = line.split(": ").map(|x| Ok(x.parse()?)).try_process(|mut iter| iter.next_tuple())?.value()?;
+            let (depth, range) = line
+                .split(": ")
+                .map(|x| Ok(x.parse()?))
+                .try_process(|mut iter| iter.next_tuple())?
+                .value()?;
+
             let period = if range == 0 { 0 } else { (range - 1) * 2 };
-            Result::Ok(Layer { depth, range, period })
+
+            Result::Ok(Layer {
+                depth,
+                range,
+                period,
+            })
         })
         .try_collect()?;
 
-    let result1 = layers.iter().filter(|x| x.depth % x.period == 0).map(|x| x.depth * x.range).sum::<usize>();
+    let result1 = layers
+        .iter()
+        .filter(|x| x.depth % x.period == 0)
+        .map(|x| x.depth * x.range)
+        .sum::<usize>();
 
     let mut delay = 0;
     while layers.iter().any(|x| (delay + x.depth) % x.period == 0) {

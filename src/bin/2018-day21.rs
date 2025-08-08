@@ -9,13 +9,13 @@ fn main() -> Result<()> {
     let input = String::from_utf8_lossy(&input);
     let input = input.lines().collect_vec();
 
-    let v1 = input[7].split_ascii_whitespace().nth(2).value()?.parse::<i64>()?;
-    let v2 = input[8].split_ascii_whitespace().nth(1).value()?.parse::<i64>()?;
-    let v3 = input[9].split_ascii_whitespace().nth(2).value()?.parse::<i64>()?;
-    let v4 = input[11].split_ascii_whitespace().nth(2).value()?.parse::<i64>()?;
-    let v5 = input[12].split_ascii_whitespace().nth(2).value()?.parse::<i64>()?;
-    let v6 = input[13].split_ascii_whitespace().nth(2).value()?.parse::<i64>()?;
-    let v7 = input[14].split_ascii_whitespace().nth(1).value()?.parse::<i64>()?;
+    let v1 = (input[7].split_ascii_whitespace().nth(2).value()?).parse::<i64>()?;
+    let v2 = (input[8].split_ascii_whitespace().nth(1).value()?).parse::<i64>()?;
+    let v3 = (input[9].split_ascii_whitespace().nth(2).value()?).parse::<i64>()?;
+    let v4 = (input[11].split_ascii_whitespace().nth(2).value()?).parse::<i64>()?;
+    let v5 = (input[12].split_ascii_whitespace().nth(2).value()?).parse::<i64>()?;
+    let v6 = (input[13].split_ascii_whitespace().nth(2).value()?).parse::<i64>()?;
+    let v7 = (input[14].split_ascii_whitespace().nth(1).value()?).parse::<i64>()?;
 
     let mut first_value = None;
     let mut last_value = None;

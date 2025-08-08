@@ -8,14 +8,22 @@ use std::str;
 fn main() -> Result<()> {
     let mut input = setup(file!())?;
 
-    let ids = input.split_mut(|x| !x.is_ascii_alphabetic()).filter(|x| !x.is_empty()).collect_vec();
+    let ids = input
+        .split_mut(|x| !x.is_ascii_alphabetic())
+        .filter(|x| !x.is_empty())
+        .collect_vec();
 
     let result2 = ids
         .iter()
         .tuple_combinations()
         .find_map(|(id1, id2)| {
             (|| {
-                let mut iter = id1.iter().zip(id2.deref()).enumerate().filter(|&(_, (&x, &y))| x != y);
+                let mut iter = id1
+                    .iter()
+                    .zip(id2.deref())
+                    .enumerate()
+                    .filter(|&(_, (&x, &y))| x != y);
+
                 match (iter.next(), iter.next()) {
                     (Some((index, _)), None) => {
                         let mut s = String::new();

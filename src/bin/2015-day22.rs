@@ -141,8 +141,25 @@ struct GameState {
 }
 
 impl GameState {
-    fn new(hard_mode: bool, player_hp: i64, player_mana: i64, boss_hp: i64, boss_damage: i64) -> Self {
-        Self { hard_mode, status: Status { player_hp, mana_spent: 0, player_armor: 0, player_mana, boss_hp, boss_damage }, spells: Default::default() }
+    fn new(
+        hard_mode: bool,
+        player_hp: i64,
+        player_mana: i64,
+        boss_hp: i64,
+        boss_damage: i64,
+    ) -> Self {
+        Self {
+            hard_mode,
+            status: Status {
+                player_hp,
+                mana_spent: 0,
+                player_armor: 0,
+                player_mana,
+                boss_hp,
+                boss_damage,
+            },
+            spells: Default::default(),
+        }
     }
 
     fn try_cast<Spell: ISpell>(&self, spell: &Spell) -> Option<GameResult> {
@@ -207,7 +224,12 @@ enum GameResult {
     Unknown(GameState),
 }
 
-fn process_result(heap: &mut BinaryHeap<GameState>, min_mana: &mut i64, current_state: &GameState, spell: &impl ISpell) {
+fn process_result(
+    heap: &mut BinaryHeap<GameState>,
+    min_mana: &mut i64,
+    current_state: &GameState,
+    spell: &impl ISpell,
+) {
     if let Some(game_result) = current_state.try_cast(spell) {
         match game_result {
             GameResult::GameWon(mana_spent) => {

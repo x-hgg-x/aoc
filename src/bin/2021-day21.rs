@@ -12,7 +12,10 @@ struct Game {
 
 impl Game {
     fn new(positions: [u16; 2]) -> Self {
-        Self { positions, scores: [0, 0] }
+        Self {
+            positions,
+            scores: [0, 0],
+        }
     }
 
     fn advance(&mut self, index: usize, dice: u16) {

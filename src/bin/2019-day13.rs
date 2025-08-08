@@ -25,7 +25,12 @@ struct Intcode {
 
 impl Intcode {
     fn new(program: HashMap<usize, i64>, input: Option<i64>) -> Self {
-        Self { program, ip: 0, relative_base: 0, input }
+        Self {
+            program,
+            ip: 0,
+            relative_base: 0,
+            input,
+        }
     }
 
     fn get_input(&mut self, arg_position: usize, instruction: i64) -> Result<i64> {
@@ -34,7 +39,10 @@ impl Intcode {
         match instruction / 10i64.pow(1 + arg_position as u32) % 10 {
             0 => Ok(*self.program.entry(usize::try_from(arg)?).or_default()),
             1 => Ok(arg),
-            2 => Ok(*self.program.entry(usize::try_from(self.relative_base + arg)?).or_default()),
+            2 => Ok(*self
+                .program
+                .entry(usize::try_from(self.relative_base + arg)?)
+                .or_default()),
             other => bail!("unknown parameter mode: {other}"),
         }
     }
@@ -44,7 +52,10 @@ impl Intcode {
 
         match instruction / 10i64.pow(1 + arg_position as u32) % 10 {
             0 => Ok(self.program.entry(usize::try_from(arg)?).or_default()),
-            2 => Ok(self.program.entry(usize::try_from(self.relative_base + arg)?).or_default()),
+            2 => Ok(self
+                .program
+                .entry(usize::try_from(self.relative_base + arg)?)
+                .or_default()),
             other => bail!("invalid parameter mode: {other}"),
         }
     }
@@ -162,7 +173,10 @@ fn compute_grid_parameters(mut intcode: Intcode) -> Result<(usize, usize, usize,
         }
     }
 
-    let block_count = grid.iter().filter(|&&(_, tile)| tile == Tile::Block).count();
+    let block_count = grid
+        .iter()
+        .filter(|&&(_, tile)| tile == Tile::Block)
+        .count();
 
     let mut min_re = 0;
     let mut max_re = 0;
@@ -182,7 +196,15 @@ fn compute_grid_parameters(mut intcode: Intcode) -> Result<(usize, usize, usize,
     Ok((block_count, width, height, Complex::new(min_re, min_im)))
 }
 
-fn draw(image: &mut [u8], grid: &[(Complex<i64>, Tile)], stdout: &mut StdoutLock, score: i64, width: usize, height: usize, origin: Complex<i64>) -> Result<()> {
+fn draw(
+    image: &mut [u8],
+    grid: &[(Complex<i64>, Tile)],
+    stdout: &mut StdoutLock,
+    score: i64,
+    width: usize,
+    height: usize,
+    origin: Complex<i64>,
+) -> Result<()> {
     for &(position, tile) in grid {
         if position != Complex::new(-1, 0) {
             let x = (position - origin).re as usize;
@@ -191,8 +213,15 @@ fn draw(image: &mut [u8], grid: &[(Complex<i64>, Tile)], stdout: &mut StdoutLock
         }
     }
 
-    writeln!(stdout, "\nScore: {score}\n\n{}\x1b[{}A", String::from_utf8_lossy(image), height + 4)?;
+    writeln!(
+        stdout,
+        "\nScore: {score}\n\n{}\x1b[{}A",
+        String::from_utf8_lossy(image),
+        height + 4
+    )?;
+
     std::thread::sleep(Duration::from_millis(1));
+
     Ok(())
 }
 
@@ -203,7 +232,9 @@ fn play(mut intcode: Intcode, width: usize, height: usize, origin: Complex<i64>)
     let mut paddle_x = 0i64;
     let mut score = 0;
 
-    let mut image = repeat_n(repeat_n(b' ', width).chain(once(b'\n')), height).flatten().collect_vec();
+    let mut image = repeat_n(repeat_n(b' ', width).chain(once(b'\n')), height)
+        .flatten()
+        .collect_vec();
 
     let mut grid = Vec::new();
     loop {
@@ -251,12 +282,19 @@ fn main() -> Result<()> {
     let input = String::from_utf8_lossy(&input);
     let input = input.trim();
 
-    let mut program: HashMap<usize, i64> = input.split(',').enumerate().map(|(pos, val)| Result::Ok((pos, val.parse()?))).try_collect()?;
+    let mut program: HashMap<usize, i64> = input
+        .split(',')
+        .enumerate()
+        .map(|(pos, val)| Result::Ok((pos, val.parse()?)))
+        .try_collect()?;
 
-    let (block_count, width, height, origin) = compute_grid_parameters(Intcode::new(program.clone(), None))?;
+    let (block_count, width, height, origin) =
+        compute_grid_parameters(Intcode::new(program.clone(), None))?;
+
     let result1 = block_count;
 
     program.insert(0, 2);
+
     let result2 = play(Intcode::new(program, None), width, height, origin)?;
 
     println!("{result1}");

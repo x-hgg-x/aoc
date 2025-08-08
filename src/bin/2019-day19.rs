@@ -15,7 +15,12 @@ struct Intcode {
 
 impl Intcode {
     fn new(program: HashMap<usize, i64>, inputs: SmallVec<[i64; 2]>) -> Self {
-        Self { program, ip: 0, relative_base: 0, inputs }
+        Self {
+            program,
+            ip: 0,
+            relative_base: 0,
+            inputs,
+        }
     }
 
     fn get_input(&mut self, arg_position: usize, instruction: i64) -> Result<i64> {
@@ -24,7 +29,10 @@ impl Intcode {
         match instruction / 10i64.pow(1 + arg_position as u32) % 10 {
             0 => Ok(*self.program.entry(usize::try_from(arg)?).or_default()),
             1 => Ok(arg),
-            2 => Ok(*self.program.entry(usize::try_from(self.relative_base + arg)?).or_default()),
+            2 => Ok(*self
+                .program
+                .entry(usize::try_from(self.relative_base + arg)?)
+                .or_default()),
             other => bail!("unknown parameter mode: {other}"),
         }
     }
@@ -34,7 +42,10 @@ impl Intcode {
 
         match instruction / 10i64.pow(1 + arg_position as u32) % 10 {
             0 => Ok(self.program.entry(usize::try_from(arg)?).or_default()),
-            2 => Ok(self.program.entry(usize::try_from(self.relative_base + arg)?).or_default()),
+            2 => Ok(self
+                .program
+                .entry(usize::try_from(self.relative_base + arg)?)
+                .or_default()),
             other => bail!("invalid parameter mode: {other}"),
         }
     }
@@ -121,11 +132,17 @@ fn main() -> Result<()> {
     let input = String::from_utf8_lossy(&input);
     let input = input.trim();
 
-    let program: HashMap<usize, i64> = input.split(',').enumerate().map(|(pos, val)| Result::Ok((pos, val.parse()?))).try_collect()?;
+    let program: HashMap<usize, i64> = input
+        .split(',')
+        .enumerate()
+        .map(|(pos, val)| Result::Ok((pos, val.parse()?)))
+        .try_collect()?;
 
     let run = |x, y| Intcode::new(program.clone(), SmallVec::from_buf([y, x])).run();
 
-    let result1 = iproduct!(0..50, 0..50).map(|(x, y)| run(x, y)).try_sum::<i64>()?;
+    let result1 = iproduct!(0..50, 0..50)
+        .map(|(x, y)| run(x, y))
+        .try_sum::<i64>()?;
 
     let mut x = 0;
     let mut y = 99;

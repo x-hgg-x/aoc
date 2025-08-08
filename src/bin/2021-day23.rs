@@ -5,6 +5,7 @@ use smallvec::SmallVec;
 use std::cmp::Ordering;
 use std::collections::BinaryHeap;
 use std::collections::hash_map::{Entry, HashMap};
+use std::iter;
 
 const ROOM_INDICES: [u8; 4] = [2, 4, 6, 8];
 const EMPTY: u8 = u8::MAX;
@@ -21,7 +22,9 @@ impl Burrow {
 
         match room.iter().position(|&x| x != EMPTY) {
             None => Some(room.len() - 1),
-            Some(position) if position > 0 && room[position..].iter().all(|&x| x == id) => Some(position - 1),
+            Some(position) if position > 0 && room[position..].iter().all(|&x| x == id) => {
+                Some(position - 1)
+            }
             _ => None,
         }
     }
@@ -55,7 +58,13 @@ struct State {
 
 impl State {
     fn new(burrow: Burrow, amphipods: SmallVec<[Amphipod; 16]>, energy: u64) -> Self {
-        let mut state = Self { burrow, amphipods, energy, energy_needed: 0 };
+        let mut state = Self {
+            burrow,
+            amphipods,
+            energy,
+            energy_needed: 0,
+        };
+
         state.energy_needed = state.energy_needed();
         state
     }
@@ -67,7 +76,10 @@ impl State {
                 Position::Room(room_index, _) if amphipod.id == room_index => 0,
                 Position::Room(room_index, room_position) => {
                     let hallway_index = ROOM_INDICES[room_index as usize];
-                    let steps = hallway_index.abs_diff(ROOM_INDICES[amphipod.id as usize]) + 2 + room_position;
+
+                    let steps = hallway_index.abs_diff(ROOM_INDICES[amphipod.id as usize])
+                        + (room_position + 2);
+
                     steps as u64 * amphipod.energy()
                 }
                 Position::Hallway(hallway_index) => {
@@ -123,25 +135,39 @@ fn parse_input(input: &str) -> Result<State> {
 
     let mut amphipods = SmallVec::new();
     let mut hallway = [0; 11];
-    let mut rooms = [SmallVec::new(), SmallVec::new(), SmallVec::new(), SmallVec::new()];
+    let mut rooms = <[SmallVec<_>; 4]>::default();
 
-    for ((index, hallway_elem), tile) in hallway.iter_mut().enumerate().zip(lines.by_ref().nth(1).value()?.bytes().flat_map(Tile::parse)) {
+    for ((index, hallway_elem), tile) in iter::zip(
+        hallway.iter_mut().enumerate(),
+        lines.by_ref().nth(1).value()?.bytes().flat_map(Tile::parse),
+    ) {
         match tile {
             Tile::Empty => *hallway_elem = EMPTY,
             Tile::Amphipod(id) => {
                 *hallway_elem = id;
-                amphipods.push(Amphipod { id, position: Position::Hallway(index as u8) });
+
+                amphipods.push(Amphipod {
+                    id,
+                    position: Position::Hallway(index as u8),
+                });
             }
         }
     }
 
     for (room_position, room_line) in lines.take(2).enumerate() {
-        for ((room_index, room), tile) in rooms.iter_mut().enumerate().zip(room_line.bytes().flat_map(Tile::parse)) {
+        for ((room_index, room), tile) in iter::zip(
+            rooms.iter_mut().enumerate(),
+            room_line.bytes().flat_map(Tile::parse),
+        ) {
             match tile {
                 Tile::Empty => room.push(EMPTY),
                 Tile::Amphipod(id) => {
                     room.push(id);
-                    amphipods.push(Amphipod { id, position: Position::Room(room_index as u8, room_position as u8) });
+
+                    amphipods.push(Amphipod {
+                        id,
+                        position: Position::Room(room_index as u8, room_position as u8),
+                    });
                 }
             }
         }
@@ -158,14 +184,38 @@ fn add_amphipods(initial_state: &mut State) {
     }
 
     initial_state.amphipods.extend_from_slice(&[
-        Amphipod { id: 3, position: Position::Room(0, 1) },
-        Amphipod { id: 3, position: Position::Room(0, 2) },
-        Amphipod { id: 2, position: Position::Room(1, 1) },
-        Amphipod { id: 1, position: Position::Room(1, 2) },
-        Amphipod { id: 1, position: Position::Room(2, 1) },
-        Amphipod { id: 0, position: Position::Room(2, 2) },
-        Amphipod { id: 0, position: Position::Room(3, 1) },
-        Amphipod { id: 2, position: Position::Room(3, 2) },
+        Amphipod {
+            id: 3,
+            position: Position::Room(0, 1),
+        },
+        Amphipod {
+            id: 3,
+            position: Position::Room(0, 2),
+        },
+        Amphipod {
+            id: 2,
+            position: Position::Room(1, 1),
+        },
+        Amphipod {
+            id: 1,
+            position: Position::Room(1, 2),
+        },
+        Amphipod {
+            id: 1,
+            position: Position::Room(2, 1),
+        },
+        Amphipod {
+            id: 0,
+            position: Position::Room(2, 2),
+        },
+        Amphipod {
+            id: 0,
+            position: Position::Room(3, 1),
+        },
+        Amphipod {
+            id: 2,
+            position: Position::Room(3, 2),
+        },
     ]);
 
     initial_state.burrow.rooms[0].insert_from_slice(1, &[3, 3]);
@@ -200,31 +250,61 @@ fn solve(initial_state: State) -> u64 {
             for (amphipod_index, amphipod) in state.amphipods.iter().enumerate() {
                 match amphipod.position {
                     Position::Room(room_index, room_position) => {
-                        if state.burrow.rooms[room_index as usize][..room_position as usize].iter().any(|&x| x != EMPTY) {
+                        let room_index = room_index as usize;
+                        let room_position = room_position as usize;
+
+                        if state.burrow.rooms[room_index][..room_position]
+                            .iter()
+                            .any(|&x| x != EMPTY)
+                        {
                             continue;
                         }
 
-                        let hallway_index = ROOM_INDICES[room_index as usize] as usize;
+                        let hallway_index = ROOM_INDICES[room_index] as usize;
 
-                        let iter_left = state.burrow.hallway.iter().enumerate().take(hallway_index).rev().take_while(|&(_, &value)| value == EMPTY);
-                        let iter_right = state.burrow.hallway.iter().enumerate().skip(hallway_index + 1).take_while(|&(_, &value)| value == EMPTY);
+                        let iter_left = state
+                            .burrow
+                            .hallway
+                            .iter()
+                            .enumerate()
+                            .take(hallway_index)
+                            .rev()
+                            .take_while(|&(_, &value)| value == EMPTY);
 
-                        current_states.extend(iter_left.chain(iter_right).filter(|&(index, _)| !ROOM_INDICES.contains(&(index as u8))).map(|(index, _)| {
-                            let mut burrow = state.burrow.clone();
-                            burrow.rooms[room_index as usize][room_position as usize] = EMPTY;
-                            burrow.hallway[index] = amphipod.id;
+                        let iter_right = state
+                            .burrow
+                            .hallway
+                            .iter()
+                            .enumerate()
+                            .skip(hallway_index + 1)
+                            .take_while(|&(_, &value)| value == EMPTY);
 
-                            let mut amphipods = state.amphipods.clone();
-                            amphipods[amphipod_index].position = Position::Hallway(index as u8);
+                        current_states.extend(
+                            iter_left
+                                .chain(iter_right)
+                                .filter(|&(index, _)| !ROOM_INDICES.contains(&(index as u8)))
+                                .map(|(index, _)| {
+                                    let mut burrow = state.burrow.clone();
 
-                            let steps = hallway_index.abs_diff(index) + 1 + room_position as usize;
-                            let energy = state.energy + steps as u64 * amphipod.energy();
+                                    burrow.rooms[room_index][room_position] = EMPTY;
 
-                            State::new(burrow, amphipods, energy)
-                        }));
+                                    burrow.hallway[index] = amphipod.id;
+
+                                    let mut amphipods = state.amphipods.clone();
+                                    amphipods[amphipod_index].position =
+                                        Position::Hallway(index as u8);
+
+                                    let steps = hallway_index.abs_diff(index) + 1 + room_position;
+                                    let energy = state.energy + steps as u64 * amphipod.energy();
+
+                                    State::new(burrow, amphipods, energy)
+                                }),
+                        );
                     }
                     Position::Hallway(hallway_index) => {
-                        if let Some(room_position) = state.burrow.get_available_room_position(amphipod.id) {
+                        if let Some(room_position) =
+                            state.burrow.get_available_room_position(amphipod.id)
+                        {
                             let room_hallway_index = ROOM_INDICES[amphipod.id as usize];
 
                             let range = if hallway_index < room_hallway_index {
@@ -233,13 +313,18 @@ fn solve(initial_state: State) -> u64 {
                                 room_hallway_index as usize + 1..hallway_index as usize
                             };
 
-                            if state.burrow.hallway[range.clone()].iter().all(|&value| value == EMPTY) {
+                            if state.burrow.hallway[range.clone()]
+                                .iter()
+                                .all(|&value| value == EMPTY)
+                            {
                                 let mut burrow = state.burrow.clone();
                                 burrow.rooms[amphipod.id as usize][room_position] = amphipod.id;
                                 burrow.hallway[hallway_index as usize] = EMPTY;
 
                                 let mut amphipods = state.amphipods.clone();
-                                amphipods[amphipod_index].position = Position::Room(amphipod.id, room_position as u8);
+
+                                amphipods[amphipod_index].position =
+                                    Position::Room(amphipod.id, room_position as u8);
 
                                 let steps = range.len() + 2 + room_position;
                                 let energy = state.energy + steps as u64 * amphipod.energy();

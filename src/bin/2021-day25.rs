@@ -18,8 +18,16 @@ struct Grid {
 
 impl Grid {
     fn new(width: usize, height: usize, tiles: Vec<Tile>) -> Result<Self> {
-        ensure!(width * height == tiles.len(), "unable to construct Grid: width * height != tiles.len()");
-        Ok(Self { width, height, tiles })
+        ensure!(
+            width * height == tiles.len(),
+            "unable to construct Grid: width * height != tiles.len()"
+        );
+
+        Ok(Self {
+            width,
+            height,
+            tiles,
+        })
     }
 
     fn get_index(&self, row: usize, column: usize) -> usize {
@@ -34,7 +42,13 @@ fn step_east(grid: &mut Grid, buf: &mut Vec<Tile>) -> bool {
     let mut locked = true;
 
     for (i_row, row) in grid.tiles.chunks_exact(grid.width).enumerate() {
-        for (i_col, (x1, x2)) in row.iter().cycle().tuple_windows().take(grid.width).enumerate() {
+        for (i_col, (x1, x2)) in row
+            .iter()
+            .cycle()
+            .tuple_windows()
+            .take(grid.width)
+            .enumerate()
+        {
             if let (Tile::EastCucumber, Tile::Empty) = (x1, x2) {
                 let index1 = grid.get_index(i_row, i_col);
                 let index2 = grid.get_index(i_row, (i_col + 1) % grid.width);
@@ -55,7 +69,14 @@ fn step_south(grid: &mut Grid, buf: &mut Vec<Tile>) -> bool {
 
     let mut locked = true;
 
-    for (i_row, (row1, row2)) in grid.tiles.chunks_exact(grid.width).cycle().tuple_windows().take(grid.height).enumerate() {
+    for (i_row, (row1, row2)) in grid
+        .tiles
+        .chunks_exact(grid.width)
+        .cycle()
+        .tuple_windows()
+        .take(grid.height)
+        .enumerate()
+    {
         for (i_col, (x1, x2)) in row1.iter().zip(row2).enumerate() {
             if let (Tile::SouthCucumber, Tile::Empty) = (x1, x2) {
                 let index1 = grid.get_index(i_row, i_col);

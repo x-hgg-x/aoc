@@ -28,17 +28,21 @@ fn main() -> Result<()> {
         })
         .try_collect()?;
 
-    let (x1, y1) = instructions.iter().fold((0, 0), |(x, y), value| match value {
-        Instruction::Forward(value) => (x + value, y),
-        Instruction::Up(value) => (x, y - value),
-        Instruction::Down(value) => (x, y + value),
-    });
+    let (x1, y1) = instructions
+        .iter()
+        .fold((0, 0), |(x, y), value| match value {
+            Instruction::Forward(value) => (x + value, y),
+            Instruction::Up(value) => (x, y - value),
+            Instruction::Down(value) => (x, y + value),
+        });
 
-    let (x2, y2, _) = instructions.iter().fold((0, 0, 0), |(x, y, aim), value| match value {
-        Instruction::Forward(value) => (x + value, y + aim * value, aim),
-        Instruction::Up(value) => (x, y, aim - value),
-        Instruction::Down(value) => (x, y, aim + value),
-    });
+    let (x2, y2, _) = instructions
+        .iter()
+        .fold((0, 0, 0), |(x, y, aim), value| match value {
+            Instruction::Forward(value) => (x + value, y + aim * value, aim),
+            Instruction::Up(value) => (x, y, aim - value),
+            Instruction::Down(value) => (x, y, aim + value),
+        });
 
     let result1 = x1 * y1;
     let result2 = x2 * y2;

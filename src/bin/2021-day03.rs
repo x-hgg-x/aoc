@@ -46,7 +46,13 @@ fn main() -> Result<()> {
         values.push(value);
     }
 
-    let gamma_rate = counts.iter().rev().enumerate().map(|(index, &x)| ((x > len / 2) as u64) << index).sum::<u64>();
+    let gamma_rate = counts
+        .iter()
+        .rev()
+        .enumerate()
+        .map(|(index, &x)| ((x > len / 2) as u64) << index)
+        .sum::<u64>();
+
     let epsilon_rate = (!gamma_rate) & ((1 << width) - 1);
     let result1 = gamma_rate * epsilon_rate;
 

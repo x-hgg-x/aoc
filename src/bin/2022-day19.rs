@@ -27,7 +27,12 @@ impl Blueprint {
     fn max_geodes(&self, remaining: u64) -> u64 {
         let mut max_geodes = 0;
 
-        let initial_state = State { resources: [0; 4], robots: [1, 0, 0, 0], remaining };
+        let initial_state = State {
+            resources: [0; 4],
+            robots: [1, 0, 0, 0],
+            remaining,
+        };
+
         let mut current_states = vec![initial_state];
 
         while let Some(state) = current_states.pop() {
@@ -45,7 +50,8 @@ impl Blueprint {
                         } else if state.robots[i_resource] == 0 {
                             u64::MAX - 1
                         } else {
-                            (cost[i_resource] - state.resources[i_resource] - 1) / state.robots[i_resource] + 1
+                            let diff = cost[i_resource] - state.resources[i_resource] - 1;
+                            diff / state.robots[i_resource] + 1
                         }
                     })
                     .max()
@@ -59,12 +65,19 @@ impl Blueprint {
                 let new_remaining = state.remaining - elasped;
 
                 let mut new_resources = state.resources;
-                izip!(&mut new_resources, &state.robots, cost).for_each(|(resource, robot, c)| *resource = *resource + robot * elasped - c);
+
+                izip!(&mut new_resources, &state.robots, cost)
+                    .for_each(|(resource, robot, c)| *resource = *resource + robot * elasped - c);
 
                 let mut new_robots = state.robots;
                 new_robots[i_blueprint] += 1;
 
-                let new_state = State { resources: new_resources, robots: new_robots, remaining: new_remaining };
+                let new_state = State {
+                    resources: new_resources,
+                    robots: new_robots,
+                    remaining: new_remaining,
+                };
+
                 let new_max_geodes = new_state.max_geodes();
 
                 if new_max_geodes + (new_remaining * (new_remaining - 1)) / 2 > max_geodes {
@@ -109,17 +122,29 @@ fn main() -> Result<()> {
                 [geode_robot_ore_cost, 0, geode_robot_obsidian_cost, 0],
             ];
 
-            let max_robots = costs.iter().fold([0, 0, 0, u64::MAX], |mut max_cost, cost| {
+            let max_robots = (costs.iter()).fold([0, 0, 0, u64::MAX], |mut max_cost, cost| {
                 iter::zip(&mut max_cost, cost).for_each(|(max, &c)| *max = c.max(*max));
                 max_cost
             });
 
-            Result::Ok(Blueprint { id, costs, max_robots })
+            Result::Ok(Blueprint {
+                id,
+                costs,
+                max_robots,
+            })
         })
         .try_collect()?;
 
-    let result1 = blueprints.iter().map(|blueprint| blueprint.id * blueprint.max_geodes(24)).sum::<u64>();
-    let result2 = blueprints.iter().take(3).map(|blueprint| blueprint.max_geodes(32)).product::<u64>();
+    let result1 = blueprints
+        .iter()
+        .map(|blueprint| blueprint.id * blueprint.max_geodes(24))
+        .sum::<u64>();
+
+    let result2 = blueprints
+        .iter()
+        .take(3)
+        .map(|blueprint| blueprint.max_geodes(32))
+        .product::<u64>();
 
     println!("{result1}");
     println!("{result2}");

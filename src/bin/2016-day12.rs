@@ -40,7 +40,10 @@ fn get_register(register: &str) -> Result<usize> {
 fn get_input(input: &str) -> Result<Input> {
     match parse_register(input) {
         Some(r) => Ok(Input::Register(r)),
-        None => input.parse().map(Input::Value).wrap_err_with(|| eyre!("unknown register or value: {input}")),
+        None => input
+            .parse()
+            .map(Input::Value)
+            .wrap_err_with(|| eyre!("unknown register or value: {input}")),
     }
 }
 
@@ -74,13 +77,19 @@ fn main() -> Result<()> {
         .map(|line| {
             let args: SmallVec<[_; 3]> = line.split_ascii_whitespace().collect();
 
-            Ok(match args[0] {
-                "cpy" => Instruction::Copy(get_input(args[1])?, get_register(args[2])?),
-                "inc" => Instruction::Increment(get_register(args[1])?),
-                "dec" => Instruction::Decrement(get_register(args[1])?),
-                "jnz" => Instruction::JumpIfNotZero(get_input(args[1])?, get_input(args[2])?),
+            match args[0] {
+                "cpy" => Ok(Instruction::Copy(
+                    get_input(args[1])?,
+                    get_register(args[2])?,
+                )),
+                "inc" => Ok(Instruction::Increment(get_register(args[1])?)),
+                "dec" => Ok(Instruction::Decrement(get_register(args[1])?)),
+                "jnz" => Ok(Instruction::JumpIfNotZero(
+                    get_input(args[1])?,
+                    get_input(args[2])?,
+                )),
                 other => bail!("unknown instruction: {other}"),
-            })
+            }
         })
         .try_collect()?;
 

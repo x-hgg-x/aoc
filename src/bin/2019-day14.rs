@@ -21,9 +21,18 @@ struct Buffer<'a> {
     leftovers: HashMap<&'a str, u64>,
 }
 
-fn fuel_cost<'a>(reactions: &HashMap<&'a str, Reaction<'a>>, buffer: &mut Buffer<'a>, fuel_amount: u64) -> u64 {
+fn fuel_cost<'a>(
+    reactions: &HashMap<&'a str, Reaction<'a>>,
+    buffer: &mut Buffer<'a>,
+    fuel_amount: u64,
+) -> u64 {
     buffer.requirements.clear();
-    buffer.requirements.push(Ingredient { name: "FUEL", quantity: fuel_amount });
+
+    buffer.requirements.push(Ingredient {
+        name: "FUEL",
+        quantity: fuel_amount,
+    });
+
     buffer.leftovers.clear();
 
     let mut ore_cost = 0;
@@ -52,15 +61,25 @@ fn fuel_cost<'a>(reactions: &HashMap<&'a str, Reaction<'a>>, buffer: &mut Buffer
 
         *leftover = (required_reaction_count * required_reaction.output.quantity) - remaining;
 
-        buffer.requirements.extend(
-            required_reaction.inputs.iter().map(|ingredient| Ingredient { name: ingredient.name, quantity: required_reaction_count * ingredient.quantity }),
-        );
+        buffer
+            .requirements
+            .extend(
+                (required_reaction.inputs.iter()).map(|ingredient| Ingredient {
+                    name: ingredient.name,
+                    quantity: required_reaction_count * ingredient.quantity,
+                }),
+            );
     }
 
     ore_cost
 }
 
-fn max_fuel<'a>(reactions: &HashMap<&'a str, Reaction<'a>>, buffer: &mut Buffer<'a>, total_ore: u64, unit_cost: u64) -> u64 {
+fn max_fuel<'a>(
+    reactions: &HashMap<&'a str, Reaction<'a>>,
+    buffer: &mut Buffer<'a>,
+    total_ore: u64,
+    unit_cost: u64,
+) -> u64 {
     let mut fuel_left = 0;
     let mut fuel_right = 2 * total_ore / unit_cost;
 
@@ -89,21 +108,40 @@ fn main() -> Result<()> {
         .map(|cap_reaction| {
             let reaction_inputs = regex_ingredient
                 .captures_iter(cap_reaction.get(1).value()?.as_str())
-                .map(|cap_input| Result::Ok(Ingredient { name: cap_input.get(2).value()?.as_str(), quantity: cap_input[1].parse()? }))
+                .map(|cap_input| {
+                    Result::Ok(Ingredient {
+                        name: cap_input.get(2).value()?.as_str(),
+                        quantity: cap_input[1].parse()?,
+                    })
+                })
                 .try_collect()?;
 
             let reaction_output = cap_reaction
                 .get(2)
                 .and_then(|x| x.as_str().split_ascii_whitespace().next_tuple())
-                .map(|(count, name)| Result::Ok(Ingredient { name, quantity: count.parse()? }))
+                .map(|(count, name)| {
+                    Result::Ok(Ingredient {
+                        name,
+                        quantity: count.parse()?,
+                    })
+                })
                 .transpose()?
                 .value()?;
 
-            Result::Ok((reaction_output.name, Reaction { inputs: reaction_inputs, output: reaction_output }))
+            Result::Ok((
+                reaction_output.name,
+                Reaction {
+                    inputs: reaction_inputs,
+                    output: reaction_output,
+                },
+            ))
         })
         .try_collect()?;
 
-    let mut buffer = Buffer { requirements: Vec::new(), leftovers: HashMap::with_capacity(1 + reactions.len()) };
+    let mut buffer = Buffer {
+        requirements: Vec::new(),
+        leftovers: HashMap::with_capacity(1 + reactions.len()),
+    };
 
     let unit_cost = fuel_cost(&reactions, &mut buffer, 1);
     let max_fuel = max_fuel(&reactions, &mut buffer, 1_000_000_000_000, unit_cost);

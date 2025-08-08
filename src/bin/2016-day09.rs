@@ -2,8 +2,12 @@ use aoc::*;
 
 use regex::{CaptureLocations, Regex};
 
-fn get_location_data<'a>(input: &'a str, locations: &CaptureLocations, i: usize) -> Result<&'a str> {
-    locations.get(i).map(|(start, end)| &input[start..end]).value()
+fn get_location_data<'a>(
+    input: &'a str,
+    locations: &CaptureLocations,
+    i: usize,
+) -> Result<&'a str> {
+    (locations.get(i).map(|(start, end)| &input[start..end])).value()
 }
 
 fn file_length_v1(data: &str, re: &Regex, locations: &mut CaptureLocations) -> Result<usize> {

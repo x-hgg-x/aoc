@@ -4,7 +4,7 @@ use itertools::Itertools;
 use md5::Digest;
 use smallvec::SmallVec;
 
-use std::iter::once;
+use std::iter::{self, once};
 
 fn hash_generator(input: &[u8]) -> impl Iterator<Item = Digest> + use<> {
     let input_len = input.len();
@@ -12,7 +12,7 @@ fn hash_generator(input: &[u8]) -> impl Iterator<Item = Digest> + use<> {
     let mut data = SmallVec::<[u8; 24]>::from_slice(input);
     data.push(b'0');
 
-    once(md5::compute(&data)).chain(std::iter::from_fn(move || {
+    once(md5::compute(&data)).chain(iter::from_fn(move || {
         for (pos, x) in data[input_len..].iter_mut().enumerate().rev() {
             if *x < b'9' {
                 *x += 1;
@@ -51,7 +51,11 @@ fn main() -> Result<()> {
         })
         .collect_vec();
 
-    let result1: String = sub_hashes.iter().map(|&(fifth, _)| char::from_digit(fifth as u32, 16).value()).take(8).try_collect()?;
+    let result1: String = sub_hashes
+        .iter()
+        .map(|&(fifth, _)| char::from_digit(fifth as u32, 16).value())
+        .take(8)
+        .try_collect()?;
 
     let mut password = ['_'; 8];
     for &(fifth, sixth) in sub_hashes.iter().rev() {

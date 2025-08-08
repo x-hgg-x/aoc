@@ -6,7 +6,7 @@ fn main() -> Result<()> {
     let input = setup(file!())?;
     let input = String::from_utf8_lossy(&input);
 
-    let list: Vec<i64> = input.split_ascii_whitespace().map(|x| x.parse()).try_collect()?;
+    let list: Vec<i64> = (input.split_ascii_whitespace().map(|x| x.parse())).try_collect()?;
 
     let result1 = list.iter().map(|x| x / 3 - 2).sum::<i64>();
 

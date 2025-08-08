@@ -12,7 +12,11 @@ struct Grid {
 
 impl Grid {
     fn new(width: usize, height: usize, tiles: Vec<u8>) -> Result<Self> {
-        ensure!(width * height == tiles.len(), "unable to construct Grid: width * height != tiles.len()");
+        ensure!(
+            width * height == tiles.len(),
+            "unable to construct Grid: width * height != tiles.len()"
+        );
+
         Ok(Self { width, tiles })
     }
 
@@ -38,7 +42,10 @@ fn main() -> Result<()> {
 
     let tiles = additional_line
         .clone()
-        .chain(input.lines().flat_map(|line| once(9).chain(line.bytes().map(|x| x - b'0')).chain(once(9))))
+        .chain(
+            (input.lines())
+                .flat_map(|line| once(9).chain(line.bytes().map(|x| x - b'0')).chain(once(9))),
+        )
         .chain(additional_line)
         .collect_vec();
 
@@ -49,10 +56,14 @@ fn main() -> Result<()> {
         .chunks_exact(grid.width)
         .tuple_windows()
         .flat_map(|(row_0, row_1, row_2)| {
-            izip!(row_0.windows(3), row_1.windows(3), row_2.windows(3)).filter_map(|(x0, x1, x2)| {
-                let center = x1[1];
-                (center < x0[1] && center < x1[0] && center < x1[2] && center < x2[1]).then_some(center)
-            })
+            izip!(row_0.windows(3), row_1.windows(3), row_2.windows(3)).filter_map(
+                |(x0, x1, x2)| {
+                    let center = x1[1];
+
+                    (center < x0[1] && center < x1[0] && center < x1[2] && center < x2[1])
+                        .then_some(center)
+                },
+            )
         })
         .fold((0, 0), |(count, sum), x| (count + 1u64, sum + x as u64));
 
@@ -76,16 +87,25 @@ fn main() -> Result<()> {
         while let Some(index) = queue.pop() {
             let (row, column) = grid.get_position(index);
 
-            queue.extend([(row - 1, column), (row + 1, column), (row, column - 1), (row, column + 1)].into_iter().filter_map(|(new_row, new_column)| {
-                let new_index = grid.get_index(new_row, new_column);
-                if grid.tiles[new_index] != 9
-                    && let Some(x @ true) = processed.get_mut(new_index)
-                {
-                    *x = false;
-                    return Some(new_index);
-                }
-                None
-            }));
+            queue.extend(
+                [
+                    (row - 1, column),
+                    (row + 1, column),
+                    (row, column - 1),
+                    (row, column + 1),
+                ]
+                .into_iter()
+                .filter_map(|(new_row, new_column)| {
+                    let new_index = grid.get_index(new_row, new_column);
+                    if grid.tiles[new_index] != 9
+                        && let Some(x @ true) = processed.get_mut(new_index)
+                    {
+                        *x = false;
+                        return Some(new_index);
+                    }
+                    None
+                }),
+            );
 
             count += 1;
         }
@@ -95,7 +115,12 @@ fn main() -> Result<()> {
 
     counts.sort_unstable();
 
-    let result2 = counts.iter().rev().next_tuple().map(|(x0, x1, x2)| x0 * x1 * x2).value()?;
+    let result2 = counts
+        .iter()
+        .rev()
+        .next_tuple()
+        .map(|(x0, x1, x2)| x0 * x1 * x2)
+        .value()?;
 
     println!("{result1}");
     println!("{result2}");

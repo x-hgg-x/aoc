@@ -44,11 +44,21 @@ impl Packet {
             PacketData::Literal(value) => *value,
             PacketData::Sum(sub_packets) => sub_packets.iter().map(Self::value).sum(),
             PacketData::Product(sub_packets) => sub_packets.iter().map(Self::value).product(),
-            PacketData::Min(sub_packets) => sub_packets.iter().map(Self::value).min().unwrap_or_default(),
-            PacketData::Max(sub_packets) => sub_packets.iter().map(Self::value).max().unwrap_or_default(),
-            PacketData::Greater(sub_packets) => (sub_packets[0].value() > sub_packets[1].value()) as u64,
-            PacketData::Less(sub_packets) => (sub_packets[0].value() < sub_packets[1].value()) as u64,
-            PacketData::Equal(sub_packets) => (sub_packets[0].value() == sub_packets[1].value()) as u64,
+            PacketData::Min(sub_packets) => {
+                (sub_packets.iter().map(Self::value).min()).unwrap_or_default()
+            }
+            PacketData::Max(sub_packets) => {
+                (sub_packets.iter().map(Self::value).max()).unwrap_or_default()
+            }
+            PacketData::Greater(sub_packets) => {
+                (sub_packets[0].value() > sub_packets[1].value()) as u64
+            }
+            PacketData::Less(sub_packets) => {
+                (sub_packets[0].value() < sub_packets[1].value()) as u64
+            }
+            PacketData::Equal(sub_packets) => {
+                (sub_packets[0].value() == sub_packets[1].value()) as u64
+            }
         }
     }
 }
@@ -61,7 +71,11 @@ struct BitCursor<'a> {
 
 impl<'a> BitCursor<'a> {
     fn new(remaining: &'a [u8]) -> Self {
-        Self { remaining, offset: 0, bit_count: 0 }
+        Self {
+            remaining,
+            offset: 0,
+            bit_count: 0,
+        }
     }
 
     fn read_bits(&mut self, count: usize) -> Result<u64> {
@@ -113,14 +127,38 @@ impl<'a> BitCursor<'a> {
         let packet_type = self.read_bits(3)?;
 
         match packet_type {
-            0 => Ok(Packet { version, data: PacketData::Sum(self.parse_sub_packets()?) }),
-            1 => Ok(Packet { version, data: PacketData::Product(self.parse_sub_packets()?) }),
-            2 => Ok(Packet { version, data: PacketData::Min(self.parse_sub_packets()?) }),
-            3 => Ok(Packet { version, data: PacketData::Max(self.parse_sub_packets()?) }),
-            4 => Ok(Packet { version, data: PacketData::Literal(self.parse_literal()?) }),
-            5 => Ok(Packet { version, data: PacketData::Greater(self.parse_sub_packets()?) }),
-            6 => Ok(Packet { version, data: PacketData::Less(self.parse_sub_packets()?) }),
-            7 => Ok(Packet { version, data: PacketData::Equal(self.parse_sub_packets()?) }),
+            0 => Ok(Packet {
+                version,
+                data: PacketData::Sum(self.parse_sub_packets()?),
+            }),
+            1 => Ok(Packet {
+                version,
+                data: PacketData::Product(self.parse_sub_packets()?),
+            }),
+            2 => Ok(Packet {
+                version,
+                data: PacketData::Min(self.parse_sub_packets()?),
+            }),
+            3 => Ok(Packet {
+                version,
+                data: PacketData::Max(self.parse_sub_packets()?),
+            }),
+            4 => Ok(Packet {
+                version,
+                data: PacketData::Literal(self.parse_literal()?),
+            }),
+            5 => Ok(Packet {
+                version,
+                data: PacketData::Greater(self.parse_sub_packets()?),
+            }),
+            6 => Ok(Packet {
+                version,
+                data: PacketData::Less(self.parse_sub_packets()?),
+            }),
+            7 => Ok(Packet {
+                version,
+                data: PacketData::Equal(self.parse_sub_packets()?),
+            }),
             _ => bail!("unknown packet type: {packet_type}"),
         }
     }
@@ -172,7 +210,10 @@ fn main() -> Result<()> {
     let input = String::from_utf8_lossy(&input);
     let input = input.trim();
 
-    ensure!(input.len() % 2 == 0, "input must have an even number of bytes");
+    ensure!(
+        input.len() % 2 == 0,
+        "input must have an even number of bytes"
+    );
 
     let bytes: Vec<_> = input
         .as_bytes()

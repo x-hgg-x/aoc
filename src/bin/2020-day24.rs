@@ -9,15 +9,17 @@ fn main() -> Result<()> {
     let mut tiles = HashMap::new();
 
     for line in input.lines() {
-        let position = line.split_inclusive(['e', 'w']).fold((0i64, 0i64), |(q, r), direction| match direction {
-            "e" => (q + 1, r),
-            "w" => (q - 1, r),
-            "se" => (q, r + 1),
-            "nw" => (q, r - 1),
-            "sw" => (q - 1, r + 1),
-            "ne" => (q + 1, r - 1),
-            _ => (q, r),
-        });
+        let position = line
+            .split_inclusive(['e', 'w'])
+            .fold((0i64, 0i64), |(q, r), direction| match direction {
+                "e" => (q + 1, r),
+                "w" => (q - 1, r),
+                "se" => (q, r + 1),
+                "nw" => (q, r - 1),
+                "sw" => (q - 1, r + 1),
+                "ne" => (q + 1, r - 1),
+                _ => (q, r),
+            });
 
         match tiles.entry(position) {
             Entry::Occupied(entry) => {
@@ -39,15 +41,24 @@ fn main() -> Result<()> {
         neighbors_count.clear();
 
         for &(q, r) in tiles.keys() {
-            for neighbor in [(q + 1, r), (q - 1, r), (q, r + 1), (q, r - 1), (q - 1, r + 1), (q + 1, r - 1)] {
+            for neighbor in [
+                (q + 1, r),
+                (q - 1, r),
+                (q, r + 1),
+                (q, r - 1),
+                (q - 1, r + 1),
+                (q + 1, r - 1),
+            ] {
                 *neighbors_count.entry(neighbor).or_default() += 1;
             }
         }
 
-        buffer.extend(neighbors_count.iter().filter_map(|(&position, &count)| match (tiles.contains_key(&position), count) {
-            (false, 2) => Some((position, ())),
-            (true, 1 | 2) => Some((position, ())),
-            _ => None,
+        buffer.extend(neighbors_count.iter().filter_map(|(&position, &count)| {
+            match (tiles.contains_key(&position), count) {
+                (false, 2) => Some((position, ())),
+                (true, 1 | 2) => Some((position, ())),
+                _ => None,
+            }
         }));
 
         std::mem::swap(&mut buffer, &mut tiles);

@@ -21,8 +21,16 @@ struct Grid {
 
 impl Grid {
     fn new(width: usize, height: usize, tiles: Vec<Tile>) -> Result<Self> {
-        ensure!(width * height == tiles.len(), "unable to construct Grid: width * height != tiles.len()");
-        Ok(Self { width, height, tiles })
+        ensure!(
+            width * height == tiles.len(),
+            "unable to construct Grid: width * height != tiles.len()"
+        );
+
+        Ok(Self {
+            width,
+            height,
+            tiles,
+        })
     }
 
     fn get_index(&self, row: usize, column: usize) -> usize {
@@ -74,12 +82,22 @@ fn main() -> Result<()> {
             Tile::Letter(c) => letters.push(c),
             Tile::Intersection => {
                 if row_direction != 0 {
-                    if column > 0 && matches!(grid.tiles[grid.get_index(row, column - 1)], Tile::HorizontalLine | Tile::Letter(_)) {
+                    if column > 0
+                        && matches!(
+                            grid.tiles[grid.get_index(row, column - 1)],
+                            Tile::HorizontalLine | Tile::Letter(_)
+                        )
+                    {
                         row_direction = 0;
                         column_direction = -1;
                         continue;
                     }
-                    if column < grid.width - 1 && matches!(grid.tiles[grid.get_index(row, column + 1)], Tile::HorizontalLine | Tile::Letter(_)) {
+                    if column < grid.width - 1
+                        && matches!(
+                            grid.tiles[grid.get_index(row, column + 1)],
+                            Tile::HorizontalLine | Tile::Letter(_)
+                        )
+                    {
                         row_direction = 0;
                         column_direction = 1;
                         continue;
@@ -87,12 +105,22 @@ fn main() -> Result<()> {
                 }
 
                 if column_direction != 0 {
-                    if row > 0 && matches!(grid.tiles[grid.get_index(row - 1, column)], Tile::VerticalLine | Tile::Letter(_)) {
+                    if row > 0
+                        && matches!(
+                            grid.tiles[grid.get_index(row - 1, column)],
+                            Tile::VerticalLine | Tile::Letter(_)
+                        )
+                    {
                         row_direction = -1;
                         column_direction = 0;
                         continue;
                     }
-                    if row < grid.height - 1 && matches!(grid.tiles[grid.get_index(row + 1, column)], Tile::VerticalLine | Tile::Letter(_)) {
+                    if row < grid.height - 1
+                        && matches!(
+                            grid.tiles[grid.get_index(row + 1, column)],
+                            Tile::VerticalLine | Tile::Letter(_)
+                        )
+                    {
                         row_direction = 1;
                         column_direction = 0;
                         continue;

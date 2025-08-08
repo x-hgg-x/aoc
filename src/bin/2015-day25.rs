@@ -2,6 +2,8 @@ use aoc::*;
 
 use regex::Regex;
 
+use std::iter;
+
 fn main() -> Result<()> {
     let input = setup(file!())?;
     let input = String::from_utf8_lossy(&input);
@@ -14,7 +16,9 @@ fn main() -> Result<()> {
     let sum = row - 1 + column - 1;
     let n = sum * (sum + 1) / 2 + column - 1;
 
-    let mut generator = std::iter::successors(Some(20151125_u64), |number| Some((number * 252533) % 33554393));
+    let mut generator = iter::successors(Some(20151125_u64), |number| {
+        Some((number * 252533) % 33554393)
+    });
 
     let result = generator.nth(n).value()?;
 

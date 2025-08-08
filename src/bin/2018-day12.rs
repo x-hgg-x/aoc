@@ -20,7 +20,10 @@ fn read_token(token: u8) -> Result<u8> {
 }
 
 fn compute_rule_index(iter: impl IntoIterator<Item = u8>) -> usize {
-    iter.into_iter().enumerate().map(|(index, x)| x as usize * (1 << index)).sum()
+    iter.into_iter()
+        .enumerate()
+        .map(|(index, x)| x as usize * (1 << index))
+        .sum()
 }
 
 fn step(plants: &mut Plants, buf: &mut VecDeque<u8>, rules: &[u8; 32]) {
@@ -33,10 +36,15 @@ fn step(plants: &mut Plants, buf: &mut VecDeque<u8>, rules: &[u8; 32]) {
         plants.pots.pop_back();
     }
 
-    let iter = [0; 4].into_iter().chain(plants.pots.iter().copied()).chain([0; 4]).tuple_windows().map(|(x0, x1, x2, x3, x4)| {
-        let rule_index = compute_rule_index([x0, x1, x2, x3, x4]);
-        rules[rule_index]
-    });
+    let iter = [0; 4]
+        .into_iter()
+        .chain(plants.pots.iter().copied())
+        .chain([0; 4])
+        .tuple_windows()
+        .map(|(x0, x1, x2, x3, x4)| {
+            let rule_index = compute_rule_index([x0, x1, x2, x3, x4]);
+            rules[rule_index]
+        });
 
     buf.clear();
     buf.extend(iter);
@@ -45,7 +53,11 @@ fn step(plants: &mut Plants, buf: &mut VecDeque<u8>, rules: &[u8; 32]) {
 }
 
 fn compute_sum(plants: &mut Plants) -> i64 {
-    (plants.current_start_index..).zip(&plants.pots).filter(|&(_, &pot)| pot == 1).map(|(index, _)| index).sum()
+    (plants.current_start_index..)
+        .zip(&plants.pots)
+        .filter(|&(_, &pot)| pot == 1)
+        .map(|(index, _)| index)
+        .sum()
 }
 
 fn main() -> Result<()> {
@@ -56,13 +68,25 @@ fn main() -> Result<()> {
 
     let mut rules = [0u8; 32];
     for cap in regex_rule.captures_iter(&input) {
-        let rule_index = cap[1].iter().copied().map(read_token).try_process(|iter| compute_rule_index(iter))?;
+        let rule_index = cap[1]
+            .iter()
+            .copied()
+            .map(read_token)
+            .try_process(|iter| compute_rule_index(iter))?;
+
         rules[rule_index] = read_token(cap[2][0])?;
     }
 
     ensure!(rules[0] == 0, "unsupported rule");
 
-    let mut plants = Plants { pots: regex_start.captures(&input).value()?[1].iter().copied().map(read_token).try_collect()?, current_start_index: 0 };
+    let mut plants = Plants {
+        current_start_index: 0,
+        pots: regex_start.captures(&input).value()?[1]
+            .iter()
+            .copied()
+            .map(read_token)
+            .try_collect()?,
+    };
 
     let mut buf = VecDeque::new();
 

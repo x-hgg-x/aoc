@@ -18,7 +18,14 @@ impl Memory {
         let mut values = vec![0; size * size];
         values[half_size * (size + 1)] = 1;
 
-        Self { size, values, current_position: Complex::new(half_size, half_size), line_direction: Complex::new(1, 0), remaining_line_count: 1, line_len: 1 }
+        Self {
+            size,
+            values,
+            current_position: Complex::new(half_size, half_size),
+            line_direction: Complex::new(1, 0),
+            remaining_line_count: 1,
+            line_len: 1,
+        }
     }
 
     fn get_index(&self, row: usize, column: usize) -> usize {
@@ -26,8 +33,11 @@ impl Memory {
     }
 
     fn next_index(&mut self) -> Result<usize> {
-        self.current_position.re = usize::try_from(i64::try_from(self.current_position.re)? + self.line_direction.re)?;
-        self.current_position.im = usize::try_from(i64::try_from(self.current_position.im)? + self.line_direction.im)?;
+        self.current_position = Complex {
+            re: usize::try_from(i64::try_from(self.current_position.re)? + self.line_direction.re)?,
+            im: usize::try_from(i64::try_from(self.current_position.im)? + self.line_direction.im)?,
+        };
+
         self.remaining_line_count -= 1;
 
         if self.remaining_line_count == 0 {
@@ -47,7 +57,12 @@ impl Memory {
         let rows = row.saturating_sub(1)..=(row + 1).min(self.size - 1);
         let columns = column.saturating_sub(1)..=(column + 1).min(self.size - 1);
 
-        self.values.chunks_exact(self.size).skip(*rows.start()).take(rows.end() - rows.start() + 1).flat_map(|row| &row[columns.clone()]).sum()
+        self.values
+            .chunks_exact(self.size)
+            .skip(*rows.start())
+            .take(rows.end() - rows.start() + 1)
+            .flat_map(|row| &row[columns.clone()])
+            .sum()
     }
 }
 

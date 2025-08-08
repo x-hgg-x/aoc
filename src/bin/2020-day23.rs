@@ -7,18 +7,35 @@ fn solve(input: &[u8], size: usize, turns: usize) -> Result<Vec<usize>> {
     let mut current_cup = cups[0];
 
     let mut successors = (1..size).chain(cups.first().copied()).collect_vec();
+
     for i in 0..cups.len() - 1 {
         successors[cups[i]] = cups[(i + 1) % cups.len()];
     }
-    successors[*cups.last().value()?] = if size > cups.len() { cups.len() } else { cups[0] };
+
+    successors[*cups.last().value()?] = if size > cups.len() {
+        cups.len()
+    } else {
+        cups[0]
+    };
 
     for _ in 0..turns {
         let s1 = successors[current_cup];
         let s2 = successors[s1];
         let s3 = successors[s2];
 
-        let destination_cup = (0..size).rev().cycle().skip(size - current_cup).find(|x| ![s1, s2, s3].contains(x)).value()?;
-        (successors[current_cup], successors[destination_cup], successors[s3]) = (successors[s3], s1, successors[destination_cup]);
+        let destination_cup = (0..size)
+            .rev()
+            .cycle()
+            .skip(size - current_cup)
+            .find(|x| ![s1, s2, s3].contains(x))
+            .value()?;
+
+        (
+            successors[current_cup],
+            successors[destination_cup],
+            successors[s3],
+        ) = (successors[s3], s1, successors[destination_cup]);
+
         current_cup = successors[current_cup];
     }
 

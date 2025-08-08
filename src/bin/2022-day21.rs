@@ -36,19 +36,35 @@ impl<'a> Monkey<'a> {
     }
 }
 
-fn compute_root_value(monkeys: &HashMap<&str, Monkey>, inverted_graph: &HashMap<&str, Vec<&str>>) -> i64 {
+fn compute_root_value(
+    monkeys: &HashMap<&str, Monkey>,
+    inverted_graph: &HashMap<&str, Vec<&str>>,
+) -> i64 {
     let mut values = HashMap::new();
-    let mut queue: VecDeque<_> = monkeys.iter().filter(|&(_, monkey)| matches!(monkey, Monkey::Constant(_))).map(|(&name, _)| name).collect();
+
+    let mut queue: VecDeque<_> = monkeys
+        .iter()
+        .filter(|&(_, monkey)| matches!(monkey, Monkey::Constant(_)))
+        .map(|(&name, _)| name)
+        .collect();
 
     while let Some(name) = queue.pop_front() {
         values.insert(name, monkeys[name].value(&values));
-        queue.extend(inverted_graph[name].iter().copied().filter(|&x| monkeys[x].is_calculable(&values)));
+        queue.extend(
+            inverted_graph[name]
+                .iter()
+                .copied()
+                .filter(|&x| monkeys[x].is_calculable(&values)),
+        );
     }
 
     values["root"]
 }
 
-fn compute_human_value(monkeys: &HashMap<&str, Monkey>, inverted_graph: &HashMap<&str, Vec<&str>>) -> Result<i64> {
+fn compute_human_value(
+    monkeys: &HashMap<&str, Monkey>,
+    inverted_graph: &HashMap<&str, Vec<&str>>,
+) -> Result<i64> {
     let mut values = HashMap::new();
 
     let mut human_dependencies = HashSet::new();
@@ -60,11 +76,21 @@ fn compute_human_value(monkeys: &HashMap<&str, Monkey>, inverted_graph: &HashMap
     }
 
     queue.clear();
-    queue.extend(monkeys.iter().filter(|&(&name, monkey)| name != "humn" && matches!(monkey, Monkey::Constant(_))).map(|(&name, _)| name));
+
+    queue.extend(
+        monkeys
+            .iter()
+            .filter(|&(&name, monkey)| name != "humn" && matches!(monkey, Monkey::Constant(_)))
+            .map(|(&name, _)| name),
+    );
 
     while let Some(name) = queue.pop_front() {
         values.insert(name, monkeys[name].value(&values));
-        queue.extend(inverted_graph[name].iter().copied().filter(|&x| monkeys[x].is_calculable(&values) && !human_dependencies.contains(name)));
+        queue.extend(
+            inverted_graph[name].iter().copied().filter(|&x| {
+                monkeys[x].is_calculable(&values) && !human_dependencies.contains(name)
+            }),
+        );
     }
 
     let (mut current_unknown, mut current_value) = match monkeys["root"] {

@@ -40,7 +40,10 @@ fn get_register(register: &str) -> Result<usize> {
 fn get_input(input: &str) -> Result<Input> {
     match parse_register(input) {
         Some(r) => Ok(Input::Register(r)),
-        None => input.parse().map(Input::Value).wrap_err_with(|| eyre!("unknown register or value: {input}")),
+        None => input
+            .parse()
+            .map(Input::Value)
+            .wrap_err_with(|| eyre!("unknown register or value: {input}")),
     }
 }
 
@@ -78,13 +81,25 @@ fn main() -> Result<()> {
         .map(|line| {
             let args: SmallVec<[_; 3]> = line.split_ascii_whitespace().collect();
 
-            Ok(match args[0] {
-                "set" => Instruction::Set(get_register(args[1])?, get_input(args[2])?),
-                "sub" => Instruction::Substraction(get_register(args[1])?, get_input(args[2])?),
-                "mul" => Instruction::Multiplication(get_register(args[1])?, get_input(args[2])?),
-                "jnz" => Instruction::JumpIfNotZero(get_input(args[1])?, get_input(args[2])?),
+            match args[0] {
+                "set" => Ok(Instruction::Set(
+                    get_register(args[1])?,
+                    get_input(args[2])?,
+                )),
+                "sub" => Ok(Instruction::Substraction(
+                    get_register(args[1])?,
+                    get_input(args[2])?,
+                )),
+                "mul" => Ok(Instruction::Multiplication(
+                    get_register(args[1])?,
+                    get_input(args[2])?,
+                )),
+                "jnz" => Ok(Instruction::JumpIfNotZero(
+                    get_input(args[1])?,
+                    get_input(args[2])?,
+                )),
                 other => bail!("unknown instruction: {other}"),
-            })
+            }
         })
         .try_collect()?;
 
@@ -94,7 +109,11 @@ fn main() -> Result<()> {
     let [_, min, max, ..] = registers;
 
     let sqrt = (max as f64).sqrt() as i64;
-    let composite_number_count = (min..=max).step_by(17).filter(|&x| (2..=sqrt).any(|i| x % i == 0)).count();
+
+    let composite_number_count = (min..=max)
+        .step_by(17)
+        .filter(|&x| (2..=sqrt).any(|i| x % i == 0))
+        .count();
 
     let result1 = mul_count;
     let result2 = composite_number_count;

@@ -73,7 +73,10 @@ fn main() -> Result<()> {
 
     let mut bots = vec![Default::default(); bot_instructions.len()];
     for (bot_number, node1, node2) in bot_instructions {
-        bots[bot_number] = Bot { values: SmallVec::new(), outputs: SmallVec::from_buf([node1, node2]) };
+        bots[bot_number] = Bot {
+            values: SmallVec::new(),
+            outputs: SmallVec::from_buf([node1, node2]),
+        };
     }
 
     let mut processable_bots = Vec::with_capacity(input_edges.len());

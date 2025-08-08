@@ -11,7 +11,11 @@ struct Grid {
 
 impl Grid {
     fn new(tiles: Vec<u8>) -> Result<Self> {
-        ensure!(SIZE * SIZE == tiles.len(), "unable to construct Grid: width * height != tiles.len()");
+        ensure!(
+            SIZE * SIZE == tiles.len(),
+            "unable to construct Grid: width * height != tiles.len()"
+        );
+
         Ok(Self { tiles })
     }
 
@@ -36,10 +40,26 @@ fn step(grid: &mut Grid, queue: &mut Vec<(usize, usize)>) -> (usize, bool) {
         *tile += 1;
 
         if *tile == 10 {
-            let new_rows = [Some(row), row.checked_sub(1), (row < SIZE - 1).then_some(row + 1)];
-            let new_columns = [Some(column), column.checked_sub(1), (column < SIZE - 1).then_some(column + 1)];
+            let new_rows = [
+                Some(row),
+                row.checked_sub(1),
+                (row < SIZE - 1).then_some(row + 1),
+            ];
 
-            queue.extend(iproduct!(new_rows.into_iter().flatten(), new_columns.into_iter().flatten()).skip(1));
+            let new_columns = [
+                Some(column),
+                column.checked_sub(1),
+                (column < SIZE - 1).then_some(column + 1),
+            ];
+
+            queue.extend(
+                iproduct!(
+                    new_rows.into_iter().flatten(),
+                    new_columns.into_iter().flatten()
+                )
+                .skip(1),
+            );
+
             count += 1;
         }
     }
@@ -59,7 +79,11 @@ fn main() -> Result<()> {
     let input = setup(file!())?;
     let input = String::from_utf8_lossy(&input);
 
-    let tiles = input.lines().flat_map(|line| line.bytes().map(|x| x - b'0')).collect_vec();
+    let tiles = input
+        .lines()
+        .flat_map(|line| line.bytes().map(|x| x - b'0'))
+        .collect_vec();
+
     let mut grid = Grid::new(tiles)?;
 
     let mut total_count = 0usize;

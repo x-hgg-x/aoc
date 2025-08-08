@@ -24,9 +24,28 @@ struct Grid {
 }
 
 impl Grid {
-    fn new(width: usize, height: usize, tiles: Vec<Tile>, min_width: i64, max_width: i64, min_depth: i64, max_depth: i64) -> Result<Self> {
-        ensure!(width * height == tiles.len(), "unable to construct Grid: width * height != tiles.len()");
-        Ok(Self { width, tiles, min_width, max_width, min_depth, max_depth })
+    fn new(
+        width: usize,
+        height: usize,
+        tiles: Vec<Tile>,
+        min_width: i64,
+        max_width: i64,
+        min_depth: i64,
+        max_depth: i64,
+    ) -> Result<Self> {
+        ensure!(
+            width * height == tiles.len(),
+            "unable to construct Grid: width * height != tiles.len()"
+        );
+
+        Ok(Self {
+            width,
+            tiles,
+            min_width,
+            max_width,
+            min_depth,
+            max_depth,
+        })
     }
 
     fn get_index(&self, x: i64, y: i64) -> Result<usize> {
@@ -67,9 +86,19 @@ fn main() -> Result<()> {
         .try_collect()?;
 
     let x_y_min_max = clay_areas.iter().fold(
-        (WATER_SPRING_X_COORD, WATER_SPRING_X_COORD, i64::MAX, i64::MIN),
+        (
+            WATER_SPRING_X_COORD,
+            WATER_SPRING_X_COORD,
+            i64::MAX,
+            i64::MIN,
+        ),
         |(min_width, max_width, min_depth, max_depth), (width, depth)| {
-            (min_width.min(*width.start()), max_width.max(*width.end()), min_depth.min(*depth.start()), max_depth.max(*depth.end()))
+            (
+                min_width.min(*width.start()),
+                max_width.max(*width.end()),
+                min_depth.min(*depth.start()),
+                max_depth.max(*depth.end()),
+            )
         },
     );
 
@@ -82,7 +111,9 @@ fn main() -> Result<()> {
     let height = usize::try_from(max_depth - min_depth + 1)?;
     let tiles = vec![Tile::Sand; width * height];
 
-    let mut grid = Grid::new(width, height, tiles, min_width, max_width, min_depth, max_depth)?;
+    let mut grid = Grid::new(
+        width, height, tiles, min_width, max_width, min_depth, max_depth,
+    )?;
 
     for (width_range, depth_range) in clay_areas {
         for (x, y) in iproduct!(width_range, depth_range) {
@@ -181,11 +212,12 @@ fn main() -> Result<()> {
 
     let included_tiles = &grid.tiles[width..grid.tiles.len() - width];
 
-    let (water, stable_water) = included_tiles.iter().fold((0usize, 0usize), |(water, stable_water), tile| match tile {
-        Tile::UnstableWater => (water + 1, stable_water),
-        Tile::StableWater => (water + 1, stable_water + 1),
-        _ => (water, stable_water),
-    });
+    let (water, stable_water) =
+        (included_tiles.iter()).fold((0usize, 0usize), |(water, stable_water), tile| match tile {
+            Tile::UnstableWater => (water + 1, stable_water),
+            Tile::StableWater => (water + 1, stable_water + 1),
+            _ => (water, stable_water),
+        });
 
     let result1 = water;
     let result2 = stable_water;

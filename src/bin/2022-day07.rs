@@ -15,8 +15,15 @@ struct Dir {
 
 impl Dir {
     fn total_size(&self, filesystem: &HashMap<String, Self>) -> u64 {
-        let total_size = self.size + self.children.iter().map(|path| filesystem[path].total_size(filesystem)).sum::<u64>();
+        let total_size = self.size
+            + self
+                .children
+                .iter()
+                .map(|path| filesystem[path].total_size(filesystem))
+                .sum::<u64>();
+
         self.total_size.set(total_size);
+
         total_size
     }
 }
@@ -40,7 +47,9 @@ fn main() -> Result<()> {
                 dir_stack.push(dir);
             }
         } else if command == "$ ls" {
-            let path = repeat_n("/", dir_stack.len()).interleave(dir_stack.iter().copied()).collect::<String>();
+            let path = repeat_n("/", dir_stack.len())
+                .interleave(dir_stack.iter().copied())
+                .collect::<String>();
 
             let mut size = 0;
             let mut children = Vec::new();
@@ -49,11 +58,21 @@ fn main() -> Result<()> {
                 if let Some(dir) = line.strip_prefix("dir ") {
                     children.push(format!("{path}/{dir}"));
                 } else {
-                    size += line.split_ascii_whitespace().next().value()?.parse::<u64>()?;
+                    size += line
+                        .split_ascii_whitespace()
+                        .next()
+                        .value()?
+                        .parse::<u64>()?;
                 }
             }
 
-            filesystem.insert(path, Dir { size, children, total_size: Cell::new(0) });
+            let dir = Dir {
+                size,
+                children,
+                total_size: Cell::new(0),
+            };
+
+            filesystem.insert(path, dir);
         } else {
             bail!("invalid command");
         }
@@ -62,8 +81,18 @@ fn main() -> Result<()> {
     let total_size = filesystem["/root"].total_size(&filesystem);
     let min_deleted_size = total_size - 40_000_000;
 
-    let result1 = filesystem.values().map(|dir| dir.total_size.get()).filter(|&x| x < 100_000).sum::<u64>();
-    let result2 = filesystem.values().map(|dir| dir.total_size.get()).filter(|&x| x > min_deleted_size).min().value()?;
+    let result1 = filesystem
+        .values()
+        .map(|dir| dir.total_size.get())
+        .filter(|&x| x < 100_000)
+        .sum::<u64>();
+
+    let result2 = filesystem
+        .values()
+        .map(|dir| dir.total_size.get())
+        .filter(|&x| x > min_deleted_size)
+        .min()
+        .value()?;
 
     println!("{result1}");
     println!("{result2}");

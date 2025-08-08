@@ -2,6 +2,8 @@ use aoc::*;
 
 use itertools::Itertools;
 
+use std::iter;
+
 fn check_password_1(data: &[u8; 6]) -> bool {
     let increasing = data.windows(2).all(|x| x[0] <= x[1]);
     let adjacent_same = data.iter().dedup_with_count().any(|(count, _)| count >= 2);
@@ -33,10 +35,19 @@ fn main() -> Result<()> {
     let (start_password, end_password) = input.split('-').map(|x| x.trim()).next_tuple().value()?;
 
     let start = start_password.as_bytes().try_into()?;
-    let range_len = (1 + end_password.parse::<i64>()? - start_password.parse::<i64>()?).try_into()?;
 
-    let result1 = std::iter::successors(Some(start), |&data| Some(next_password(data))).take(range_len).filter(check_password_1).count();
-    let result2 = std::iter::successors(Some(start), |&data| Some(next_password(data))).take(range_len).filter(check_password_2).count();
+    let range_len =
+        (1 + end_password.parse::<i64>()? - start_password.parse::<i64>()?).try_into()?;
+
+    let result1 = iter::successors(Some(start), |&data| Some(next_password(data)))
+        .take(range_len)
+        .filter(check_password_1)
+        .count();
+
+    let result2 = iter::successors(Some(start), |&data| Some(next_password(data)))
+        .take(range_len)
+        .filter(check_password_2)
+        .count();
 
     println!("{result1}");
     println!("{result2}");

@@ -21,7 +21,11 @@ fn compute_checksum(input: &[u8], disk_size: usize) -> String {
     disk.truncate(disk_size);
 
     let mut buf = disk;
-    let mut checksum = buf.chunks_exact(2).map(|x| (x[0] == x[1]) as u8).collect_vec();
+
+    let mut checksum = buf
+        .chunks_exact(2)
+        .map(|x| (x[0] == x[1]) as u8)
+        .collect_vec();
 
     while checksum.len() % 2 == 0 {
         std::mem::swap(&mut buf, &mut checksum);

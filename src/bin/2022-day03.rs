@@ -14,14 +14,21 @@ fn compute_priority(c: u8) -> u64 {
     (c & 0x1f) + 26 * (c & 0x20 == 0) as u64
 }
 
-fn compute_intersection_priority(intersection: &mut Vec<u8>, buf: &mut Vec<u8>, init_data: &[u8], chunks: &[&[u8]]) -> u64 {
+fn compute_intersection_priority(
+    intersection: &mut Vec<u8>,
+    buf: &mut Vec<u8>,
+    init_data: &[u8],
+    chunks: &[&[u8]],
+) -> u64 {
     fill_sort_dedup(intersection, init_data);
 
     for &data in chunks {
         fill_sort_dedup(buf, data);
 
         let mut buf_iter = buf.iter();
-        intersection.retain(|&x| buf_iter.take_while_ref(|&&item| item <= x).any(|&item| item == x));
+
+        intersection
+            .retain(|&x| (buf_iter.take_while_ref(|&&item| item <= x)).any(|&item| item == x));
     }
 
     intersection.iter().map(|&c| compute_priority(c)).sum()

@@ -21,8 +21,16 @@ struct Grid {
 
 impl Grid {
     fn new(width: usize, height: usize, nodes: Vec<Node>) -> Result<Self> {
-        ensure!(width * height == nodes.len(), "unable to construct Grid: width * height != nodes.len()");
-        Ok(Self { width, height, nodes })
+        ensure!(
+            width * height == nodes.len(),
+            "unable to construct Grid: width * height != nodes.len()"
+        );
+
+        Ok(Self {
+            width,
+            height,
+            nodes,
+        })
     }
 
     fn get_index(&self, row: usize, column: usize) -> usize {
@@ -38,10 +46,19 @@ struct State {
 }
 
 impl State {
-    fn new(hole_position: (usize, usize), (goal_row, goal_column): (usize, usize), steps: usize) -> Self {
+    fn new(
+        hole_position: (usize, usize),
+        (goal_row, goal_column): (usize, usize),
+        steps: usize,
+    ) -> Self {
         let (hole_row, hole_column) = hole_position;
         let distance = hole_row.abs_diff(goal_row) + hole_column.abs_diff(goal_column);
-        Self { hole_position, steps, distance }
+
+        Self {
+            hole_position,
+            steps,
+            distance,
+        }
     }
 
     fn estimate(&self) -> usize {
@@ -72,11 +89,17 @@ impl PartialOrd for State {
 fn check_grid(grid: &Grid) -> Result<()> {
     let mut max_used = 0;
     let mut min_size = u64::MAX;
-    for node in grid.nodes.chunks_exact(grid.height).flat_map(|nodes| &nodes[..2]) {
-        max_used = max_used.max(node.used);
-        min_size = min_size.min(node.size);
-    }
+
+    grid.nodes
+        .chunks_exact(grid.height)
+        .flat_map(|nodes| &nodes[..2])
+        .for_each(|node| {
+            max_used = max_used.max(node.used);
+            min_size = min_size.min(node.size);
+        });
+
     ensure!(max_used <= min_size, "no direct path from goal to start");
+
     Ok(())
 }
 
@@ -87,11 +110,23 @@ fn main() -> Result<()> {
     let regex_grid_size = Regex::new(r#"/dev/grid/node-x(\d+)-y(\d+)"#)?;
     let regex_node = Regex::new(r#"(?m)^\S+\s+(\d+)T\s+(\d+)T\s+\d+T\s+\d+%$"#)?;
 
-    let cap = regex_grid_size.captures(input.lines().last().value()?).value()?;
+    let cap = regex_grid_size
+        .captures(input.lines().last().value()?)
+        .value()?;
+
     let width = cap[1].parse::<usize>()? + 1;
     let height = cap[2].parse::<usize>()? + 1;
 
-    let nodes = regex_node.captures_iter(&input).map(|cap| Result::Ok(Node { size: cap[1].parse()?, used: cap[2].parse()? })).try_collect()?;
+    let nodes = regex_node
+        .captures_iter(&input)
+        .map(|cap| {
+            Result::Ok(Node {
+                size: cap[1].parse()?,
+                used: cap[2].parse()?,
+            })
+        })
+        .try_collect()?;
+
     let grid = Grid::new(width, height, nodes)?;
 
     let result1 = grid
@@ -100,7 +135,8 @@ fn main() -> Result<()> {
         .tuple_combinations()
         .map(|(node1, node2)| {
             let total_used = node1.used + node2.used;
-            (node2.used != 0 && total_used <= node1.size) as usize + (node1.used != 0 && total_used <= node2.size) as usize
+            (node2.used != 0 && total_used <= node1.size) as usize
+                + (node1.used != 0 && total_used <= node2.size) as usize
         })
         .sum::<usize>();
 

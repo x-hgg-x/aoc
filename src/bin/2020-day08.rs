@@ -56,12 +56,12 @@ fn main() -> Result<()> {
         .map(|line| {
             let (name, arg) = line.split_ascii_whitespace().next_tuple().value()?;
 
-            Ok(match name {
-                "nop" => Instruction::Nop(arg.parse()?),
-                "acc" => Instruction::Accumulate(arg.parse()?),
-                "jmp" => Instruction::Jump(arg.parse()?),
+            match name {
+                "nop" => Ok(Instruction::Nop(arg.parse()?)),
+                "acc" => Ok(Instruction::Accumulate(arg.parse()?)),
+                "jmp" => Ok(Instruction::Jump(arg.parse()?)),
                 other => bail!("unknown instruction: {other}"),
-            })
+            }
         })
         .try_collect()?;
 

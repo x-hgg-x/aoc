@@ -16,7 +16,13 @@ struct Permutations<'a, T, const N: usize> {
 
 impl<'a, T, const N: usize> Permutations<'a, T, N> {
     fn new(data: &'a [T]) -> Self {
-        Self { data, available: SmallVec::new(), buf: SmallVec::new(), factorials: Self::compute_factorials(data.len() as i64), factorial_index: 0 }
+        Self {
+            data,
+            available: SmallVec::new(),
+            buf: SmallVec::new(),
+            factorials: Self::compute_factorials(data.len() as i64),
+            factorial_index: 0,
+        }
     }
 
     fn compute_factorials(num: i64) -> Vec<i64> {
@@ -42,11 +48,14 @@ impl<'a, T: Copy, const N: usize> Iterator for Permutations<'a, T, N> {
         self.buf.clear();
         self.available = SmallVec::from_slice(self.data);
 
-        self.buf.extend(self.factorials[..self.data.len()].iter().rev().map(|&place_value| {
-            let index = x / place_value;
-            x -= index * place_value;
-            self.available.remove(index.rem_euclid(self.available.len() as i64) as usize)
-        }));
+        self.buf.extend(
+            (self.factorials[..self.data.len()].iter().rev()).map(|&place_value| {
+                let index = x / place_value;
+                x -= index * place_value;
+                let idx = index.rem_euclid(self.available.len() as i64);
+                self.available.remove(idx as usize)
+            }),
+        );
 
         self.factorial_index += 1;
 
@@ -62,7 +71,11 @@ struct Intcode {
 
 impl Intcode {
     fn new(program: Vec<i64>, inputs: SmallVec<[i64; 2]>) -> Self {
-        Self { program, ip: 0, inputs }
+        Self {
+            program,
+            ip: 0,
+            inputs,
+        }
     }
 
     fn get_input(&self, arg_position: usize, instruction: i64) -> Result<i64> {
@@ -153,7 +166,9 @@ fn main() -> Result<()> {
         .map(|permutation| {
             let mut in_out = 0;
             for phase_setting in permutation {
-                let mut intcode = Intcode::new(program.clone(), SmallVec::from_buf([phase_setting, in_out]));
+                let mut intcode =
+                    Intcode::new(program.clone(), SmallVec::from_buf([phase_setting, in_out]));
+
                 in_out = intcode.run()?.value()?;
             }
             Ok(in_out)
@@ -163,8 +178,12 @@ fn main() -> Result<()> {
 
     let result2 = Permutations::<_, 5>::new(&[5, 6, 7, 8, 9])
         .map(|permutation| {
-            let mut intcodes: SmallVec<[_; 5]> =
-                permutation.iter().map(|&phase_setting| Intcode::new(program.clone(), SmallVec::from_slice(&[phase_setting]))).collect();
+            let mut intcodes: SmallVec<[_; 5]> = permutation
+                .iter()
+                .map(|&phase_setting| {
+                    Intcode::new(program.clone(), SmallVec::from_slice(&[phase_setting]))
+                })
+                .collect();
 
             let mut halted_programs = [false; 5];
 

@@ -56,7 +56,11 @@ fn main() -> Result<()> {
             let line_range = x[2].parse()?..=x[4].parse()?;
             let column_range = x[3].parse()?..=x[5].parse()?;
 
-            Ok(Instruction { command, line_range, column_range })
+            Ok(Instruction {
+                command,
+                line_range,
+                column_range,
+            })
         })
         .try_collect()?;
 

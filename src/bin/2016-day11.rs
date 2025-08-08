@@ -18,7 +18,10 @@ struct Pair {
 
 impl Pair {
     fn new(chip_floor: i8, gen_floor: i8) -> Self {
-        Self { chip_floor, gen_floor }
+        Self {
+            chip_floor,
+            gen_floor,
+        }
     }
 }
 
@@ -47,34 +50,42 @@ impl Hash for State {
 
 impl State {
     fn new(pairs: SmallVec<[Pair; 8]>, elevator_floor: i8) -> Self {
-        Self { pairs, elevator_floor }
+        Self {
+            pairs,
+            elevator_floor,
+        }
     }
 
     fn is_valid(&self) -> bool {
         (0..=3).contains(&self.elevator_floor)
-            && self.pairs.iter().all(|p1| p1.chip_floor == p1.gen_floor || self.pairs.iter().all(|p2| p2.gen_floor != p1.chip_floor))
+            && self.pairs.iter().all(|p1| {
+                p1.chip_floor == p1.gen_floor
+                    || self.pairs.iter().all(|p2| p2.gen_floor != p1.chip_floor)
+            })
     }
 
     fn is_final(&self) -> bool {
-        self.pairs.iter().all(|pair| pair.chip_floor == 3 && pair.gen_floor == 3)
+        (self.pairs.iter()).all(|pair| pair.chip_floor == 3 && pair.gen_floor == 3)
     }
 
-    fn next_states<'a>(&'a self, possible_moves: &'a [(IndicesVec, IndicesVec)]) -> impl Iterator<Item = State> + 'a {
+    fn next_states(
+        &self,
+        possible_moves: &[(IndicesVec, IndicesVec)],
+    ) -> impl Iterator<Item = State> {
         possible_moves
             .iter()
             .filter(move |(chips, generators)| {
-                if let Some(chips) = chips {
-                    let check = chips.iter().all(|&chip_index| self.pairs[chip_index].chip_floor == self.elevator_floor);
-                    if !check {
-                        return false;
-                    }
+                if let Some(chips) = chips
+                    && !(chips.iter()).all(|&idx| self.pairs[idx].chip_floor == self.elevator_floor)
+                {
+                    return false;
                 }
 
-                if let Some(generators) = generators {
-                    let check = generators.iter().all(|&generator_index| self.pairs[generator_index].gen_floor == self.elevator_floor);
-                    if !check {
-                        return false;
-                    }
+                if let Some(generators) = generators
+                    && !(generators.iter())
+                        .all(|&idx| self.pairs[idx].gen_floor == self.elevator_floor)
+                {
+                    return false;
                 }
 
                 true
@@ -109,8 +120,18 @@ fn solve(state: &State) -> usize {
     // Possible moves: 1 chip or 1 generator or 2 chips or 2 generators or a pair of chip/generator of the same type
     let possible_moves = (0..state.pairs.len())
         .tuple_combinations()
-        .flat_map(|(x,)| [(Some(smallvec![x]), None), (None, Some(smallvec![x])), (Some(smallvec![x]), Some(smallvec![x]))])
-        .chain((0..state.pairs.len()).tuple_combinations().flat_map(|(x, y)| [(Some(smallvec![x, y]), None), (None, Some(smallvec![x, y]))]))
+        .flat_map(|(x,)| {
+            [
+                (Some(smallvec![x]), None),
+                (None, Some(smallvec![x])),
+                (Some(smallvec![x]), Some(smallvec![x])),
+            ]
+        })
+        .chain(
+            (0..state.pairs.len())
+                .tuple_combinations()
+                .flat_map(|(x, y)| [(Some(smallvec![x, y]), None), (None, Some(smallvec![x, y]))]),
+        )
         .collect_vec();
 
     let mut current_states = vec![state.clone()];
@@ -168,7 +189,11 @@ fn main() -> Result<()> {
         }
     }
 
-    let pairs = chips.iter().map(|(&name, &chip_floor)| Pair::new(chip_floor, generators[name])).sorted_unstable().collect();
+    let pairs = chips
+        .iter()
+        .map(|(&name, &chip_floor)| Pair::new(chip_floor, generators[name]))
+        .sorted_unstable()
+        .collect();
 
     let mut state = State::new(pairs, 0);
     let result1 = solve(&state);

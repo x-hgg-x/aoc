@@ -8,12 +8,19 @@ struct LookAndSay {
 
 impl LookAndSay {
     fn new(number: &[u8]) -> Self {
-        Self { data: number.iter().map(|&x| x - b'0').collect() }
+        Self {
+            data: number.iter().map(|&x| x - b'0').collect(),
+        }
     }
 
     fn next(&mut self, n: u32) -> &[u8] {
         for _ in 0..n {
-            self.data = self.data.iter().dedup_with_count().flat_map(|(count, digit)| [count as u8, *digit]).collect();
+            self.data = self
+                .data
+                .iter()
+                .dedup_with_count()
+                .flat_map(|(count, digit)| [count as u8, *digit])
+                .collect();
         }
 
         &self.data

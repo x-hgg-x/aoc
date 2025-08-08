@@ -2,7 +2,14 @@ use aoc::*;
 
 use itertools::Itertools;
 
-const NEIGHBORS: &[(i64, i64, i64); 6] = &[(-1, 0, 0), (1, 0, 0), (0, -1, 0), (0, 1, 0), (0, 0, -1), (0, 0, 1)];
+const NEIGHBORS: &[(i64, i64, i64); 6] = &[
+    (-1, 0, 0),
+    (1, 0, 0),
+    (0, -1, 0),
+    (0, 1, 0),
+    (0, 0, -1),
+    (0, 0, 1),
+];
 
 struct Grid3d {
     tiles: Vec<u8>,
@@ -20,7 +27,16 @@ impl Grid3d {
         let dim_y = (bounds.max_y - bounds.min_y + 1).try_into()?;
         let dim_z = (bounds.max_z - bounds.min_z + 1).try_into()?;
         let tiles = vec![0; dim_x * dim_y * dim_z];
-        Ok(Self { tiles, dim_x, dim_y, dim_z, min_x: bounds.min_x, min_y: bounds.min_y, min_z: bounds.min_z })
+
+        Ok(Self {
+            tiles,
+            dim_x,
+            dim_y,
+            dim_z,
+            min_x: bounds.min_x,
+            min_y: bounds.min_y,
+            min_z: bounds.min_z,
+        })
     }
 
     fn get_index(&self, x: i64, y: i64, z: i64) -> Result<usize> {
@@ -52,7 +68,12 @@ impl Grid3d {
 
             for &(dx, dy, dz) in NEIGHBORS {
                 let (new_x, new_y, new_z) = (x + dx, y + dy, z + dz);
-                if range_x.contains(&new_x) && range_y.contains(&new_y) && range_z.contains(&new_z) && self.tile(new_x, new_y, new_z)? == 0 {
+
+                if range_x.contains(&new_x)
+                    && range_y.contains(&new_y)
+                    && range_z.contains(&new_z)
+                    && self.tile(new_x, new_y, new_z)? == 0
+                {
                     queue.push((new_x, new_y, new_z));
                 }
             }
@@ -75,7 +96,12 @@ struct Bounds {
 fn count_sides(grid: &Grid3d, cubes: &[(i64, i64, i64)], val: u8) -> Result<usize> {
     cubes
         .iter()
-        .map(|&(x, y, z)| NEIGHBORS.iter().map(|&(dx, dy, dz)| grid.tile(x + dx, y + dy, z + dz)).try_process(|iter| iter.filter(|&tile| tile == val).count()))
+        .map(|&(x, y, z)| {
+            NEIGHBORS
+                .iter()
+                .map(|&(dx, dy, dz)| grid.tile(x + dx, y + dy, z + dz))
+                .try_process(|iter| iter.filter(|&tile| tile == val).count())
+        })
         .try_sum()
 }
 
@@ -83,8 +109,15 @@ fn main() -> Result<()> {
     let input = setup(file!())?;
     let input = String::from_utf8_lossy(&input);
 
-    let cubes: Vec<(i64, i64, i64)> =
-        input.lines().map(|line| line.split(',').map(|x| Ok(x.parse()?)).try_process(|mut iter| iter.next_tuple())?.value()).try_collect()?;
+    let cubes: Vec<(i64, i64, i64)> = input
+        .lines()
+        .map(|line| {
+            line.split(',')
+                .map(|x| Ok(x.parse()?))
+                .try_process(|mut iter| iter.next_tuple())?
+                .value()
+        })
+        .try_collect()?;
 
     let bounds = cubes.iter().fold(Bounds::default(), |bounds, cube| Bounds {
         min_x: bounds.min_x.min(cube.0 - 1),

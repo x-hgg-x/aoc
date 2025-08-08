@@ -5,6 +5,7 @@ use itertools::Itertools;
 
 use std::cmp::Ordering;
 use std::collections::{BinaryHeap, HashSet};
+use std::iter;
 
 const EMPTY: u8 = 0;
 const WALL: u8 = 1 << 0;
@@ -25,8 +26,16 @@ struct Grid {
 
 impl Grid {
     fn new(width: usize, height: usize, tiles: Vec<Tile>) -> Result<Self> {
-        ensure!(width * height == tiles.len(), "unable to construct Grid: width * height != tiles.len()");
-        Ok(Self { width, height, tiles })
+        ensure!(
+            width * height == tiles.len(),
+            "unable to construct Grid: width * height != tiles.len()"
+        );
+
+        Ok(Self {
+            width,
+            height,
+            tiles,
+        })
     }
 
     fn get_index(&self, row: usize, column: usize) -> usize {
@@ -34,25 +43,51 @@ impl Grid {
     }
 
     fn step(&self) -> Self {
-        let mut new_tiles = self.tiles.iter().map(|&tile| if tile == Tile(WALL) { tile } else { Tile(EMPTY) }).collect_vec();
+        let mut new_tiles = self
+            .tiles
+            .iter()
+            .map(|&tile| {
+                if tile == Tile(WALL) {
+                    tile
+                } else {
+                    Tile(EMPTY)
+                }
+            })
+            .collect_vec();
 
         for (i_row, row) in self.tiles.chunks_exact(self.width).enumerate() {
             for (i_col, &tile) in row.iter().enumerate() {
                 [
                     (tile.0 & BLIZZARD_LEFT != 0).then(|| {
-                        let new_col = if i_col >= 2 { i_col - 1 } else { self.width - 2 };
+                        let new_col = if i_col >= 2 {
+                            i_col - 1
+                        } else {
+                            self.width - 2
+                        };
                         (BLIZZARD_LEFT, i_row, new_col)
                     }),
                     (tile.0 & BLIZZARD_RIGHT != 0).then(|| {
-                        let new_col = if i_col <= self.width - 3 { i_col + 1 } else { 1 };
+                        let new_col = if i_col <= self.width - 3 {
+                            i_col + 1
+                        } else {
+                            1
+                        };
                         (BLIZZARD_RIGHT, i_row, new_col)
                     }),
                     (tile.0 & BLIZZARD_UP != 0).then(|| {
-                        let new_row = if i_row >= 2 { i_row - 1 } else { self.height - 2 };
+                        let new_row = if i_row >= 2 {
+                            i_row - 1
+                        } else {
+                            self.height - 2
+                        };
                         (BLIZZARD_UP, new_row, i_col)
                     }),
                     (tile.0 & BLIZZARD_DOWN != 0).then(|| {
-                        let new_row = if i_row <= self.height - 3 { i_row + 1 } else { 1 };
+                        let new_row = if i_row <= self.height - 3 {
+                            i_row + 1
+                        } else {
+                            1
+                        };
                         (BLIZZARD_DOWN, new_row, i_col)
                     }),
                 ]
@@ -64,7 +99,11 @@ impl Grid {
             }
         }
 
-        Self { width: self.width, height: self.height, tiles: new_tiles }
+        Self {
+            width: self.width,
+            height: self.height,
+            tiles: new_tiles,
+        }
     }
 }
 
@@ -76,10 +115,19 @@ struct State {
 }
 
 impl State {
-    fn new(position: (usize, usize), (goal_row, goal_column): (usize, usize), steps: usize) -> Self {
+    fn new(
+        position: (usize, usize),
+        (goal_row, goal_column): (usize, usize),
+        steps: usize,
+    ) -> Self {
         let (row, column) = position;
         let distance = row.abs_diff(goal_row) + column.abs_diff(goal_column);
-        Self { position, steps, distance }
+
+        Self {
+            position,
+            steps,
+            distance,
+        }
     }
 
     fn estimate(&self) -> usize {
@@ -118,7 +166,12 @@ fn lcm(x: usize, y: usize) -> usize {
     x * y / gcd(x, y)
 }
 
-fn find_shortest_path(start_position: (usize, usize), goal_position: (usize, usize), start_time: usize, cache: &[Grid]) -> Result<usize> {
+fn find_shortest_path(
+    start_position: (usize, usize),
+    goal_position: (usize, usize),
+    start_time: usize,
+    cache: &[Grid],
+) -> Result<usize> {
     let mut previous_states = HashSet::new();
     let mut current_states = BinaryHeap::from([State::new(start_position, goal_position, 0)]);
 
@@ -147,8 +200,12 @@ fn find_shortest_path(start_position: (usize, usize), goal_position: (usize, usi
                     ]
                     .into_iter()
                     .flatten()
-                    .filter(|&(new_row, new_column)| grid.tiles[grid.get_index(new_row, new_column)] == Tile(EMPTY))
-                    .map(|(new_row, new_column)| State::new((new_row, new_column), goal_position, state.steps + 1)),
+                    .filter(|&(new_row, new_column)| {
+                        grid.tiles[grid.get_index(new_row, new_column)] == Tile(EMPTY)
+                    })
+                    .map(|(new_row, new_column)| {
+                        State::new((new_row, new_column), goal_position, state.steps + 1)
+                    }),
                 );
             }
         }
@@ -179,10 +236,19 @@ fn main() -> Result<()> {
     let grid = Grid::new(width, height, tiles)?;
 
     let cycle_size = lcm(width - 2, height - 2);
-    let cache = std::iter::successors(Some(grid.clone()), |grid| Some(grid.step())).take(cycle_size).collect_vec();
+
+    let cache = iter::successors(Some(grid.clone()), |grid| Some(grid.step()))
+        .take(cycle_size)
+        .collect_vec();
 
     let first_empty = grid.tiles.iter().position(|&x| x == Tile(EMPTY)).value()?;
-    let last_empty = grid.tiles.iter().rev().position(|&x| x == Tile(EMPTY)).value()?;
+
+    let last_empty = grid
+        .tiles
+        .iter()
+        .rev()
+        .position(|&x| x == Tile(EMPTY))
+        .value()?;
 
     let start_position = (0, first_empty);
     let goal_position = (height - 1, width - 1 - last_empty);

@@ -29,9 +29,11 @@ fn main() -> Result<()> {
                 if common_letters == cap[3] {
                     let id = cap[2].parse::<u64>()?;
 
-                    let name = String::from_iter(
-                        cap[1].chars().map(|c| c.to_digit(36).and_then(|n| char::from_digit((n - 10 + id as u32) % 26 + 10, 36)).unwrap_or('-')),
-                    );
+                    let name = String::from_iter(cap[1].chars().map(|c| {
+                        c.to_digit(36)
+                            .and_then(|n| char::from_digit((n - 10 + id as u32) % 26 + 10, 36))
+                            .unwrap_or('-')
+                    }));
 
                     Result::Ok(Some((name, id)))
                 } else {
@@ -43,7 +45,12 @@ fn main() -> Result<()> {
         .try_collect()?;
 
     let result1 = real_rooms.iter().fold(0, |acc, (_, id)| acc + id);
-    let result2 = real_rooms.iter().find(|(name, _)| name == "northpole-object-storage").map(|&(_, id)| id).value()?;
+
+    let result2 = real_rooms
+        .iter()
+        .find(|(name, _)| name == "northpole-object-storage")
+        .map(|&(_, id)| id)
+        .value()?;
 
     println!("{result1}");
     println!("{result2}");

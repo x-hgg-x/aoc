@@ -19,7 +19,13 @@ struct Permutations<'a, T, const N: usize> {
 
 impl<'a, T, const N: usize> Permutations<'a, T, N> {
     fn new(data: &'a [T]) -> Self {
-        Self { data, available: SmallVec::new(), buf: SmallVec::new(), factorials: Self::compute_factorials(data.len() as i64), factorial_index: 0 }
+        Self {
+            data,
+            available: SmallVec::new(),
+            buf: SmallVec::new(),
+            factorials: Self::compute_factorials(data.len() as i64),
+            factorial_index: 0,
+        }
     }
 
     fn compute_factorials(num: i64) -> Vec<i64> {
@@ -45,11 +51,14 @@ impl<'a, T: Copy, const N: usize> Iterator for Permutations<'a, T, N> {
         self.buf.clear();
         self.available = SmallVec::from_slice(self.data);
 
-        self.buf.extend(self.factorials[..self.data.len()].iter().rev().map(|&place_value| {
-            let index = x / place_value;
-            x -= index * place_value;
-            self.available.remove(index.rem_euclid(self.available.len() as i64) as usize)
-        }));
+        self.buf.extend(
+            (self.factorials[..self.data.len()].iter().rev()).map(|&place_value| {
+                let index = x / place_value;
+                x -= index * place_value;
+                let idx = index.rem_euclid(self.available.len() as i64);
+                self.available.remove(idx as usize)
+            }),
+        );
 
         self.factorial_index += 1;
 
@@ -65,8 +74,16 @@ struct Grid {
 
 impl Grid {
     fn new(width: usize, height: usize, tiles: Vec<bool>) -> Result<Self> {
-        ensure!(width * height == tiles.len(), "unable to construct Grid: width * height != tiles.len()");
-        Ok(Self { width, height, tiles })
+        ensure!(
+            width * height == tiles.len(),
+            "unable to construct Grid: width * height != tiles.len()"
+        );
+
+        Ok(Self {
+            width,
+            height,
+            tiles,
+        })
     }
 
     fn get_index(&self, row: usize, column: usize) -> usize {
@@ -87,10 +104,19 @@ struct State {
 }
 
 impl State {
-    fn new(position: (usize, usize), (goal_row, goal_column): (usize, usize), steps: usize) -> Self {
+    fn new(
+        position: (usize, usize),
+        (goal_row, goal_column): (usize, usize),
+        steps: usize,
+    ) -> Self {
         let (row, column) = position;
         let distance = row.abs_diff(goal_row) + column.abs_diff(goal_column);
-        Self { position, steps, distance }
+
+        Self {
+            position,
+            steps,
+            distance,
+        }
     }
 
     fn estimate(&self) -> usize {
@@ -118,7 +144,11 @@ impl PartialOrd for State {
     }
 }
 
-fn compute_shortest_distance(grid: &Grid, initial_position: (usize, usize), goal_position: (usize, usize)) -> usize {
+fn compute_shortest_distance(
+    grid: &Grid,
+    initial_position: (usize, usize),
+    goal_position: (usize, usize),
+) -> usize {
     let (initial_row, initial_column) = initial_position;
     let initial_index = grid.get_index(initial_row, initial_column);
     let initial_state = State::new(initial_position, goal_position, 0);
@@ -175,7 +205,11 @@ fn compute_shortest_distance(grid: &Grid, initial_position: (usize, usize), goal
     }
 }
 
-fn compute_shortest_path<'a, I>(permutations: &'a [SmallVec<[u8; 8]>], distances: &HashMap<(u8, u8), usize>, iter_func: impl Fn(&'a [u8]) -> I) -> Result<usize>
+fn compute_shortest_path<'a, I>(
+    permutations: &'a [SmallVec<[u8; 8]>],
+    distances: &HashMap<(u8, u8), usize>,
+    iter_func: impl Fn(&'a [u8]) -> I,
+) -> Result<usize>
 where
     I: Iterator<Item = u8> + 'a,
 {
@@ -185,7 +219,12 @@ where
             iter_func(path)
                 .tuple_windows()
                 .map(|(initial_location, goal_location)| {
-                    distances[&if initial_location < goal_location { (initial_location, goal_location) } else { (goal_location, initial_location) }]
+                    let locations = if initial_location < goal_location {
+                        (initial_location, goal_location)
+                    } else {
+                        (goal_location, initial_location)
+                    };
+                    distances[&locations]
                 })
                 .sum::<usize>()
         })
@@ -218,26 +257,45 @@ fn main() -> Result<()> {
     let height = input.lines().count();
     let grid = Grid::new(width, height, tiles)?;
 
-    let locations_positions = locations_indices.into_iter().map(|(n, index)| (n, grid.get_position(index))).collect_vec();
+    let locations_positions = locations_indices
+        .into_iter()
+        .map(|(n, index)| (n, grid.get_position(index)))
+        .collect_vec();
 
     let (first_location, _) = locations_positions[0];
-    let other_locations = locations_positions[1..].iter().map(|&(location, _)| location).collect_vec();
+
+    let other_locations = locations_positions[1..]
+        .iter()
+        .map(|&(location, _)| location)
+        .collect_vec();
+
     ensure!(first_location == 0, "unable to found first location");
 
     let distances: HashMap<_, _> = locations_positions
         .iter()
         .tuple_combinations()
-        .map(|(&(initial_location, initial_position), &(goal_location, goal_position))| {
-            let steps = compute_shortest_distance(&grid, initial_position, goal_position);
-            let (location1, location2) = if initial_location < goal_location { (initial_location, goal_location) } else { (goal_location, initial_location) };
-            ((location1, location2), steps)
-        })
+        .map(
+            |(&(initial_location, initial_position), &(goal_location, goal_position))| {
+                let steps = compute_shortest_distance(&grid, initial_position, goal_position);
+                let (location1, location2) = if initial_location < goal_location {
+                    (initial_location, goal_location)
+                } else {
+                    (goal_location, initial_location)
+                };
+                ((location1, location2), steps)
+            },
+        )
         .collect();
 
     let permutations = Permutations::<_, 8>::new(&other_locations).collect_vec();
 
-    let result1 = compute_shortest_path(&permutations, &distances, |path| once(first_location).chain(path.iter().copied()))?;
-    let result2 = compute_shortest_path(&permutations, &distances, |path| once(first_location).chain(path.iter().copied()).chain(once(first_location)))?;
+    let result1 = compute_shortest_path(&permutations, &distances, |path| {
+        once(first_location).chain(path.iter().copied())
+    })?;
+
+    let result2 = compute_shortest_path(&permutations, &distances, |path| {
+        (once(first_location).chain(path.iter().copied())).chain(once(first_location))
+    })?;
 
     println!("{result1}");
     println!("{result2}");

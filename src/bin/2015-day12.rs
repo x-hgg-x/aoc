@@ -3,7 +3,9 @@ use aoc::*;
 use regex::bytes::Regex;
 
 fn count(re: &Regex, input: &[u8]) -> Result<i64> {
-    re.find_iter(input).map(|x| Ok(String::from_utf8_lossy(x.as_bytes()).parse::<i64>()?)).try_sum()
+    re.find_iter(input)
+        .map(|x| Ok(String::from_utf8_lossy(x.as_bytes()).parse::<i64>()?))
+        .try_sum()
 }
 
 fn main() -> Result<()> {

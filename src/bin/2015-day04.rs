@@ -3,7 +3,7 @@ use aoc::*;
 use md5::Digest;
 use smallvec::SmallVec;
 
-use std::iter::once;
+use std::iter::{self, once};
 
 fn hash_generator(input: &[u8]) -> impl Iterator<Item = (usize, Digest)> + use<> {
     let input_len = input.len();
@@ -12,7 +12,7 @@ fn hash_generator(input: &[u8]) -> impl Iterator<Item = (usize, Digest)> + use<>
     let mut data = SmallVec::<[u8; 24]>::from_slice(input);
     data.push(b'1');
 
-    once((n, md5::compute(&data))).chain(std::iter::from_fn(move || {
+    once((n, md5::compute(&data))).chain(iter::from_fn(move || {
         for (pos, x) in data[input_len..].iter_mut().enumerate().rev() {
             if *x < b'9' {
                 *x += 1;
@@ -33,7 +33,10 @@ fn hash_generator(input: &[u8]) -> impl Iterator<Item = (usize, Digest)> + use<>
 }
 
 fn find_digest(input: &[u8], f: impl Fn(&Digest) -> bool) -> Result<usize> {
-    hash_generator(input).find(|(_, digest)| f(digest)).map(|(n, _)| n).value()
+    hash_generator(input)
+        .find(|(_, digest)| f(digest))
+        .map(|(n, _)| n)
+        .value()
 }
 
 fn main() -> Result<()> {

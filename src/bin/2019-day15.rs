@@ -21,7 +21,12 @@ struct Intcode {
 
 impl Intcode {
     fn new(program: HashMap<usize, i64>, input: Option<i64>) -> Self {
-        Self { program, ip: 0, relative_base: 0, input }
+        Self {
+            program,
+            ip: 0,
+            relative_base: 0,
+            input,
+        }
     }
 
     fn get_input(&mut self, arg_position: usize, instruction: i64) -> Result<i64> {
@@ -30,7 +35,10 @@ impl Intcode {
         match instruction / 10i64.pow(1 + arg_position as u32) % 10 {
             0 => Ok(*self.program.entry(usize::try_from(arg)?).or_default()),
             1 => Ok(arg),
-            2 => Ok(*self.program.entry(usize::try_from(self.relative_base + arg)?).or_default()),
+            2 => Ok(*self
+                .program
+                .entry(usize::try_from(self.relative_base + arg)?)
+                .or_default()),
             other => bail!("unknown parameter mode: {other}"),
         }
     }
@@ -40,7 +48,10 @@ impl Intcode {
 
         match instruction / 10i64.pow(1 + arg_position as u32) % 10 {
             0 => Ok(self.program.entry(usize::try_from(arg)?).or_default()),
-            2 => Ok(self.program.entry(usize::try_from(self.relative_base + arg)?).or_default()),
+            2 => Ok(self
+                .program
+                .entry(usize::try_from(self.relative_base + arg)?)
+                .or_default()),
             other => bail!("invalid parameter mode: {other}"),
         }
     }
@@ -139,12 +150,24 @@ fn main() -> Result<()> {
     let input = String::from_utf8_lossy(&input);
     let input = input.trim();
 
-    let program: HashMap<usize, i64> = input.split(',').enumerate().map(|(pos, val)| Result::Ok((pos, val.parse()?))).try_collect()?;
+    let program: HashMap<usize, i64> = input
+        .split(',')
+        .enumerate()
+        .map(|(pos, val)| Result::Ok((pos, val.parse()?)))
+        .try_collect()?;
+
     let mut intcode = Intcode::new(program, None);
 
     let mut current_position = Complex::new(0, 0);
     let mut current_direction = Complex::new(0, 0);
-    let mut unknown_tiles = HashMap::from([(NORTH, vec![1]), (SOUTH, vec![2]), (WEST, vec![3]), (EAST, vec![4])]);
+
+    let mut unknown_tiles = HashMap::from([
+        (NORTH, vec![1]),
+        (SOUTH, vec![2]),
+        (WEST, vec![3]),
+        (EAST, vec![4]),
+    ]);
+
     let mut unknown_path = Vec::new();
     let mut remaining_inputs = VecDeque::new();
 
@@ -163,7 +186,10 @@ fn main() -> Result<()> {
 
                 for (new_input, new_direction) in (1..=4).zip(DIRECTIONS) {
                     let new_position = current_position + new_direction;
-                    if !grid.contains_key(&new_position) && !unknown_tiles.contains_key(&new_position) {
+
+                    if !grid.contains_key(&new_position)
+                        && !unknown_tiles.contains_key(&new_position)
+                    {
                         let mut new_path = unknown_path.clone();
                         new_path.push(new_input);
                         unknown_tiles.insert(new_position, new_path);
@@ -177,7 +203,12 @@ fn main() -> Result<()> {
                         unknown_path = unknown_tiles.remove(&position).value()?;
 
                         let min_len = || unknown_path.len().min(current_path.len());
-                        let common_path_size = current_path.iter().zip(&unknown_path).position(|(x, y)| x != y).unwrap_or_else(min_len);
+
+                        let common_path_size = current_path
+                            .iter()
+                            .zip(&unknown_path)
+                            .position(|(x, y)| x != y)
+                            .unwrap_or_else(min_len);
 
                         let iter = current_path
                             .iter()
@@ -226,7 +257,10 @@ fn main() -> Result<()> {
             visited.insert(position);
 
             let new_positions = DIRECTIONS.into_iter().map(|direction| position + direction);
-            new_queue.extend(new_positions.filter(|new_position| !visited.contains(new_position) && grid[new_position] != Tile::Wall));
+
+            new_queue.extend(new_positions.filter(|new_position| {
+                !visited.contains(new_position) && grid[new_position] != Tile::Wall
+            }));
 
             if position == Complex::new(0, 0) {
                 distance = Some(steps);

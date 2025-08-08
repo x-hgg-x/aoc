@@ -10,25 +10,33 @@ fn main() -> Result<()> {
 
     let re = Regex::new(r#"([RL])(\d+)"#)?;
 
-    let blocks = re.captures_iter(&input).map(|cap| Ok((cap.get(1).value()?.as_str(), cap[2].parse::<usize>()?))).try_process(|iter| {
-        iter.scan((Complex::new(0, 1), Complex::new(0, 0)), |(direction, block), (turn, step)| {
-            let new_direction = match turn {
-                "R" => *direction * Complex::new(0, -1),
-                "L" => *direction * Complex::new(0, 1),
-                _ => *direction,
-            };
+    let blocks = re
+        .captures_iter(&input)
+        .map(|cap| Ok((cap.get(1).value()?.as_str(), cap[2].parse::<usize>()?)))
+        .try_process(|iter| {
+            iter.scan(
+                (Complex::new(0, 1), Complex::new(0, 0)),
+                |(direction, block), (turn, step)| {
+                    let new_direction = match turn {
+                        "R" => *direction * Complex::new(0, -1),
+                        "L" => *direction * Complex::new(0, 1),
+                        _ => *direction,
+                    };
 
-            let current_block = *block;
-            let intermediate_blocks = (1..=step).map(move |i| current_block + i as i64 * new_direction);
+                    let current_block = *block;
 
-            *direction = new_direction;
-            *block += step as i64 * new_direction;
+                    let intermediate_blocks =
+                        (1..=step).map(move |i| current_block + i as i64 * new_direction);
 
-            Some(intermediate_blocks)
-        })
-        .flatten()
-        .collect_vec()
-    })?;
+                    *direction = new_direction;
+                    *block += step as i64 * new_direction;
+
+                    Some(intermediate_blocks)
+                },
+            )
+            .flatten()
+            .collect_vec()
+        })?;
 
     let result1 = blocks.last().value()?.l1_norm();
 

@@ -12,8 +12,16 @@ struct Grid {
 
 impl Grid {
     fn new(width: usize, height: usize, tiles: Vec<bool>) -> Result<Self> {
-        ensure!(width * height == tiles.len(), "unable to construct Grid: width * height != tiles.len()");
-        Ok(Self { width, height, tiles })
+        ensure!(
+            width * height == tiles.len(),
+            "unable to construct Grid: width * height != tiles.len()"
+        );
+
+        Ok(Self {
+            width,
+            height,
+            tiles,
+        })
     }
 
     fn get_index(&self, row: usize, column: usize) -> usize {
@@ -27,7 +35,12 @@ impl Grid {
     }
 }
 
-fn knot_hash_round(list: &mut [u8], lengths: &[usize], current_position: &mut usize, skip: &mut usize) {
+fn knot_hash_round(
+    list: &mut [u8],
+    lengths: &[usize],
+    current_position: &mut usize,
+    skip: &mut usize,
+) {
     let size = list.len();
 
     for &len in lengths {
@@ -44,7 +57,11 @@ fn knot_hash_round(list: &mut [u8], lengths: &[usize], current_position: &mut us
 }
 
 fn knot_hash(input: &[u8]) -> SmallVec<[bool; 128]> {
-    let lengths = input.iter().map(|&x| x as usize).chain([17, 31, 73, 47, 23]).collect_vec();
+    let lengths = input
+        .iter()
+        .map(|&x| x as usize)
+        .chain([17, 31, 73, 47, 23])
+        .collect_vec();
 
     let mut list = (0..=u8::MAX).collect_vec();
     let mut current_position = 0;

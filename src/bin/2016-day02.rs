@@ -30,11 +30,20 @@ fn get_code(input: &[u8], keypad: &[&[u32]], start_pos: (usize, usize)) -> Resul
 }
 
 fn main() -> Result<()> {
-    let input = String::from_utf8_lossy(&setup(file!())?).lines().chain(once("")).join("\n");
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
+    let input = input.lines().chain(once("")).join("\n");
     let input = input.as_bytes();
 
     let keypad1 = [&[1, 2, 3][..], &[4, 5, 6][..], &[7, 8, 9][..]];
-    let keypad2 = [&[0, 0, 1, 0, 0][..], &[0, 2, 3, 4, 0][..], &[5, 6, 7, 8, 9][..], &[0, 10, 11, 12, 0][..], &[0, 0, 13, 0, 0][..]];
+
+    let keypad2 = [
+        &[0, 0, 1, 0, 0][..],
+        &[0, 2, 3, 4, 0][..],
+        &[5, 6, 7, 8, 9][..],
+        &[0, 10, 11, 12, 0][..],
+        &[0, 0, 13, 0, 0][..],
+    ];
 
     let result1 = get_code(input, &keypad1, (1, 1))?;
     let result2 = get_code(input, &keypad2, (2, 0))?;

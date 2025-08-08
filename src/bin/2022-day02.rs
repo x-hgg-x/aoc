@@ -15,8 +15,15 @@ fn main() -> Result<()> {
         })
         .try_collect()?;
 
-    let result1 = instructions.iter().map(|(x, y)| 3 * (y - x + 1).rem_euclid(3) + y + 1).sum::<i64>();
-    let result2 = instructions.iter().map(|(x, y)| (x - 1 + y).rem_euclid(3) + 3 * y + 1).sum::<i64>();
+    let result1 = instructions
+        .iter()
+        .map(|(x, y)| 3 * (y - x + 1).rem_euclid(3) + y + 1)
+        .sum::<i64>();
+
+    let result2 = instructions
+        .iter()
+        .map(|(x, y)| (x - 1 + y).rem_euclid(3) + 3 * y + 1)
+        .sum::<i64>();
 
     println!("{result1}");
     println!("{result2}");

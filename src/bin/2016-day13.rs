@@ -28,7 +28,12 @@ fn main() -> Result<()> {
     let start = Point::new(1, 1);
     let goal = Point::new(31, 39);
 
-    let directions = [Point::new(-1, 0), Point::new(1, 0), Point::new(0, -1), Point::new(0, 1)];
+    let directions = [
+        Point::new(-1, 0),
+        Point::new(1, 0),
+        Point::new(0, -1),
+        Point::new(0, 1),
+    ];
 
     let mut current_points = vec![start.clone()];
     let mut previous_points = HashSet::from([start]);
@@ -47,7 +52,10 @@ fn main() -> Result<()> {
 
         for current_point in &current_points {
             for direction in &directions {
-                let next_point = Point { x: current_point.x + direction.x, y: current_point.y + direction.y };
+                let next_point = Point {
+                    x: current_point.x + direction.x,
+                    y: current_point.y + direction.y,
+                };
 
                 if next_point == goal {
                     goal_steps = Some(steps);

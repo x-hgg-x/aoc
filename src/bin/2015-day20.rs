@@ -1,6 +1,10 @@
 use aoc::*;
 
-fn get_min_house(min_presents: usize, presents_by_house: usize, max_houses_by_elf: usize) -> Result<usize> {
+fn get_min_house(
+    min_presents: usize,
+    presents_by_house: usize,
+    max_houses_by_elf: usize,
+) -> Result<usize> {
     let max_house = min_presents / presents_by_house;
     let mut houses = vec![0; max_house];
     for i in 1..max_house {

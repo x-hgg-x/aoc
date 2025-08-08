@@ -32,7 +32,7 @@ impl Number {
         }
     }
 
-    fn depth_iter(&self) -> impl Iterator<Item = usize> + '_ {
+    fn depth_iter(&self) -> impl Iterator<Item = usize> {
         self.0.iter().scan(0, |depth, &x| {
             match x {
                 BR_LEFT => *depth += 1,
@@ -48,7 +48,16 @@ impl Number {
             return Ok(false);
         };
 
-        let &[BR_LEFT, x1 @ 0..=MAX_VALUE, COMMA, x2 @ 0..=MAX_VALUE, BR_RIGHT] = &self.0[start..start + 5] else { bail!("invalid number") };
+        let &[
+            BR_LEFT,
+            x1 @ 0..=MAX_VALUE,
+            COMMA,
+            x2 @ 0..=MAX_VALUE,
+            BR_RIGHT,
+        ] = &self.0[start..start + 5]
+        else {
+            bail!("invalid number")
+        };
 
         if let Some(v) = self.0[..start].iter_mut().rev().find(|x| **x <= MAX_VALUE) {
             *v += x1;

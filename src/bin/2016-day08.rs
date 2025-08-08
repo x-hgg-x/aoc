@@ -20,7 +20,8 @@ fn rotate_row(pixels: &mut [u8], row: usize, shift: usize) {
 }
 
 fn rotate_column(pixels: &mut [u8], column: usize, shift: usize) {
-    let mut column_pixels = <SmallVec<[u8; HEIGHT]>>::from_iter(pixels.iter().copied().skip(column).step_by(WIDTH));
+    let mut column_pixels: SmallVec<[u8; HEIGHT]> =
+        pixels.iter().copied().skip(column).step_by(WIDTH).collect();
 
     column_pixels.rotate_right(shift);
 
@@ -50,7 +51,11 @@ fn main() -> Result<()> {
     }
 
     let count = pixels.iter().filter(|&&x| x == b'#').count();
-    let message = pixels.chunks_exact(WIDTH).flat_map(|row| row.iter().copied().chain(once(b'\n'))).collect_vec();
+
+    let message = pixels
+        .chunks_exact(WIDTH)
+        .flat_map(|row| row.iter().copied().chain(once(b'\n')))
+        .collect_vec();
 
     let result1 = count;
     let result2 = String::from_utf8_lossy(&message);

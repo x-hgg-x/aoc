@@ -15,8 +15,16 @@ struct Grid {
 
 impl Grid {
     fn new(width: i64, height: i64, tiles: Vec<u8>) -> Result<Self> {
-        ensure!((width * height) as usize == tiles.len(), "unable to construct Grid: width * height != tiles.len()");
-        Ok(Self { width, height, tiles })
+        ensure!(
+            (width * height) as usize == tiles.len(),
+            "unable to construct Grid: width * height != tiles.len()"
+        );
+
+        Ok(Self {
+            width,
+            height,
+            tiles,
+        })
     }
 
     fn get_index(&self, row: usize, column: usize) -> usize {
@@ -34,7 +42,13 @@ struct State {
 impl State {
     fn new(x: i64, y: i64, risk: i64, goal_x: i64, goal_y: i64) -> Self {
         let goal_distance = goal_x - x + goal_y - y;
-        Self { x, y, risk, goal_distance }
+
+        Self {
+            x,
+            y,
+            risk,
+            goal_distance,
+        }
     }
 
     fn estimate(&self) -> (i64, i64) {
@@ -109,7 +123,12 @@ fn main() -> Result<()> {
 
     let width = input.lines().next().value()?.len() as i64;
     let height = input.lines().count() as i64;
-    let tiles = input.lines().flat_map(|line| line.bytes().map(|x| x - b'0')).collect_vec();
+
+    let tiles = input
+        .lines()
+        .flat_map(|line| line.bytes().map(|x| x - b'0'))
+        .collect_vec();
+
     let grid = Grid::new(width, height, tiles)?;
 
     let result1 = lowest_risk_path(&grid, width - 1, height - 1);

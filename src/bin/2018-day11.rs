@@ -15,7 +15,7 @@ fn compute_power_partial_sums(serial_number: i64) -> Vec<i64> {
             break;
         }
 
-        let iter = prev_row.windows(2).enumerate().scan(0, |sum, (index_x, value_row)| {
+        let iter = (prev_row.windows(2).enumerate()).scan(0, |sum, (index_x, value_row)| {
             let x = index_x as i64;
             let y = index_y as i64;
             let rack_id = x + 10;
@@ -35,7 +35,10 @@ fn compute_power_partial_sums(serial_number: i64) -> Vec<i64> {
     power_partial_sums
 }
 
-fn compute_max_square_sum(power_partial_sums: &[i64], square_size: usize) -> Result<(i64, usize, usize)> {
+fn compute_max_square_sum(
+    power_partial_sums: &[i64],
+    square_size: usize,
+) -> Result<(i64, usize, usize)> {
     iproduct!(square_size..SIZE_P_1, square_size..SIZE_P_1)
         .map(|(row, column)| {
             let prev_row = row - square_size;

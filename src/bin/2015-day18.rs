@@ -3,7 +3,7 @@ use aoc::*;
 use eyre::{bail, ensure};
 use itertools::{Itertools, izip};
 
-use std::iter::once;
+use std::iter::{once, repeat_n};
 
 const SIZE: usize = 100;
 const WIDTH: usize = SIZE + 2;
@@ -16,7 +16,10 @@ struct Grid {
 
 impl Grid {
     fn new(lights: Vec<bool>, stuck: bool) -> Result<Self> {
-        ensure!(WIDTH * HEIGHT == lights.len(), "unable to construct Grid: width * height != lights.len()");
+        ensure!(
+            WIDTH * HEIGHT == lights.len(),
+            "unable to construct Grid: width * height != lights.len()"
+        );
 
         let mut grid = Self { lights, stuck };
 
@@ -32,7 +35,12 @@ impl Grid {
     }
 
     fn stick_lights(&mut self) {
-        let stuck_index = [(1, 1), (1, WIDTH - 2), (HEIGHT - 2, 1), (HEIGHT - 2, WIDTH - 2)];
+        let stuck_index = [
+            (1, 1),
+            (1, WIDTH - 2),
+            (HEIGHT - 2, 1),
+            (HEIGHT - 2, WIDTH - 2),
+        ];
 
         for &(row, column) in &stuck_index {
             let index = self.get_index(row, column);
@@ -42,21 +50,31 @@ impl Grid {
 
     fn step(&mut self, n: u32, buf: &mut Vec<bool>) -> &mut Self {
         for _ in 0..n {
-            let iter = self.lights.chunks_exact(WIDTH).tuple_windows().flat_map(|(row_0, row_1, row_2)| {
-                let inner_iter = izip!(row_0.windows(3), row_1.windows(3), row_2.windows(3)).map(|(x0, x1, x2)| {
-                    let center = x1[1];
-                    let neighbor_lights = x0.iter().chain([&x1[0], &x1[2]]).chain(x2).copied().map_into::<usize>().sum::<usize>();
+            let iter = self.lights.chunks_exact(WIDTH).tuple_windows().flat_map(
+                |(row_0, row_1, row_2)| {
+                    let inner_iter = izip!(row_0.windows(3), row_1.windows(3), row_2.windows(3))
+                        .map(|(x0, x1, x2)| {
+                            let center = x1[1];
 
-                    match (center, neighbor_lights) {
-                        (true, 2..=3) => true,
-                        (true, _) => false,
-                        (false, 3) => true,
-                        (center, _) => center,
-                    }
-                });
+                            let neighbor_lights = x0
+                                .iter()
+                                .chain([&x1[0], &x1[2]])
+                                .chain(x2)
+                                .copied()
+                                .map_into::<usize>()
+                                .sum::<usize>();
 
-                once(false).chain(inner_iter).chain(once(false))
-            });
+                            match (center, neighbor_lights) {
+                                (true, 2..=3) => true,
+                                (true, _) => false,
+                                (false, 3) => true,
+                                (center, _) => center,
+                            }
+                        });
+
+                    once(false).chain(inner_iter).chain(once(false))
+                },
+            );
 
             buf.clear();
             buf.extend([false; WIDTH].into_iter().chain(iter).chain([false; WIDTH]));
@@ -88,11 +106,19 @@ fn main() -> Result<()> {
             });
             once(Ok(false)).chain(iter).chain(once(Ok(false)))
         })
-        .try_process(|iter| [false; WIDTH].into_iter().chain(iter).chain([false; WIDTH]).collect_vec())?;
+        .try_process(|iter| {
+            repeat_n(false, WIDTH)
+                .chain(iter)
+                .chain(repeat_n(false, WIDTH))
+                .collect_vec()
+        })?;
 
     let mut buf = Vec::with_capacity(lights.len());
 
-    let result1 = Grid::new(lights.clone(), false)?.step(100, &mut buf).count();
+    let result1 = Grid::new(lights.clone(), false)?
+        .step(100, &mut buf)
+        .count();
+
     let result2 = Grid::new(lights, true)?.step(100, &mut buf).count();
 
     println!("{result1}");

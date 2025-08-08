@@ -45,7 +45,12 @@ fn main() -> Result<()> {
         }
     });
 
-    let result2 = String::from_utf8(image.chunks_exact(WIDTH).flat_map(|row| row.iter().copied().chain(once(b'\n'))).collect_vec())?;
+    let result2 = String::from_utf8(
+        image
+            .chunks_exact(WIDTH)
+            .flat_map(|row| row.iter().copied().chain(once(b'\n')))
+            .collect_vec(),
+    )?;
 
     println!("{result1}");
     println!("{result2}");

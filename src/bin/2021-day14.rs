@@ -5,7 +5,11 @@ use regex::bytes::Regex;
 
 use std::collections::HashMap;
 
-fn step(rules: &HashMap<[u8; 2], u8>, pair_count: &mut HashMap<[u8; 2], u64>, new_pairs: &mut Vec<([u8; 2], u64)>) {
+fn step(
+    rules: &HashMap<[u8; 2], u8>,
+    pair_count: &mut HashMap<[u8; 2], u64>,
+    new_pairs: &mut Vec<([u8; 2], u64)>,
+) {
     new_pairs.clear();
 
     for (&[left, right], count) in pair_count.iter_mut() {
@@ -23,12 +27,22 @@ fn step(rules: &HashMap<[u8; 2], u8>, pair_count: &mut HashMap<[u8; 2], u64>, ne
     }
 }
 
-fn process_counts(elements: &[u8], pair_count: &HashMap<[u8; 2], u64>, first_elem: u8, last_elem: u8) -> Result<u64> {
+fn process_counts(
+    elements: &[u8],
+    pair_count: &HashMap<[u8; 2], u64>,
+    first_elem: u8,
+    last_elem: u8,
+) -> Result<u64> {
     let (min, max) = elements
         .iter()
         .map(|&elem| {
             let initial_count = (elem == first_elem || elem == last_elem) as u64;
-            let pair_sum = pair_count.iter().map(|(&pair, &count)| count * pair.iter().filter(|&&x| x == elem).count() as u64).sum::<u64>();
+
+            let pair_sum = pair_count
+                .iter()
+                .map(|(&pair, &count)| count * pair.iter().filter(|&&x| x == elem).count() as u64)
+                .sum::<u64>();
+
             initial_count + pair_sum / 2
         })
         .minmax()
@@ -44,13 +58,20 @@ fn main() -> Result<()> {
 
     let re = Regex::new(r#"(?m)^(\w\w) -> (\w)$"#)?;
 
-    let rules: HashMap<_, _> = re.captures_iter(input.as_bytes()).map(|cap| ([cap[1][0], cap[1][1]], cap[2][0])).collect();
+    let rules: HashMap<_, _> = re
+        .captures_iter(input.as_bytes())
+        .map(|cap| ([cap[1][0], cap[1][1]], cap[2][0]))
+        .collect();
 
     let initial_polymer = input.lines().next().value()?.as_bytes();
     let first_elem = *initial_polymer.first().value()?;
     let last_elem = *initial_polymer.last().value()?;
 
-    let mut elements = rules.iter().flat_map(|(&[k0, k1], &v)| [k0, k1, v]).collect_vec();
+    let mut elements = rules
+        .iter()
+        .flat_map(|(&[k0, k1], &v)| [k0, k1, v])
+        .collect_vec();
+
     elements.sort_unstable();
     elements.dedup();
 

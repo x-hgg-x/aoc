@@ -17,13 +17,21 @@ struct Equipment {
 
 impl Equipment {
     fn new(cost: i64, damage: i64, armor: i64) -> Self {
-        Self { cost, damage, armor }
+        Self {
+            cost,
+            damage,
+            armor,
+        }
     }
 }
 
 impl<'a> Sum<&'a Self> for Equipment {
     fn sum<I: Iterator<Item = &'a Self>>(iter: I) -> Self {
-        iter.fold(Self::default(), |x1, x2| Self { cost: x1.cost + x2.cost, damage: x1.damage + x2.damage, armor: x1.armor + x2.armor })
+        iter.fold(Self::default(), |x1, x2| Self {
+            cost: x1.cost + x2.cost,
+            damage: x1.damage + x2.damage,
+            armor: x1.armor + x2.armor,
+        })
     }
 }
 
@@ -38,7 +46,13 @@ fn main() -> Result<()> {
     let boss_damage: i64 = cap[2].parse()?;
     let boss_armor: i64 = cap[3].parse()?;
 
-    let weapons = [Equipment::new(8, 4, 0), Equipment::new(10, 5, 0), Equipment::new(25, 6, 0), Equipment::new(40, 7, 0), Equipment::new(74, 8, 0)];
+    let weapons = [
+        Equipment::new(8, 4, 0),
+        Equipment::new(10, 5, 0),
+        Equipment::new(25, 6, 0),
+        Equipment::new(40, 7, 0),
+        Equipment::new(74, 8, 0),
+    ];
 
     let armors = [
         Equipment::new(0, 0, 0),
@@ -60,7 +74,7 @@ fn main() -> Result<()> {
 
     let rings_combinations = once(SmallVec::<[_; 2]>::new())
         .chain(rings.iter().tuple_combinations().map(|(x,)| smallvec![x]))
-        .chain(rings.iter().tuple_combinations().map(|(x, y)| smallvec![x, y]));
+        .chain((rings.iter().tuple_combinations()).map(|(x, y)| smallvec![x, y]));
 
     let battles = iproduct!(&weapons, &armors, rings_combinations)
         .map(|(weapon, armor, rings)| {
@@ -85,7 +99,11 @@ fn main() -> Result<()> {
     let (result1, result2) = battles.iter().fold(
         (i64::MAX, i64::MIN),
         |(min_cost, max_cost), &(cost, win)| {
-            if win { (cost.min(min_cost), max_cost) } else { (min_cost, cost.max(max_cost)) }
+            if win {
+                (cost.min(min_cost), max_cost)
+            } else {
+                (min_cost, cost.max(max_cost))
+            }
         },
     );
 

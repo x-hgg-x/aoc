@@ -17,7 +17,13 @@ struct Permutations<'a, T, const N: usize> {
 
 impl<'a, T, const N: usize> Permutations<'a, T, N> {
     fn new(data: &'a [T]) -> Self {
-        Self { data, available: SmallVec::new(), buf: SmallVec::new(), factorials: Self::compute_factorials(data.len() as i64), factorial_index: 0 }
+        Self {
+            data,
+            available: SmallVec::new(),
+            buf: SmallVec::new(),
+            factorials: Self::compute_factorials(data.len() as i64),
+            factorial_index: 0,
+        }
     }
 
     fn compute_factorials(num: i64) -> Vec<i64> {
@@ -43,11 +49,14 @@ impl<'a, T: Copy, const N: usize> Iterator for Permutations<'a, T, N> {
         self.buf.clear();
         self.available = SmallVec::from_slice(self.data);
 
-        self.buf.extend(self.factorials[..self.data.len()].iter().rev().map(|&place_value| {
-            let index = x / place_value;
-            x -= index * place_value;
-            self.available.remove(index.rem_euclid(self.available.len() as i64) as usize)
-        }));
+        self.buf.extend(
+            (self.factorials[..self.data.len()].iter().rev()).map(|&place_value| {
+                let index = x / place_value;
+                x -= index * place_value;
+                let idx = index.rem_euclid(self.available.len() as i64);
+                self.available.remove(idx as usize)
+            }),
+        );
 
         self.factorial_index += 1;
 
@@ -61,7 +70,12 @@ fn main() -> Result<()> {
 
     let re = Regex::new(r#"(?m)^(\w+) to (\w+) = (\d+)$"#)?;
 
-    let mut nodes: Vec<_> = re.captures_iter(&input).flat_map(|cap| [cap.get(1), cap.get(2)]).map(|m| Result::Ok(m.value()?.as_str())).try_collect()?;
+    let mut nodes: Vec<_> = re
+        .captures_iter(&input)
+        .flat_map(|cap| [cap.get(1), cap.get(2)])
+        .map(|m| Result::Ok(m.value()?.as_str()))
+        .try_collect()?;
+
     nodes.sort_unstable();
     nodes.dedup();
 
@@ -74,10 +88,15 @@ fn main() -> Result<()> {
             Ok((location1, location2, distance))
         })
         .try_process(|iter| {
-            iter.flat_map(|(location1, location2, distance)| [((location1, location2), distance), ((location2, location1), distance)]).collect()
+            iter.flat_map(|(loc1, loc2, distance)| {
+                [((loc1, loc2), distance), ((loc2, loc1), distance)]
+            })
+            .collect()
         })?;
 
-    let distances = Permutations::<_, 8>::new(&nodes).map(|x| x.windows(2).map(|x| edges[&(x[0], x[1])]).sum::<u64>()).collect_vec();
+    let distances = Permutations::<_, 8>::new(&nodes)
+        .map(|x| x.windows(2).map(|x| edges[&(x[0], x[1])]).sum::<u64>())
+        .collect_vec();
 
     let result1 = *distances.iter().min().value()?;
     let result2 = *distances.iter().max().value()?;

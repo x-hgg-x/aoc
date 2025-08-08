@@ -45,7 +45,10 @@ fn run(instructions: &[Instruction]) -> (i64, Vec<u8>) {
         };
     }
 
-    let image = buffer.chunks_exact(40).flat_map(|x| x.iter().copied().chain(once(b'\n'))).collect_vec();
+    let image = buffer
+        .chunks_exact(40)
+        .flat_map(|x| x.iter().copied().chain(once(b'\n')))
+        .collect_vec();
 
     (strength, image)
 }
@@ -59,11 +62,11 @@ fn main() -> Result<()> {
         .map(|line| {
             let args = <SmallVec<[_; 2]>>::from_iter(line.split_ascii_whitespace());
 
-            Ok(match args[0] {
-                "noop" => Instruction::Noop,
-                "addx" => Instruction::Add(args[1].parse()?),
+            match args[0] {
+                "noop" => Ok(Instruction::Noop),
+                "addx" => Ok(Instruction::Add(args[1].parse()?)),
                 other => bail!("unknown instruction: {other}"),
-            })
+            }
         })
         .try_collect()?;
 

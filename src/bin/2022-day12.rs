@@ -13,8 +13,16 @@ struct Grid {
 
 impl Grid {
     fn new(width: i64, height: i64, tiles: Vec<u8>) -> Result<Self> {
-        ensure!(width * height == tiles.len() as i64, "unable to construct Grid: width * height != tiles.len()");
-        Ok(Self { width, height, tiles })
+        ensure!(
+            width * height == tiles.len() as i64,
+            "unable to construct Grid: width * height != tiles.len()"
+        );
+
+        Ok(Self {
+            width,
+            height,
+            tiles,
+        })
     }
 
     fn get_index(&self, row: i64, column: i64) -> i64 {
@@ -29,10 +37,18 @@ impl Grid {
 }
 
 fn shortest_path(grid: &Grid, goal: (i64, i64), start_tile: u8) -> i64 {
-    let mut current_states: VecDeque<_> =
-        grid.tiles.iter().enumerate().filter(|&(_, &x)| x == start_tile).map(|(index, _)| (grid.get_position(index as i64), 0, 0)).collect();
+    let mut current_states: VecDeque<_> = grid
+        .tiles
+        .iter()
+        .enumerate()
+        .filter(|&(_, &x)| x == start_tile)
+        .map(|(index, _)| (grid.get_position(index as i64), 0, 0))
+        .collect();
 
-    let mut previous_states: HashSet<_> = current_states.iter().map(|&(position, _, _)| position).collect();
+    let mut previous_states: HashSet<_> = current_states
+        .iter()
+        .map(|&(position, _, _)| position)
+        .collect();
 
     loop {
         if let Some(((row, column), elevation, steps)) = current_states.pop_front() {
@@ -47,19 +63,24 @@ fn shortest_path(grid: &Grid, goal: (i64, i64), start_tile: u8) -> i64 {
                 (column < grid.width - 1).then_some((row, column + 1)),
             ];
 
-            current_states.extend(moves.into_iter().flatten().flat_map(|(new_row, new_column)| {
-                let new_elevation = match grid.tiles[grid.get_index(new_row, new_column) as usize] {
-                    b'S' => 0,
-                    b'E' => 25,
-                    x => (x - b'a') as i64,
-                };
+            current_states.extend((moves.into_iter().flatten()).flat_map(
+                |(new_row, new_column)| {
+                    let new_elevation =
+                        match grid.tiles[grid.get_index(new_row, new_column) as usize] {
+                            b'S' => 0,
+                            b'E' => 25,
+                            x => (x - b'a') as i64,
+                        };
 
-                if new_elevation <= elevation + 1 && previous_states.insert((new_row, new_column)) {
-                    Some(((new_row, new_column), new_elevation, steps + 1))
-                } else {
-                    None
-                }
-            }));
+                    if new_elevation <= elevation + 1
+                        && previous_states.insert((new_row, new_column))
+                    {
+                        Some(((new_row, new_column), new_elevation, steps + 1))
+                    } else {
+                        None
+                    }
+                },
+            ));
         }
     }
 }

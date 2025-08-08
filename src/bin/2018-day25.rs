@@ -6,8 +6,15 @@ fn main() -> Result<()> {
     let input = setup(file!())?;
     let input = String::from_utf8_lossy(&input);
 
-    let points: Vec<(i64, i64, i64, i64)> =
-        input.lines().map(|line| line.split(',').map(|x| Ok(x.parse()?)).try_process(|mut iter| iter.next_tuple())?.value()).try_collect()?;
+    let points: Vec<(i64, i64, i64, i64)> = input
+        .lines()
+        .map(|line| {
+            line.split(',')
+                .map(|x| Ok(x.parse()?))
+                .try_process(|mut iter| iter.next_tuple())?
+                .value()
+        })
+        .try_collect()?;
 
     let mut graph = vec![vec![]; points.len()];
 

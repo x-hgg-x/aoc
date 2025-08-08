@@ -17,7 +17,12 @@ struct Intcode {
 
 impl Intcode {
     fn new(program: HashMap<usize, i64>, input: i64) -> Self {
-        Self { program, ip: 0, relative_base: 0, input }
+        Self {
+            program,
+            ip: 0,
+            relative_base: 0,
+            input,
+        }
     }
 
     fn get_input(&mut self, arg_position: usize, instruction: i64) -> Result<i64> {
@@ -26,7 +31,10 @@ impl Intcode {
         match instruction / 10i64.pow(1 + arg_position as u32) % 10 {
             0 => Ok(*self.program.entry(usize::try_from(arg)?).or_default()),
             1 => Ok(arg),
-            2 => Ok(*self.program.entry(usize::try_from(self.relative_base + arg)?).or_default()),
+            2 => Ok(*self
+                .program
+                .entry(usize::try_from(self.relative_base + arg)?)
+                .or_default()),
             other => bail!("unknown parameter mode: {other}"),
         }
     }
@@ -36,7 +44,10 @@ impl Intcode {
 
         match instruction / 10i64.pow(1 + arg_position as u32) % 10 {
             0 => Ok(self.program.entry(usize::try_from(arg)?).or_default()),
-            2 => Ok(self.program.entry(usize::try_from(self.relative_base + arg)?).or_default()),
+            2 => Ok(self
+                .program
+                .entry(usize::try_from(self.relative_base + arg)?)
+                .or_default()),
             other => bail!("invalid parameter mode: {other}"),
         }
     }
@@ -125,7 +136,7 @@ fn draw(mut intcode: Intcode) -> Result<HashMap<Complex<i64>, i64>> {
     let mut grid = HashMap::new();
 
     while let Some(outputs) = intcode.run()?.as_deref() {
-        let [new_color, turn] = <[_; 2]>::try_from(outputs)?;
+        let [new_color, turn] = outputs.try_into()?;
         grid.insert(current_position, new_color);
 
         match turn {
@@ -146,7 +157,11 @@ fn main() -> Result<()> {
     let input = String::from_utf8_lossy(&input);
     let input = input.trim();
 
-    let program: HashMap<usize, i64> = input.split(',').enumerate().map(|(pos, val)| Result::Ok((pos, val.parse()?))).try_collect()?;
+    let program: HashMap<usize, i64> = input
+        .split(',')
+        .enumerate()
+        .map(|(pos, val)| Result::Ok((pos, val.parse()?)))
+        .try_collect()?;
 
     let result1 = draw(Intcode::new(program.clone(), 0))?.len();
 
@@ -167,7 +182,9 @@ fn main() -> Result<()> {
     let width = (max_re - min_re + 1) as usize;
     let height = (max_im - min_im + 1) as usize;
 
-    let mut image = repeat_n(repeat_n(b' ', width).chain(once(b'\n')), height).flatten().collect_vec();
+    let mut image = repeat_n(repeat_n(b' ', width).chain(once(b'\n')), height)
+        .flatten()
+        .collect_vec();
 
     for (position, color) in grid {
         let x = (position.re - min_re) as usize;

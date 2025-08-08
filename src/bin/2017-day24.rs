@@ -15,7 +15,12 @@ fn main() -> Result<()> {
     let components: Vec<_> = input
         .lines()
         .map(|line| {
-            let (left, right) = line.split('/').map(|x| Ok(x.parse::<u64>()?)).try_process(|mut iter| iter.next_tuple())?.value()?;
+            let (left, right) = line
+                .split('/')
+                .map(|x| Ok(x.parse::<u64>()?))
+                .try_process(|mut iter| iter.next_tuple())?
+                .value()?;
+
             Result::Ok([left, right])
         })
         .try_collect()?;
@@ -24,8 +29,11 @@ fn main() -> Result<()> {
         .iter()
         .enumerate()
         .filter_map(|(index, &component)| match component {
-            [0, last] => Some(State { last, strength: last, component_indices: vec![index] }),
-            [last, 0] => Some(State { last, strength: last, component_indices: vec![index] }),
+            [0, last] | [last, 0] => Some(State {
+                last,
+                strength: last,
+                component_indices: vec![index],
+            }),
             _ => None,
         })
         .collect_vec();
@@ -51,7 +59,11 @@ fn main() -> Result<()> {
                 let mut new_component_indices = state.component_indices.clone();
                 new_component_indices.push(index);
 
-                queue.push(State { last: new_last, strength: new_strength, component_indices: new_component_indices })
+                queue.push(State {
+                    last: new_last,
+                    strength: new_strength,
+                    component_indices: new_component_indices,
+                })
             }
         }
     }

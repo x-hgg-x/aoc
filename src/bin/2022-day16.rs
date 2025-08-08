@@ -21,8 +21,18 @@ struct State {
     open_valves: u64,
 }
 
-fn compute_best_pressures(connections: &[HashMap<u8, (Vec<u8>, u64)>], start_valve_id: u8, total_time: u64) -> HashMap<u64, u64> {
-    let initial_state = State { valve_id: start_valve_id, remaining: total_time, pressure: 0, open_valves: 0 };
+fn compute_best_pressures(
+    connections: &[HashMap<u8, (Vec<u8>, u64)>],
+    start_valve_id: u8,
+    total_time: u64,
+) -> HashMap<u64, u64> {
+    let initial_state = State {
+        valve_id: start_valve_id,
+        remaining: total_time,
+        pressure: 0,
+        open_valves: 0,
+    };
+
     let mut current_states = vec![initial_state];
     let mut best_pressures = HashMap::new();
 
@@ -36,20 +46,22 @@ fn compute_best_pressures(connections: &[HashMap<u8, (Vec<u8>, u64)>], start_val
             })
             .or_insert(state.pressure);
 
-        current_states.extend(connections[state.valve_id as usize].iter().flat_map(|(&target, &(ref path, target_flow))| {
-            if target_flow == 0 || state.open_valves & (1 << target as u64) != 0 {
-                return None;
-            }
+        current_states.extend(connections[state.valve_id as usize].iter().flat_map(
+            |(&target, &(ref path, target_flow))| {
+                if target_flow == 0 || state.open_valves & (1 << target as u64) != 0 {
+                    return None;
+                }
 
-            let reward = target_flow * state.remaining.checked_sub(path.len() as u64 + 1)?;
+                let reward = target_flow * state.remaining.checked_sub(path.len() as u64 + 1)?;
 
-            Some(State {
-                valve_id: target,
-                remaining: state.remaining - path.len() as u64 - 1,
-                pressure: state.pressure + reward,
-                open_valves: state.open_valves | (1 << target as u64),
-            })
-        }));
+                Some(State {
+                    valve_id: target,
+                    remaining: state.remaining - path.len() as u64 - 1,
+                    pressure: state.pressure + reward,
+                    open_valves: state.open_valves | (1 << target as u64),
+                })
+            },
+        ));
     }
 
     best_pressures
@@ -59,7 +71,8 @@ fn main() -> Result<()> {
     let input = setup(file!())?;
     let input = String::from_utf8_lossy(&input);
 
-    let re = Regex::new(r#"(?m)^Valve (\w+) has flow rate=(\d+); tunnels? leads? to valves? (.+?)$"#)?;
+    let re =
+        Regex::new(r#"(?m)^Valve (\w+) has flow rate=(\d+); tunnels? leads? to valves? (.+?)$"#)?;
 
     let mut valves_map = HashMap::new();
 
@@ -70,8 +83,15 @@ fn main() -> Result<()> {
             let name = cap.get(1).value()?.as_str();
             let flow = cap[2].parse()?;
             let links = cap.get(3).value()?.as_str().split(", ").collect();
+
             valves_map.insert(name, id);
-            Result::Ok(Valve { id: id as u8, name, flow, links })
+
+            Result::Ok(Valve {
+                id: id as u8,
+                name,
+                flow,
+                links,
+            })
         })
         .try_collect()?;
 
@@ -100,7 +120,10 @@ fn main() -> Result<()> {
 
     let start_valve_id = valves.iter().position(|valve| valve.name == "AA").value()? as u8;
 
-    let result1 = *compute_best_pressures(&connections, start_valve_id, 30).values().max().value()?;
+    let result1 = *compute_best_pressures(&connections, start_valve_id, 30)
+        .values()
+        .max()
+        .value()?;
 
     let result2 = compute_best_pressures(&connections, start_valve_id, 26)
         .iter()

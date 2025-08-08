@@ -68,7 +68,11 @@ impl Stack {
             None => last.value = value,
             Some(Operation::Addition) => last.value += value,
             Some(Operation::Multiplication) => match next_token {
-                Some(&Token::ADDITION) => self.push(State { operation: None, value, reason: Some(Token::ADDITION) }),
+                Some(&Token::ADDITION) => self.push(State {
+                    operation: None,
+                    value,
+                    reason: Some(Token::ADDITION),
+                }),
                 _ => last.value *= value,
             },
         }
@@ -106,7 +110,10 @@ fn main() -> Result<()> {
             while let Some(byte) = iter.next() {
                 match byte {
                     b'0'..=b'9' => {
-                        let value = iter.take_while_ref(|&x| x.is_ascii_digit()).fold((byte - b'0') as u64, |acc, x| 10 * acc + (x - b'0') as u64);
+                        let value = iter
+                            .take_while_ref(|&x| x.is_ascii_digit())
+                            .fold((byte - b'0') as u64, |acc, x| 10 * acc + (x - b'0') as u64);
+
                         tokens.push(Token::Number(value));
                     }
                     b'+' => tokens.push(Token::ADDITION),
@@ -128,14 +135,27 @@ fn main() -> Result<()> {
         .iter()
         .map(|tokens| {
             stack.clear();
-            stack.push(State { operation: None, value: 0, reason: None });
+
+            stack.push(State {
+                operation: None,
+                value: 0,
+                reason: None,
+            });
 
             for token in tokens {
                 match *token {
                     Token::Number(value) => stack.merge(value)?,
-                    Token::ADDITION => stack.last_mut().value()?.operation = Some(Operation::Addition),
-                    Token::MULTIPLICATION => stack.last_mut().value()?.operation = Some(Operation::Multiplication),
-                    Token::OpeningParenthesis => stack.push(State { operation: None, value: 0, reason: Some(Token::OpeningParenthesis) }),
+                    Token::ADDITION => {
+                        stack.last_mut().value()?.operation = Some(Operation::Addition)
+                    }
+                    Token::MULTIPLICATION => {
+                        stack.last_mut().value()?.operation = Some(Operation::Multiplication)
+                    }
+                    Token::OpeningParenthesis => stack.push(State {
+                        operation: None,
+                        value: 0,
+                        reason: Some(Token::OpeningParenthesis),
+                    }),
                     Token::ClosingParenthesis => stack.pop_merge()?,
                 }
             }
@@ -149,17 +169,28 @@ fn main() -> Result<()> {
         .iter()
         .map(|tokens| {
             stack.clear();
-            stack.push(State { operation: None, value: 0, reason: None });
+
+            stack.push(State {
+                operation: None,
+                value: 0,
+                reason: None,
+            });
 
             for (index, token) in tokens.iter().enumerate() {
                 match *token {
                     Token::Number(value) => stack.merge_addition(value, tokens.get(index + 1))?,
-                    Token::ADDITION => stack.last_mut().value()?.operation = Some(Operation::Addition),
+                    Token::ADDITION => {
+                        stack.last_mut().value()?.operation = Some(Operation::Addition)
+                    }
                     Token::MULTIPLICATION => {
                         stack.pop_merge_after_addition()?;
                         stack.last_mut().value()?.operation = Some(Operation::Multiplication);
                     }
-                    Token::OpeningParenthesis => stack.push(State { operation: None, value: 0, reason: Some(Token::OpeningParenthesis) }),
+                    Token::OpeningParenthesis => stack.push(State {
+                        operation: None,
+                        value: 0,
+                        reason: Some(Token::OpeningParenthesis),
+                    }),
                     Token::ClosingParenthesis => {
                         stack.pop_merge_after_addition()?;
                         stack.pop_merge_addition(tokens.get(index + 1))?;

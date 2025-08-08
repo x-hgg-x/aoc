@@ -15,8 +15,18 @@ fn compute_fft(initial_array: &[u8]) -> String {
         buffer.clear();
 
         buffer.extend((1..=array.len()).map(|repetition| {
-            let pattern_iter = repeat(pattern.into_iter().flat_map(|y| repeat_n(y, repetition))).flatten().skip(1);
-            (array.iter().zip(pattern_iter).map(|(&x, y)| x as i64 * y).sum::<i64>().abs() % 10) as u8
+            let pattern_iter = repeat(pattern.into_iter().flat_map(|y| repeat_n(y, repetition)))
+                .flatten()
+                .skip(1);
+
+            let value = array
+                .iter()
+                .zip(pattern_iter)
+                .map(|(&x, y)| x as i64 * y)
+                .sum::<i64>()
+                .abs();
+
+            (value % 10) as u8
         }));
 
         std::mem::swap(&mut array, &mut buffer);
@@ -26,12 +36,22 @@ fn compute_fft(initial_array: &[u8]) -> String {
 }
 
 fn compute_real_fft(initial_array: &[u8]) -> Result<String> {
-    let start = initial_array[..7].iter().fold(0usize, |acc, &x| acc * 10 + x as usize);
+    let start = (initial_array[..7].iter()).fold(0usize, |acc, &x| acc * 10 + x as usize);
+
     let end = initial_array.len() * 10000;
 
-    ensure!(start >= initial_array.len() * 5000, "start must be greater than input half size");
+    ensure!(
+        start >= initial_array.len() * 5000,
+        "start must be greater than input half size"
+    );
 
-    let mut array = initial_array.iter().copied().cycle().skip(start).take(end - start).collect_vec();
+    let mut array = initial_array
+        .iter()
+        .copied()
+        .cycle()
+        .skip(start)
+        .take(end - start)
+        .collect_vec();
 
     for _ in 0..100 {
         let mut sum = array.iter().copied().map_into::<i64>().sum::<i64>();

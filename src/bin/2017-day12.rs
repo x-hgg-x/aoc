@@ -11,7 +11,11 @@ fn main() -> Result<()> {
     let graph: HashMap<_, Vec<_>> = input
         .lines()
         .map(|line| {
-            let mut iter = line.split(|c: char| !c.is_ascii_digit()).filter(|x| !x.is_empty()).map(|x| x.parse::<usize>());
+            let mut iter = line
+                .split(|c: char| !c.is_ascii_digit())
+                .filter(|x| !x.is_empty())
+                .map(|x| x.parse::<usize>());
+
             Result::Ok((iter.next().transpose()?.value()?, iter.try_collect()?))
         })
         .try_collect()?;

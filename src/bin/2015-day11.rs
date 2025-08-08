@@ -22,13 +22,16 @@ impl<'a> Password<'a> {
         loop {
             let password = self.next();
 
-            let mut iter = password.windows(2).enumerate().filter(|(_, x)| x[0] == x[1]);
+            let mut iter = password
+                .windows(2)
+                .enumerate()
+                .filter(|(_, x)| x[0] == x[1]);
 
-            let check1 = iter.next().and_then(|(pos1, _)| iter.next_back().map(|(pos2, _)| pos2 - pos1 > 1)).filter(|&x| x).is_some();
-            let check2 = password.windows(3).any(|x| x[0] + 1 == x[1] && x[1] + 1 == x[2]);
-            let check3 = !password.iter().any(|&x| x == b'i' || x == b'o' || x == b'l');
-
-            if check1 && check2 && check3 {
+            if let (Some((first, _)), Some((last, _))) = (iter.next(), iter.next_back())
+                && last - first > 1
+                && (password.windows(3)).any(|x| x[0] + 1 == x[1] && x[1] + 1 == x[2])
+                && !(password.iter()).any(|&x| x == b'i' || x == b'o' || x == b'l')
+            {
                 return String::from_utf8_lossy(password).into_owned();
             }
         }
@@ -36,7 +39,9 @@ impl<'a> Password<'a> {
 }
 
 fn main() -> Result<()> {
-    let mut input = String::from_utf8_lossy(&setup(file!())?).trim().as_bytes().to_vec();
+    let input = setup(file!())?;
+    let input = String::from_utf8_lossy(&input);
+    let mut input = input.trim().as_bytes().to_vec();
 
     let mut password_generator = Password { data: &mut input };
 

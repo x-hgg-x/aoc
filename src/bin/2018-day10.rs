@@ -16,8 +16,16 @@ struct Grid {
 
 impl Grid {
     fn new(width: usize, height: usize, tiles: Vec<u8>) -> Result<Self> {
-        ensure!(width * height == tiles.len(), "unable to construct Grid: width * height != tiles.len()");
-        Ok(Self { width, height, tiles })
+        ensure!(
+            width * height == tiles.len(),
+            "unable to construct Grid: width * height != tiles.len()"
+        );
+
+        Ok(Self {
+            width,
+            height,
+            tiles,
+        })
     }
 
     fn get_index(&self, row: usize, column: usize) -> usize {
@@ -28,10 +36,17 @@ impl Grid {
 fn compute_bounds(positions_velocities: &[(Point, Point)], time: i64) -> (i64, i64, i64, i64) {
     positions_velocities.iter().fold(
         (i64::MAX, i64::MAX, i64::MIN, i64::MIN),
-        |(xmin, ymin, xmax, ymax), &((mut position_x, mut position_y), (velocity_x, velocity_y))| {
+        |(xmin, ymin, xmax, ymax),
+         &((mut position_x, mut position_y), (velocity_x, velocity_y))| {
             position_x += time * velocity_x;
             position_y += time * velocity_y;
-            (xmin.min(position_x), ymin.min(position_y), xmax.max(position_x), ymax.max(position_y))
+
+            (
+                xmin.min(position_x),
+                ymin.min(position_y),
+                xmax.max(position_x),
+                ymax.max(position_y),
+            )
         },
     )
 }
@@ -55,18 +70,25 @@ fn main() -> Result<()> {
         .try_collect()?;
 
     let message_time = (0..)
-        .scan((i64::MAX, i64::MAX), |(x_bounds_size, y_bounds_size), time| {
-            let (new_xmin, new_ymin, new_xmax, new_ymax) = compute_bounds(&positions_velocities, time);
-            let (new_x_bounds_size, new_y_bounds_size) = (new_xmax - new_xmin, new_ymax - new_ymin);
+        .scan(
+            (i64::MAX, i64::MAX),
+            |(x_bounds_size, y_bounds_size), time| {
+                let (new_xmin, new_ymin, new_xmax, new_ymax) =
+                    compute_bounds(&positions_velocities, time);
 
-            if new_x_bounds_size <= *x_bounds_size && new_y_bounds_size <= *y_bounds_size {
-                *x_bounds_size = new_x_bounds_size.min(*x_bounds_size);
-                *y_bounds_size = new_y_bounds_size.min(*y_bounds_size);
-                Some(time)
-            } else {
-                None
-            }
-        })
+                let (new_x_bounds_size, new_y_bounds_size) =
+                    (new_xmax - new_xmin, new_ymax - new_ymin);
+
+                if new_x_bounds_size <= *x_bounds_size && new_y_bounds_size <= *y_bounds_size {
+                    *x_bounds_size = new_x_bounds_size.min(*x_bounds_size);
+                    *y_bounds_size = new_y_bounds_size.min(*y_bounds_size);
+
+                    Some(time)
+                } else {
+                    None
+                }
+            },
+        )
         .last()
         .value()?;
 
@@ -85,7 +107,9 @@ fn main() -> Result<()> {
         grid.tiles[index] = b'#';
     }
 
-    let message = grid.tiles.chunks_exact(grid.width).take(grid.height).flat_map(|row| row.iter().copied().chain(once(b'\n'))).collect_vec();
+    let message = (grid.tiles.chunks_exact(grid.width).take(grid.height))
+        .flat_map(|row| row.iter().copied().chain(once(b'\n')))
+        .collect_vec();
 
     let result1 = String::from_utf8_lossy(&message);
     let result2 = message_time;

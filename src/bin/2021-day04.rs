@@ -11,8 +11,19 @@ fn main() -> Result<()> {
 
     let mut split = input.split_ascii_whitespace().peekable();
 
-    let numbers: Vec<i8> = split.next().value()?.split(',').map(|x| x.parse()).try_collect()?;
-    let sorted_numbers = numbers.iter().copied().enumerate().sorted_unstable_by_key(|&(_, x)| x).collect_vec();
+    let numbers: Vec<i8> = split
+        .next()
+        .value()?
+        .split(',')
+        .map(|x| x.parse())
+        .try_collect()?;
+
+    let sorted_numbers = numbers
+        .iter()
+        .copied()
+        .enumerate()
+        .sorted_unstable_by_key(|&(_, x)| x)
+        .collect_vec();
 
     let mut boards = Vec::new();
     while split.peek().is_some() {
@@ -39,8 +50,17 @@ fn main() -> Result<()> {
     let ((first, first_turn), (last, last_turn)) = board_orders
         .iter()
         .flat_map(|board_order| {
-            let row_turn = board_order.chunks_exact(SIZE).map(|x| x.iter().copied().max()).min().flatten();
-            let col_turn = (0..SIZE).map(|i_col| board_order.iter().copied().skip(i_col).step_by(SIZE).max()).min().flatten();
+            let row_turn = board_order
+                .chunks_exact(SIZE)
+                .map(|x| x.iter().copied().max())
+                .min()
+                .flatten();
+
+            let col_turn = (0..SIZE)
+                .map(|i_col| board_order.iter().copied().skip(i_col).step_by(SIZE).max())
+                .min()
+                .flatten();
+
             row_turn.min(col_turn)
         })
         .enumerate()
@@ -49,8 +69,15 @@ fn main() -> Result<()> {
         .value()?;
 
     let score = |index: usize, turn| {
-        let unmarked = boards[index].iter().zip(&board_orders[index]).filter(|&(_, &order)| order > turn).map(|(&elem, _)| elem as u64).sum::<u64>();
+        let unmarked = boards[index]
+            .iter()
+            .zip(&board_orders[index])
+            .filter(|&(_, &order)| order > turn)
+            .map(|(&elem, _)| elem as u64)
+            .sum::<u64>();
+
         let called_number = numbers[turn as usize] as u64;
+
         unmarked * called_number
     };
 

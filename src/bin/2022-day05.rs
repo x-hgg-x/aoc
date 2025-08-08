@@ -5,7 +5,13 @@ use regex::Regex;
 
 use std::iter;
 
-fn move_crates(stacks: &mut [Vec<u8>], n: usize, from: usize, to: usize, reverse: bool) -> Result<()> {
+fn move_crates(
+    stacks: &mut [Vec<u8>],
+    n: usize,
+    from: usize,
+    to: usize,
+    reverse: bool,
+) -> Result<()> {
     let mut to_stack = std::mem::take(stacks.get_mut(to).value()?);
     let from_stack = stacks.get_mut(from).value()?;
 
@@ -23,7 +29,11 @@ fn move_crates(stacks: &mut [Vec<u8>], n: usize, from: usize, to: usize, reverse
 }
 
 fn top(stacks: &[Vec<u8>]) -> String {
-    stacks.iter().flat_map(|stack| stack.iter().last()).map(|&x| x as char).collect()
+    stacks
+        .iter()
+        .flat_map(|stack| stack.iter().last())
+        .map(|&x| x as char)
+        .collect()
 }
 
 fn main() -> Result<()> {
@@ -32,7 +42,12 @@ fn main() -> Result<()> {
 
     let (input_crates, input_moves) = input.split("\n\n").next_tuple().value()?;
 
-    let size = input_crates.split_ascii_whitespace().next_back().value()?.parse()?;
+    let size = input_crates
+        .split_ascii_whitespace()
+        .next_back()
+        .value()?
+        .parse()?;
+
     let mut stacks_1 = vec![vec![]; size];
 
     for line in input_crates.lines() {

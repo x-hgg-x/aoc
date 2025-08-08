@@ -15,8 +15,15 @@ fn main() -> Result<()> {
 
     let mut iter = (numbers.len() as u32..).scan(*numbers.last().value()?, |last_number, index| {
         let old_index = &mut spoken_numbers[*last_number as usize];
-        *last_number = if *old_index > 0 { index - *old_index } else { 0 };
+
+        *last_number = if *old_index > 0 {
+            index - *old_index
+        } else {
+            0
+        };
+
         *old_index = index;
+
         Some(*last_number)
     });
 

@@ -37,18 +37,23 @@ fn main() -> Result<()> {
         .map(|x| {
             let (dance_move, args) = x.split_at(1);
 
-            Ok(match dance_move {
-                "s" => DanceMove::Spin(args.parse()?),
+            match dance_move {
+                "s" => Ok(DanceMove::Spin(args.parse()?)),
                 "x" => {
                     let (arg1, arg2) = args.split('/').next_tuple().value()?;
-                    DanceMove::Exchange(arg1.parse()?, arg2.parse()?)
+                    Ok(DanceMove::Exchange(arg1.parse()?, arg2.parse()?))
                 }
                 "p" => {
-                    let (arg1, arg2) = args.split('/').map(|x| x.as_bytes()[0]).next_tuple().value()?;
-                    DanceMove::Partner(arg1, arg2)
+                    let (arg1, arg2) = args
+                        .split('/')
+                        .map(|x| x.as_bytes()[0])
+                        .next_tuple()
+                        .value()?;
+
+                    Ok(DanceMove::Partner(arg1, arg2))
                 }
                 other => bail!("unknown dance move: {other}"),
-            })
+            }
         })
         .try_collect()?;
 

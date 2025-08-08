@@ -51,35 +51,45 @@ fn compute_total_time(nodes: &[Node]) -> u64 {
     loop {
         queue.sort_unstable_by_key(|node| Reverse(node.index));
 
-        for worker in workers.iter_mut().filter(|x| matches!(x, None | Some((_, 0)))) {
-            match queue.pop() {
-                None => break,
-                Some(node) => {
-                    *worker = Some((node, node.index as u64 + 61));
-                }
-            }
+        for worker in workers
+            .iter_mut()
+            .filter(|x| matches!(x, None | Some((_, 0))))
+        {
+            let Some(node) = queue.pop() else {
+                break;
+            };
+            *worker = Some((node, node.index as u64 + 61))
         }
 
-        match workers.iter().flatten().map(|&(_, remaining_time)| remaining_time).filter(|&remaining_time| remaining_time != 0).min() {
-            None => break,
-            Some(elapsed_time) => {
-                total_time += elapsed_time;
+        let Some(elapsed_time) = workers
+            .iter()
+            .flatten()
+            .map(|&(_, remaining_time)| remaining_time)
+            .filter(|&remaining_time| remaining_time != 0)
+            .min()
+        else {
+            break;
+        };
 
-                for (worker_node, worker_timer) in workers.iter_mut().flatten().filter(|(_, remaining_time)| *remaining_time != 0) {
-                    *worker_timer -= elapsed_time;
+        total_time += elapsed_time;
 
-                    if *worker_timer == 0 {
-                        finished_nodes |= 1 << worker_node.index;
+        for (worker_node, worker_timer) in workers
+            .iter_mut()
+            .flatten()
+            .filter(|(_, remaining_time)| *remaining_time != 0)
+        {
+            *worker_timer -= elapsed_time;
 
-                        for child_node in nodes {
-                            if (visited_nodes >> child_node.index) & 1 == 0
-                                && (worker_node.children >> child_node.index) & 1 != 0
-                                && child_node.parents & finished_nodes == child_node.parents
-                            {
-                                queue.push(child_node);
-                                visited_nodes |= 1 << child_node.index;
-                            }
-                        }
+            if *worker_timer == 0 {
+                finished_nodes |= 1 << worker_node.index;
+
+                for child_node in nodes {
+                    if (visited_nodes >> child_node.index) & 1 == 0
+                        && (worker_node.children >> child_node.index) & 1 != 0
+                        && child_node.parents & finished_nodes == child_node.parents
+                    {
+                        queue.push(child_node);
+                        visited_nodes |= 1 << child_node.index;
                     }
                 }
             }
@@ -94,11 +104,21 @@ fn main() -> Result<()> {
 
     let re = Regex::new(r#"(?m)^Step (\w) must be finished before step (\w) can begin.$"#)?;
 
-    let edges = re.captures_iter(&input).map(|cap| [(cap[1][0] - b'A') as usize, (cap[2][0] - b'A') as usize]).collect_vec();
+    let edges = re
+        .captures_iter(&input)
+        .map(|cap| [(cap[1][0] - b'A') as usize, (cap[2][0] - b'A') as usize])
+        .collect_vec();
 
     let size = 1 + edges.iter().copied().flatten().max().value()?;
 
-    let mut nodes = (0..size).map(|index| Node { index, children: 0, parents: 0 }).collect_vec();
+    let mut nodes = (0..size)
+        .map(|index| Node {
+            index,
+            children: 0,
+            parents: 0,
+        })
+        .collect_vec();
+
     for &edge in &edges {
         nodes[edge[0]].children |= 1 << edge[1];
         nodes[edge[1]].parents |= 1 << edge[0];

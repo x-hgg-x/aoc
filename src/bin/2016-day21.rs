@@ -129,7 +129,10 @@ impl ParseRegex {
             }
             Some(Self::REGEX_SWAP_LETTER) => {
                 let cap = self.regex_swap_letter.captures(line).value()?;
-                Ok(Operation::SwapLetter(cap[1].as_bytes()[0], cap[2].as_bytes()[0]))
+                Ok(Operation::SwapLetter(
+                    cap[1].as_bytes()[0],
+                    cap[2].as_bytes()[0],
+                ))
             }
             Some(Self::REGEX_ROTATE_LEFT) => {
                 let cap = self.regex_rotate_left.captures(line).value()?;
@@ -170,7 +173,10 @@ fn main() -> Result<()> {
         Regex::new(r#"^move position (\d+) to position (\d+)$"#)?,
     )?;
 
-    let operations: Vec<_> = input.lines().map(|line| parse_regex.parse(line)).try_collect()?;
+    let operations: Vec<_> = input
+        .lines()
+        .map(|line| parse_regex.parse(line))
+        .try_collect()?;
 
     let mut password = *b"abcdefgh";
     for operation in &operations {

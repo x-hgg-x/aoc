@@ -13,7 +13,9 @@ struct Particle {
 }
 
 fn parse_vec3(s: &str) -> Result<(i64, i64, i64)> {
-    s.split(',').map(|x| Ok(x.trim().parse()?)).try_process(|mut iter| iter.next_tuple().value())?
+    s.split(',')
+        .map(|x| Ok(x.trim().parse()?))
+        .try_process(|mut iter| iter.next_tuple().value())?
 }
 
 fn main() -> Result<()> {
@@ -29,7 +31,14 @@ fn main() -> Result<()> {
             let position = parse_vec3(&cap[1])?;
             let velocity = parse_vec3(&cap[2])?;
             let acceleration = parse_vec3(&cap[3])?;
-            Result::Ok(Particle { index, position, velocity, acceleration, destroyed: false })
+
+            Result::Ok(Particle {
+                index,
+                position,
+                velocity,
+                acceleration,
+                destroyed: false,
+            })
         })
         .try_collect()?;
 
@@ -58,7 +67,13 @@ fn main() -> Result<()> {
         particles.retain(|x| !x.destroyed);
     }
 
-    let result1 = particles.iter().chain(&destroyed).min_by_key(|x| x.position.0.abs() + x.position.1.abs() + x.position.2.abs()).map(|x| x.index).value()?;
+    let result1 = particles
+        .iter()
+        .chain(&destroyed)
+        .min_by_key(|x| x.position.0.abs() + x.position.1.abs() + x.position.2.abs())
+        .map(|x| x.index)
+        .value()?;
+
     let result2 = particles.len();
 
     println!("{result1}");

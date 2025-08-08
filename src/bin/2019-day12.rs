@@ -37,10 +37,19 @@ fn total_energy(mut positions: Vec<[i64; 3]>, mut velocities: Vec<[i64; 3]>) -> 
         step(&mut positions, &mut velocities);
     }
 
-    positions.iter().zip(&velocities).map(|([x, y, z], &[vx, vy, vz])| (x.abs() + y.abs() + z.abs()) * (vx.abs() + vy.abs() + vz.abs())).sum()
+    positions
+        .iter()
+        .zip(&velocities)
+        .map(|([x, y, z], &[vx, vy, vz])| {
+            (x.abs() + y.abs() + z.abs()) * (vx.abs() + vy.abs() + vz.abs())
+        })
+        .sum()
 }
 
-fn compute_cycle_size(initial_positions: Vec<[i64; 3]>, initial_velocities: Vec<[i64; 3]>) -> usize {
+fn compute_cycle_size(
+    initial_positions: Vec<[i64; 3]>,
+    initial_velocities: Vec<[i64; 3]>,
+) -> usize {
     let mut positions = initial_positions.clone();
     let mut velocities = initial_velocities.clone();
 
@@ -52,8 +61,15 @@ fn compute_cycle_size(initial_positions: Vec<[i64; 3]>, initial_velocities: Vec<
         steps += 1;
 
         for (dim, cycle_size) in cycle_sizes.iter_mut().enumerate() {
-            let mut iter = izip!(&positions, &velocities, &initial_positions, &initial_velocities);
-            if *cycle_size == 0 && iter.all(|(p, v, ip, iv)| p[dim] == ip[dim] && v[dim] == iv[dim]) {
+            let mut iter = izip!(
+                &positions,
+                &velocities,
+                &initial_positions,
+                &initial_velocities
+            );
+
+            if *cycle_size == 0 && iter.all(|(p, v, ip, iv)| p[dim] == ip[dim] && v[dim] == iv[dim])
+            {
                 *cycle_size = steps;
             }
         }
@@ -68,7 +84,11 @@ fn main() -> Result<()> {
 
     let re = Regex::new(r#"(?m)^<x=(.+?), y=(.+?), z=(.+?)>$"#)?;
 
-    let initial_positions: Vec<_> = re.captures_iter(&input).map(|cap| Result::Ok([cap[1].parse()?, cap[2].parse()?, cap[3].parse()?])).try_collect()?;
+    let initial_positions: Vec<_> = re
+        .captures_iter(&input)
+        .map(|cap| Result::Ok([cap[1].parse()?, cap[2].parse()?, cap[3].parse()?]))
+        .try_collect()?;
+
     let initial_velocities = vec![[0; 3]; initial_positions.len()];
 
     let result1 = total_energy(initial_positions.clone(), initial_velocities.clone());

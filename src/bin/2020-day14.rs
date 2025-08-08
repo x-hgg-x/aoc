@@ -21,21 +21,23 @@ enum Instruction {
     SetMemory { index: u64, value: u64 },
 }
 
-fn compute_floating_masks(mask: &Mask) -> impl Iterator<Item = u64> + '_ {
-    once(0).chain((1u64..(1 << mask.mx.count_ones())).scan((0, 0), |(floating, gray), index| {
-        let new_gray = index ^ (index >> 1);
-        let bit_changed = *gray ^ new_gray;
-        *gray = new_gray;
+fn compute_floating_masks(mask: &Mask) -> impl Iterator<Item = u64> {
+    once(0).chain(
+        (1u64..(1 << mask.mx.count_ones())).scan((0, 0), |(floating, gray), index| {
+            let new_gray = index ^ (index >> 1);
+            let bit_changed = *gray ^ new_gray;
+            *gray = new_gray;
 
-        let bit = 1 << mask.mx_indices[bit_changed.trailing_zeros() as usize];
-        if new_gray & bit_changed == 0 {
-            *floating &= !bit;
-        } else {
-            *floating |= bit;
-        }
+            let bit = 1 << mask.mx_indices[bit_changed.trailing_zeros() as usize];
+            if new_gray & bit_changed == 0 {
+                *floating &= !bit;
+            } else {
+                *floating |= bit;
+            }
 
-        Some(*floating)
-    }))
+            Some(*floating)
+        }),
+    )
 }
 
 fn main() -> Result<()> {
@@ -71,9 +73,17 @@ fn main() -> Result<()> {
                     }
                 }
 
-                Ok(Instruction::SetMask(Mask { m0, m1, mx, mx_indices }))
+                Ok(Instruction::SetMask(Mask {
+                    m0,
+                    m1,
+                    mx,
+                    mx_indices,
+                }))
             } else if let Some(cap) = regex_set_memory.captures(line) {
-                Ok(Instruction::SetMemory { index: cap[1].parse()?, value: cap[2].parse()? })
+                Ok(Instruction::SetMemory {
+                    index: cap[1].parse()?,
+                    value: cap[2].parse()?,
+                })
             } else {
                 bail!("unknown instruction: {line}");
             }
@@ -83,7 +93,12 @@ fn main() -> Result<()> {
     let mut memory1 = HashMap::new();
     let mut memory2 = HashMap::new();
 
-    let mut mask = Mask { m0: 0, m1: !0, mx: 0, mx_indices: SmallVec::new() };
+    let mut mask = Mask {
+        m0: 0,
+        m1: !0,
+        mx: 0,
+        mx_indices: SmallVec::new(),
+    };
 
     for instruction in &instructions {
         match *instruction {

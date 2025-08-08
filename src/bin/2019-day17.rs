@@ -17,7 +17,12 @@ struct Intcode {
 
 impl Intcode {
     fn new(program: HashMap<usize, i64>, inputs: VecDeque<i64>) -> Self {
-        Self { program, ip: 0, relative_base: 0, inputs }
+        Self {
+            program,
+            ip: 0,
+            relative_base: 0,
+            inputs,
+        }
     }
 
     fn get_input(&mut self, arg_position: usize, instruction: i64) -> Result<i64> {
@@ -26,7 +31,10 @@ impl Intcode {
         match instruction / 10i64.pow(1 + arg_position as u32) % 10 {
             0 => Ok(*self.program.entry(usize::try_from(arg)?).or_default()),
             1 => Ok(arg),
-            2 => Ok(*self.program.entry(usize::try_from(self.relative_base + arg)?).or_default()),
+            2 => Ok(*self
+                .program
+                .entry(usize::try_from(self.relative_base + arg)?)
+                .or_default()),
             other => bail!("unknown parameter mode: {other}"),
         }
     }
@@ -36,7 +44,10 @@ impl Intcode {
 
         match instruction / 10i64.pow(1 + arg_position as u32) % 10 {
             0 => Ok(self.program.entry(usize::try_from(arg)?).or_default()),
-            2 => Ok(self.program.entry(usize::try_from(self.relative_base + arg)?).or_default()),
+            2 => Ok(self
+                .program
+                .entry(usize::try_from(self.relative_base + arg)?)
+                .or_default()),
             other => bail!("invalid parameter mode: {other}"),
         }
     }
@@ -128,7 +139,11 @@ struct Grid {
 
 impl Grid {
     fn new(width: usize, height: usize, tiles: Vec<bool>) -> Result<Self> {
-        ensure!(width * height == tiles.len(), "unable to construct Grid: width * height != tiles.len()");
+        ensure!(
+            width * height == tiles.len(),
+            "unable to construct Grid: width * height != tiles.len()"
+        );
+
         Ok(Self { width, tiles })
     }
 
@@ -141,7 +156,12 @@ fn compute_grid(mut intcode: Intcode) -> Result<(Grid, Complex<i64>, Complex<i64
     let outputs = intcode.run()?;
 
     let width = outputs.split(|&x| x == 10).next().value()?.len() + 2;
-    let height = outputs.split(|&x| x == 10).filter(|row| !row.is_empty()).count() + 2;
+
+    let height = outputs
+        .split(|&x| x == 10)
+        .filter(|row| !row.is_empty())
+        .count()
+        + 2;
 
     let mut current_position = None;
     let mut current_direction = None;
@@ -149,7 +169,7 @@ fn compute_grid(mut intcode: Intcode) -> Result<(Grid, Complex<i64>, Complex<i64
     let mut tiles = Vec::with_capacity(width * height);
     tiles.extend(repeat_n(false, width));
 
-    for (i_row, row) in outputs.split(|&x| x == 10).filter(|row| !row.is_empty()).enumerate() {
+    for (i_row, row) in (outputs.split(|&x| x == 10).filter(|row| !row.is_empty())).enumerate() {
         let i_row = i_row as i64;
 
         tiles.push(false);
@@ -188,7 +208,11 @@ fn compute_grid(mut intcode: Intcode) -> Result<(Grid, Complex<i64>, Complex<i64
 
     tiles.extend(repeat_n(false, width));
 
-    Ok((Grid::new(width, height, tiles)?, current_position.value()?, current_direction.value()?))
+    Ok((
+        Grid::new(width, height, tiles)?,
+        current_position.value()?,
+        current_direction.value()?,
+    ))
 }
 
 fn compute_alignment(grid: &Grid) -> usize {
@@ -199,13 +223,19 @@ fn compute_alignment(grid: &Grid) -> usize {
         .flat_map(|(i_row, (row_0, row_1, row_2))| {
             izip!(row_0.windows(3), row_1.windows(3), row_2.windows(3))
                 .enumerate()
-                .filter(|&(_, (x0, x1, x2))| x1[1] && x0[1] as u8 + x1[0] as u8 + x1[2] as u8 + x2[1] as u8 >= 3)
+                .filter(|&(_, (x0, x1, x2))| {
+                    x1[1] && x0[1] as u8 + x1[0] as u8 + x1[2] as u8 + x2[1] as u8 >= 3
+                })
                 .map(move |(i_col, _)| i_row * i_col)
         })
         .sum()
 }
 
-fn compute_path(grid: &Grid, mut current_position: Complex<i64>, mut current_direction: Complex<i64>) -> Result<String> {
+fn compute_path(
+    grid: &Grid,
+    mut current_position: Complex<i64>,
+    mut current_direction: Complex<i64>,
+) -> Result<String> {
     let mut path = String::new();
 
     loop {
@@ -244,43 +274,81 @@ fn compute_inputs(path: &str) -> Result<VecDeque<i64>> {
         .find_map(|first_index| {
             let first_pattern = check_pattern(&path[..first_index])?;
 
-            let sub_path = match path.split(first_pattern).filter(|&s| !s.is_empty()).min_by_key(|s| s.len()) {
+            let sub_path = match path
+                .split(first_pattern)
+                .filter(|&s| !s.is_empty())
+                .min_by_key(|s| s.len())
+            {
                 None => return Some([first_pattern, "", ""]),
                 Some(x) if x.len() < 2 => return None,
                 Some(x) => x,
             };
 
-            (sub_path.len().saturating_sub(21)..=sub_path.len() - 2).rev().find_map(|second_index| {
-                let second_pattern = check_pattern(&sub_path[second_index..])?;
+            (sub_path.len().saturating_sub(21)..=sub_path.len() - 2)
+                .rev()
+                .find_map(|second_index| {
+                    let second_pattern = check_pattern(&sub_path[second_index..])?;
 
-                buffer.clear();
-                buffer.extend(path.split(first_pattern).flat_map(|s| s.split(second_pattern)).filter(|&s| !s.is_empty()));
+                    buffer.clear();
+                    buffer.extend(
+                        path.split(first_pattern)
+                            .flat_map(|s| s.split(second_pattern))
+                            .filter(|&s| !s.is_empty()),
+                    );
 
-                let third_pattern = match buffer.iter().copied().min_by_key(|s| s.len()) {
-                    None => return Some([first_pattern, second_pattern, ""]),
-                    Some(x) => check_pattern(x)?,
-                };
+                    let third_pattern = match buffer.iter().copied().min_by_key(|s| s.len()) {
+                        None => return Some([first_pattern, second_pattern, ""]),
+                        Some(x) => check_pattern(x)?,
+                    };
 
-                if buffer.iter().all(|&s| s.len() % third_pattern.len() == 0) && buffer.iter().flat_map(|&s| s.split(third_pattern)).all(|s| s.is_empty()) {
-                    Some([first_pattern, second_pattern, third_pattern])
-                } else {
-                    None
-                }
-            })
+                    if buffer.iter().all(|&s| s.len() % third_pattern.len() == 0)
+                        && buffer
+                            .iter()
+                            .flat_map(|&s| s.split(third_pattern))
+                            .all(|s| s.is_empty())
+                    {
+                        Some([first_pattern, second_pattern, third_pattern])
+                    } else {
+                        None
+                    }
+                })
         })
         .value()?;
 
-    let iter_a = path.match_indices(patterns[0]).filter(|(_, s)| !s.is_empty()).map(|(index, _)| (index, *b"A,"));
-    let iter_b = path.match_indices(patterns[1]).filter(|(_, s)| !s.is_empty()).map(|(index, _)| (index, *b"B,"));
-    let iter_c = path.match_indices(patterns[2]).filter(|(_, s)| !s.is_empty()).map(|(index, _)| (index, *b"C,"));
+    let iter_a = path
+        .match_indices(patterns[0])
+        .filter(|(_, s)| !s.is_empty())
+        .map(|(index, _)| (index, *b"A,"));
 
-    let mut sorted_matches = iter_a.chain(iter_b).chain(iter_c).sorted_unstable_by_key(|&(index, _)| index).collect_vec();
+    let iter_b = path
+        .match_indices(patterns[1])
+        .filter(|(_, s)| !s.is_empty())
+        .map(|(index, _)| (index, *b"B,"));
+
+    let iter_c = path
+        .match_indices(patterns[2])
+        .filter(|(_, s)| !s.is_empty())
+        .map(|(index, _)| (index, *b"C,"));
+
+    let mut sorted_matches = iter_a
+        .chain(iter_b)
+        .chain(iter_c)
+        .sorted_unstable_by_key(|&(index, _)| index)
+        .collect_vec();
+
     *sorted_matches.last_mut().map(|(_, [_, x])| x).value()? = b'\n';
 
     let main_routine = sorted_matches.into_iter().flat_map(|(_, s)| s);
-    let sub_functions = patterns.into_iter().flat_map(|pattern| pattern.bytes().rev().skip(1).rev().chain([b'\n']));
 
-    Ok(main_routine.chain(sub_functions).chain(*b"n\n").map_into().collect())
+    let sub_functions = patterns
+        .into_iter()
+        .flat_map(|pattern| pattern.bytes().rev().skip(1).rev().chain([b'\n']));
+
+    Ok(main_routine
+        .chain(sub_functions)
+        .chain(*b"n\n")
+        .map_into()
+        .collect())
 }
 
 fn main() -> Result<()> {
@@ -288,9 +356,14 @@ fn main() -> Result<()> {
     let input = String::from_utf8_lossy(&input);
     let input = input.trim();
 
-    let mut program: HashMap<usize, i64> = input.split(',').enumerate().map(|(pos, val)| Result::Ok((pos, val.parse()?))).try_collect()?;
+    let mut program: HashMap<usize, i64> = input
+        .split(',')
+        .enumerate()
+        .map(|(pos, val)| Result::Ok((pos, val.parse()?)))
+        .try_collect()?;
 
-    let (grid, current_position, current_direction) = compute_grid(Intcode::new(program.clone(), VecDeque::new()))?;
+    let (grid, current_position, current_direction) =
+        compute_grid(Intcode::new(program.clone(), VecDeque::new()))?;
 
     let result1 = compute_alignment(&grid);
 

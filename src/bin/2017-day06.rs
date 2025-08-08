@@ -9,7 +9,11 @@ fn main() -> Result<()> {
     let input = setup(file!())?;
     let input = String::from_utf8_lossy(&input);
 
-    let mut banks: SmallVec<[usize; 16]> = input.split_ascii_whitespace().map(|x| x.parse()).try_collect()?;
+    let mut banks: SmallVec<[usize; 16]> = input
+        .split_ascii_whitespace()
+        .map(|x| x.parse())
+        .try_collect()?;
+
     let size = banks.len();
 
     let mut previous_states = HashMap::new();
@@ -21,7 +25,12 @@ fn main() -> Result<()> {
             Entry::Vacant(entry) => entry.insert(count),
         };
 
-        let (index_max, &max) = banks.iter().enumerate().rev().max_by_key(|&(_, &x)| x).value()?;
+        let (index_max, &max) = banks
+            .iter()
+            .enumerate()
+            .rev()
+            .max_by_key(|&(_, &x)| x)
+            .value()?;
 
         let q = max / size;
         let r = max % size;

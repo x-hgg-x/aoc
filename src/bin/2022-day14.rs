@@ -20,9 +20,24 @@ struct Grid {
 }
 
 impl Grid {
-    fn new(width: usize, height: usize, tiles: Vec<Tile>, min_width: i64, min_depth: i64) -> Result<Self> {
-        ensure!(width * height == tiles.len(), "unable to construct Grid: width * height != tiles.len()");
-        Ok(Self { width, tiles, min_width, min_depth })
+    fn new(
+        width: usize,
+        height: usize,
+        tiles: Vec<Tile>,
+        min_width: i64,
+        min_depth: i64,
+    ) -> Result<Self> {
+        ensure!(
+            width * height == tiles.len(),
+            "unable to construct Grid: width * height != tiles.len()"
+        );
+
+        Ok(Self {
+            width,
+            tiles,
+            min_width,
+            min_depth,
+        })
     }
 
     fn get_index(&self, x: i64, y: i64) -> Result<usize> {
@@ -53,17 +68,29 @@ fn main() -> Result<()> {
     let mut rock_areas = Vec::new();
 
     input.lines().try_for_each(|line| {
-        line.split(" -> ").map(|coord| coord.split(',').map(|x| Ok(x.parse::<i64>()?)).try_process(|mut iter| iter.next_tuple())?.value()).try_process(|iter| {
-            rock_areas.extend(iter.tuple_windows().map(|((x1, y1), (x2, y2))| {
-                let range_x = if x1 <= x2 { x1..=x2 } else { x2..=x1 };
-                let range_y = if y1 <= y2 { y1..=y2 } else { y2..=y1 };
-                (range_x, range_y)
-            }))
-        })
+        line.split(" -> ")
+            .map(|coord| {
+                coord
+                    .split(',')
+                    .map(|x| Ok(x.parse::<i64>()?))
+                    .try_process(|mut iter| iter.next_tuple())?
+                    .value()
+            })
+            .try_process(|iter| {
+                rock_areas.extend(iter.tuple_windows().map(|((x1, y1), (x2, y2))| {
+                    let range_x = if x1 <= x2 { x1..=x2 } else { x2..=x1 };
+                    let range_y = if y1 <= y2 { y1..=y2 } else { y2..=y1 };
+                    (range_x, range_y)
+                }))
+            })
     })?;
 
     let min_depth = 0;
-    let max_depth = 1 + rock_areas.iter().fold(i64::MIN, |max_depth, (_, y)| max_depth.max(*y.end()));
+
+    let max_depth = 1 + rock_areas
+        .iter()
+        .fold(i64::MIN, |max_depth, (_, y)| max_depth.max(*y.end()));
+
     let min_width = SAND_START_X_COORD - max_depth;
     let max_width = SAND_START_X_COORD + max_depth;
 

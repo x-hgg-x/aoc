@@ -5,13 +5,15 @@ use itertools::{Itertools, izip};
 use regex::Regex;
 use smallvec::SmallVec;
 
+use std::iter;
+
 fn composition(sum: usize, len: usize) -> Result<impl Iterator<Item = SmallVec<[usize; 4]>>> {
     ensure!(sum >= len, "invalid parameters: sum < len");
 
     let mut first = SmallVec::from_elem(1, len);
     first[len - 1] = sum - len + 1;
 
-    Ok(std::iter::successors(Some(first), |vec| {
+    Ok(iter::successors(Some(first), |vec| {
         let mut v = vec.clone();
         let len = v.len();
 
@@ -29,7 +31,9 @@ fn main() -> Result<()> {
     let input = setup(file!())?;
     let input = String::from_utf8_lossy(&input);
 
-    let re = Regex::new(r#"capacity (-?\d+), durability (-?\d+), flavor (-?\d+), texture (-?\d+), calories (-?\d+)"#)?;
+    let re = Regex::new(
+        r#"capacity (-?\d+), durability (-?\d+), flavor (-?\d+), texture (-?\d+), calories (-?\d+)"#,
+    )?;
 
     let ingredients: Vec<_> = re
         .captures_iter(&input)
@@ -45,13 +49,14 @@ fn main() -> Result<()> {
 
     let cookies = composition(100, ingredients.len())?
         .map(|amounts| {
-            let properties = ingredients.iter().zip(amounts).fold([0; 5], |total, (weight, amount)| {
-                let mut sum = [0; 5];
-                for (sum, &total, &weight) in izip!(&mut sum, &total, weight) {
-                    *sum = total + amount as i64 * weight;
-                }
-                sum
-            });
+            let properties =
+                iter::zip(&ingredients, amounts).fold([0; 5], |total, (weight, amount)| {
+                    let mut sum = [0; 5];
+                    for (sum, &total, &weight) in izip!(&mut sum, &total, weight) {
+                        *sum = total + amount as i64 * weight;
+                    }
+                    sum
+                });
 
             let score = properties[..4].iter().map(|&x| x.max(0)).product::<i64>();
             let calories = properties[4];
@@ -60,7 +65,13 @@ fn main() -> Result<()> {
         .collect_vec();
 
     let result1 = cookies.iter().map(|(score, _)| score).max().value()?;
-    let result2 = cookies.iter().filter(|&&(_, calories)| calories == 500).map(|(score, _)| score).max().value()?;
+
+    let result2 = cookies
+        .iter()
+        .filter(|&&(_, calories)| calories == 500)
+        .map(|(score, _)| score)
+        .max()
+        .value()?;
 
     println!("{result1}");
     println!("{result2}");

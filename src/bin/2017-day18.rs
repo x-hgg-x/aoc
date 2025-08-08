@@ -42,16 +42,18 @@ enum Instruction2 {
 }
 
 fn convert_instruction(instruction: &Instruction1) -> Result<Instruction2> {
-    Ok(match *instruction {
-        Instruction1::Sound(input) => Instruction2::Send(input),
-        Instruction1::Set(r, input) => Instruction2::Set(r, input),
-        Instruction1::Addition(r, input) => Instruction2::Addition(r, input),
-        Instruction1::Multiplication(r, input) => Instruction2::Multiplication(r, input),
-        Instruction1::Modulo(r, input) => Instruction2::Modulo(r, input),
-        Instruction1::RecoverIfNotZero(Input::Register(r)) => Instruction2::Receive(r),
-        Instruction1::JumpIfGreaterThanZero(input1, input2) => Instruction2::JumpIfGreaterThanZero(input1, input2),
+    match *instruction {
+        Instruction1::Sound(input) => Ok(Instruction2::Send(input)),
+        Instruction1::Set(r, input) => Ok(Instruction2::Set(r, input)),
+        Instruction1::Addition(r, input) => Ok(Instruction2::Addition(r, input)),
+        Instruction1::Multiplication(r, input) => Ok(Instruction2::Multiplication(r, input)),
+        Instruction1::Modulo(r, input) => Ok(Instruction2::Modulo(r, input)),
+        Instruction1::RecoverIfNotZero(Input::Register(r)) => Ok(Instruction2::Receive(r)),
+        Instruction1::JumpIfGreaterThanZero(input1, input2) => {
+            Ok(Instruction2::JumpIfGreaterThanZero(input1, input2))
+        }
         _ => bail!("unable to convert instruction: Instruction1::RecoverIfNotZero(Input::Value)"),
-    })
+    }
 }
 
 fn get_input(input: &str) -> Input {
@@ -70,10 +72,18 @@ fn run1(instructions: &[Instruction1]) -> Result<i64> {
     while range.contains(&ip) {
         match instructions[ip as usize] {
             Instruction1::Sound(input) => last_frequency = Some(input.get_value(&mut registers)),
-            Instruction1::Set(r, input) => *registers.entry(r).or_default() = input.get_value(&mut registers),
-            Instruction1::Addition(r, input) => *registers.entry(r).or_default() += input.get_value(&mut registers),
-            Instruction1::Multiplication(r, input) => *registers.entry(r).or_default() *= input.get_value(&mut registers),
-            Instruction1::Modulo(r, input) => *registers.entry(r).or_default() %= input.get_value(&mut registers),
+            Instruction1::Set(r, input) => {
+                *registers.entry(r).or_default() = input.get_value(&mut registers)
+            }
+            Instruction1::Addition(r, input) => {
+                *registers.entry(r).or_default() += input.get_value(&mut registers)
+            }
+            Instruction1::Multiplication(r, input) => {
+                *registers.entry(r).or_default() *= input.get_value(&mut registers)
+            }
+            Instruction1::Modulo(r, input) => {
+                *registers.entry(r).or_default() %= input.get_value(&mut registers)
+            }
             Instruction1::RecoverIfNotZero(input) => {
                 if input.get_value(&mut registers) != 0 {
                     return last_frequency.ok_or_else(|| eyre!("no sound was emitted"));
@@ -98,46 +108,57 @@ fn run2(instructions: &[Instruction2]) -> Result<usize> {
     let mut all_registers = [HashMap::from([(b'p', 0)]), HashMap::from([(b'p', 1)])];
     let mut ips = [0, 0];
 
-    let program_ids = [0, 1];
+    const PROGRAM_ID0: u64 = 1 << 0;
+    const PROGRAM_ID1: u64 = 1 << 1;
+    const PROGRAM_IDS: [u64; 2] = [PROGRAM_ID0, PROGRAM_ID1];
+
     let mut queue_0 = VecDeque::new();
     let mut queue_1 = VecDeque::new();
 
-    let mut locked = [false, false];
-    let mut finished = [false, false];
+    let mut locked = 0u64;
+    let mut finished = 0u64;
 
     let range = 0..instructions.len().try_into()?;
 
     'run: loop {
-        for (ip, registers, program_id) in izip!(&mut ips, &mut all_registers, program_ids) {
+        for (ip, registers, program_id) in izip!(&mut ips, &mut all_registers, PROGRAM_IDS) {
             let (self_queue, other_queue, other_program_id) = match program_id {
-                0 => (&mut queue_0, &mut queue_1, program_id ^ 1),
-                1 => (&mut queue_1, &mut queue_0, program_id ^ 1),
+                PROGRAM_ID0 => (&mut queue_0, &mut queue_1, PROGRAM_ID1),
+                PROGRAM_ID1 => (&mut queue_1, &mut queue_0, PROGRAM_ID0),
                 other => bail!("unknown program id: {other}"),
             };
 
             loop {
                 if !range.contains(ip) {
-                    finished[program_id] = true;
+                    finished |= program_id;
                     break;
                 }
 
                 match instructions[*ip as usize] {
                     Instruction2::Send(input) => {
-                        locked[other_program_id] = false;
+                        locked &= !other_program_id;
                         other_queue.push_back(input.get_value(registers));
 
-                        if program_id == 1 {
+                        if program_id == PROGRAM_ID1 {
                             program_1_send_count += 1;
                         }
                     }
-                    Instruction2::Set(r, input) => *registers.entry(r).or_default() = input.get_value(registers),
-                    Instruction2::Addition(r, input) => *registers.entry(r).or_default() += input.get_value(registers),
-                    Instruction2::Multiplication(r, input) => *registers.entry(r).or_default() *= input.get_value(registers),
-                    Instruction2::Modulo(r, input) => *registers.entry(r).or_default() %= input.get_value(registers),
+                    Instruction2::Set(r, input) => {
+                        *registers.entry(r).or_default() = input.get_value(registers)
+                    }
+                    Instruction2::Addition(r, input) => {
+                        *registers.entry(r).or_default() += input.get_value(registers)
+                    }
+                    Instruction2::Multiplication(r, input) => {
+                        *registers.entry(r).or_default() *= input.get_value(registers)
+                    }
+                    Instruction2::Modulo(r, input) => {
+                        *registers.entry(r).or_default() %= input.get_value(registers)
+                    }
                     Instruction2::Receive(r) => match self_queue.pop_front() {
                         Some(value) => *registers.entry(r).or_default() = value,
                         None => {
-                            locked[program_id] = true;
+                            locked |= program_id;
                             break;
                         }
                     },
@@ -151,7 +172,7 @@ fn run2(instructions: &[Instruction2]) -> Result<usize> {
                 *ip += 1;
             }
 
-            if locked.into_iter().zip(finished).all(|(is_locked, is_finished)| is_locked || is_finished) {
+            if locked | finished == 0b11 {
                 break 'run Ok(program_1_send_count);
             }
         }
@@ -167,22 +188,38 @@ fn main() -> Result<()> {
         .map(|line| {
             let args: SmallVec<[_; 3]> = line.split_ascii_whitespace().collect();
 
-            Ok(match args[0] {
-                "snd" => Instruction1::Sound(get_input(args[1])),
-                "set" => Instruction1::Set(args[1].as_bytes()[0], get_input(args[2])),
-                "add" => Instruction1::Addition(args[1].as_bytes()[0], get_input(args[2])),
-                "mul" => Instruction1::Multiplication(args[1].as_bytes()[0], get_input(args[2])),
-                "mod" => Instruction1::Modulo(args[1].as_bytes()[0], get_input(args[2])),
-                "rcv" => Instruction1::RecoverIfNotZero(get_input(args[1])),
-                "jgz" => Instruction1::JumpIfGreaterThanZero(get_input(args[1]), get_input(args[2])),
+            match args[0] {
+                "snd" => Ok(Instruction1::Sound(get_input(args[1]))),
+                "set" => Ok(Instruction1::Set(args[1].as_bytes()[0], get_input(args[2]))),
+                "add" => Ok(Instruction1::Addition(
+                    args[1].as_bytes()[0],
+                    get_input(args[2]),
+                )),
+                "mul" => Ok(Instruction1::Multiplication(
+                    args[1].as_bytes()[0],
+                    get_input(args[2]),
+                )),
+                "mod" => Ok(Instruction1::Modulo(
+                    args[1].as_bytes()[0],
+                    get_input(args[2]),
+                )),
+                "rcv" => Ok(Instruction1::RecoverIfNotZero(get_input(args[1]))),
+                "jgz" => Ok(Instruction1::JumpIfGreaterThanZero(
+                    get_input(args[1]),
+                    get_input(args[2]),
+                )),
                 other => bail!("unknown instruction: {other}"),
-            })
+            }
         })
         .try_collect()?;
 
     let result1 = run1(&instructions_1)?;
 
-    let instructions_2: Vec<_> = instructions_1.iter().map(convert_instruction).try_collect()?;
+    let instructions_2: Vec<_> = instructions_1
+        .iter()
+        .map(convert_instruction)
+        .try_collect()?;
+
     let result2 = run2(&instructions_2)?;
 
     println!("{result1}");

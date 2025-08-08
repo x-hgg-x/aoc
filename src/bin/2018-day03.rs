@@ -22,16 +22,28 @@ fn main() -> Result<()> {
     let areas: Vec<_> = re
         .captures_iter(&input)
         .map(|cap| {
-            Result::Ok(Area { id: cap[1].parse()?, x_offset: cap[2].parse()?, y_offset: cap[3].parse()?, x_size: cap[4].parse()?, y_size: cap[5].parse()? })
+            Result::Ok(Area {
+                id: cap[1].parse()?,
+                x_offset: cap[2].parse()?,
+                y_offset: cap[3].parse()?,
+                x_size: cap[4].parse()?,
+                y_size: cap[5].parse()?,
+            })
         })
         .try_collect()?;
 
     let mut grid = vec![0usize; SIZE * SIZE];
 
     for area in &areas {
-        grid.chunks_exact_mut(SIZE).skip(area.y_offset).take(area.y_size).for_each(|line| {
-            line.iter_mut().skip(area.x_offset).take(area.x_size).for_each(|x| *x += 1);
-        });
+        grid.chunks_exact_mut(SIZE)
+            .skip(area.y_offset)
+            .take(area.y_size)
+            .for_each(|line| {
+                line.iter_mut()
+                    .skip(area.x_offset)
+                    .take(area.x_size)
+                    .for_each(|x| *x += 1);
+            });
     }
 
     let result1 = grid.iter().filter(|&&x| x >= 2).count();
@@ -39,7 +51,15 @@ fn main() -> Result<()> {
     let result2 = areas
         .iter()
         .find(|&area| {
-            grid.chunks_exact(SIZE).skip(area.y_offset).take(area.y_size).all(|line| line.iter().skip(area.x_offset).take(area.x_size).all(|&x| x == 1))
+            grid.chunks_exact(SIZE)
+                .skip(area.y_offset)
+                .take(area.y_size)
+                .all(|line| {
+                    line.iter()
+                        .skip(area.x_offset)
+                        .take(area.x_size)
+                        .all(|&x| x == 1)
+                })
         })
         .map(|x| x.id)
         .value()?;
