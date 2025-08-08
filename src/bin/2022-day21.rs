@@ -60,7 +60,7 @@ fn compute_human_value(monkeys: &HashMap<&str, Monkey>, inverted_graph: &HashMap
     }
 
     queue.clear();
-    queue.extend(monkeys.iter().filter(|(&name, monkey)| name != "humn" && matches!(monkey, Monkey::Constant(_))).map(|(&name, _)| name));
+    queue.extend(monkeys.iter().filter(|&(&name, monkey)| name != "humn" && matches!(monkey, Monkey::Constant(_))).map(|(&name, _)| name));
 
     while let Some(name) = queue.pop_front() {
         values.insert(name, monkeys[name].value(&values));

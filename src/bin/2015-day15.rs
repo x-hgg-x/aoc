@@ -1,7 +1,7 @@
 use aoc::*;
 
 use eyre::ensure;
-use itertools::{izip, Itertools};
+use itertools::{Itertools, izip};
 use regex::Regex;
 use smallvec::SmallVec;
 

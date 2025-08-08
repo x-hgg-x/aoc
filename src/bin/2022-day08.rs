@@ -1,7 +1,7 @@
 use aoc::*;
 
 use eyre::ensure;
-use itertools::{iproduct, Itertools};
+use itertools::{Itertools, iproduct};
 
 use std::iter;
 

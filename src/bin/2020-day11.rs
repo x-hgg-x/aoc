@@ -1,7 +1,7 @@
 use aoc::*;
 
 use eyre::{bail, ensure};
-use itertools::{iproduct, Itertools};
+use itertools::{Itertools, iproduct};
 
 #[derive(Clone)]
 struct Grid {

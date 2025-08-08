@@ -91,7 +91,7 @@ fn main() -> Result<()> {
         .iter()
         .flatten()
         .enumerate()
-        .filter(|(_, &rule_index)| rules[rule_index as usize].0.starts_with("departure"))
+        .filter(|&(_, &rule_index)| rules[rule_index as usize].0.starts_with("departure"))
         .map(|(index, _)| self_ticket[index])
         .product::<u64>();
 

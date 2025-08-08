@@ -5,7 +5,7 @@ use smallvec::SmallVec;
 
 use std::iter::once;
 
-fn hash_generator(input: &[u8]) -> impl Iterator<Item = (usize, Digest)> {
+fn hash_generator(input: &[u8]) -> impl Iterator<Item = (usize, Digest)> + use<> {
     let input_len = input.len();
     let mut n: usize = 1;
 

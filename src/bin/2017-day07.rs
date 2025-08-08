@@ -21,10 +21,10 @@ fn compute_total_weights<'a>(nodes: &HashMap<&'a str, Node>, parents: &HashMap<&
         let node = &nodes[name];
         total_weights.insert(name, node.children_names.iter().fold(node.weight, |acc, &child_name| acc + total_weights[child_name]));
 
-        if let Some(parent) = parents[name] {
-            if nodes[parent].children_names.iter().all(|&x| total_weights.contains_key(x)) {
-                queue.push_back(parent);
-            }
+        if let Some(parent) = parents[name]
+            && nodes[parent].children_names.iter().all(|&x| total_weights.contains_key(x))
+        {
+            queue.push_back(parent);
         }
     }
 
@@ -80,7 +80,7 @@ fn main() -> Result<()> {
         nodes.insert(node_name, Node { name: node_name, weight: node_weight, children_names });
     }
 
-    let bottom_node_name = parents.iter().find(|(_, &v)| v.is_none()).map(|(&k, _)| k).value()?;
+    let bottom_node_name = parents.iter().find(|&(_, &v)| v.is_none()).map(|(&k, _)| k).value()?;
     let total_weights = compute_total_weights(&nodes, &parents);
 
     let result1 = bottom_node_name;

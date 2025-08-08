@@ -43,15 +43,15 @@ fn main() -> Result<()> {
         }
 
         for (index, component) in components.iter().enumerate() {
-            if let Some(position) = component.iter().position(|&x| x == state.last) {
-                if !state.component_indices.contains(&index) {
-                    let new_last = component[position ^ 1];
-                    let new_strength = state.strength + component.iter().sum::<u64>();
-                    let mut new_component_indices = state.component_indices.clone();
-                    new_component_indices.push(index);
+            if let Some(position) = component.iter().position(|&x| x == state.last)
+                && !state.component_indices.contains(&index)
+            {
+                let new_last = component[position ^ 1];
+                let new_strength = state.strength + component.iter().sum::<u64>();
+                let mut new_component_indices = state.component_indices.clone();
+                new_component_indices.push(index);
 
-                    queue.push(State { last: new_last, strength: new_strength, component_indices: new_component_indices })
-                }
+                queue.push(State { last: new_last, strength: new_strength, component_indices: new_component_indices })
             }
         }
     }

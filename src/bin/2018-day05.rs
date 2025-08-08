@@ -4,10 +4,10 @@ fn react(input: &[u8], output: &mut Vec<u8>, removed_char: Option<u8>) -> usize 
     output.clear();
 
     for &c in input {
-        if let Some(removed_char) = removed_char {
-            if c.eq_ignore_ascii_case(&removed_char) {
-                continue;
-            }
+        if let Some(removed_char) = removed_char
+            && c.eq_ignore_ascii_case(&removed_char)
+        {
+            continue;
         }
 
         match output.last() {

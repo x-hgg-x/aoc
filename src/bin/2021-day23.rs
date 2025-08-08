@@ -3,8 +3,8 @@ use aoc::*;
 use smallvec::SmallVec;
 
 use std::cmp::Ordering;
-use std::collections::hash_map::{Entry, HashMap};
 use std::collections::BinaryHeap;
+use std::collections::hash_map::{Entry, HashMap};
 
 const ROOM_INDICES: [u8; 4] = [2, 4, 6, 8];
 const EMPTY: u8 = u8::MAX;

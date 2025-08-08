@@ -97,11 +97,8 @@ fn compute_reachable_keys_cache(map: &Map) -> HashMap<(i64, i64), ReachableKeys>
                 let iter = DIRECTIONS.into_iter().filter_map(|direction| {
                     let new_position = position + direction;
                     let tile = map.tiles[map.get_index(new_position)];
-                    if tile != b'#' {
-                        Some((new_position, doors | *map.doors.get(&new_position).unwrap_or(&0), distance + 1))
-                    } else {
-                        None
-                    }
+
+                    (tile != b'#').then(|| (new_position, doors | *map.doors.get(&new_position).unwrap_or(&0), distance + 1))
                 });
 
                 queue.extend(iter);

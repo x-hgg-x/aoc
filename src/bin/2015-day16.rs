@@ -9,17 +9,13 @@ fn get_aunt(input: &str, gift: &HashMap<&str, RangeInclusive<u32>>, regex_compou
     input
         .lines()
         .find_map(|line| {
-            (|| {
+            (|| -> Result<_> {
                 let condition = regex_compounds
                     .captures_iter(line)
                     .map(|cap| Ok((cap.get(1).value()?.as_str(), cap[2].parse()?)))
                     .try_process(|mut iter| iter.all(|(item, count)| gift[item].contains(&count)))?;
 
-                if condition {
-                    Result::Ok(Some(regex_num.captures(line).value()?[1].parse()?))
-                } else {
-                    Result::Ok(None)
-                }
+                condition.then(|| Ok(regex_num.captures(line).value()?[1].parse()?)).transpose()
             })()
             .transpose()
         })

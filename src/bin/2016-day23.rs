@@ -1,6 +1,6 @@
 use aoc::*;
 
-use eyre::{bail, eyre, WrapErr};
+use eyre::{WrapErr, bail, eyre};
 use itertools::Itertools;
 use smallvec::SmallVec;
 

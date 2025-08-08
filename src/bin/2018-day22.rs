@@ -1,11 +1,11 @@
 use aoc::*;
 
-use eyre::{bail, Report};
+use eyre::{Report, bail};
 use itertools::Itertools;
 
 use std::cmp::Ordering;
-use std::collections::hash_map::{Entry, HashMap};
 use std::collections::BinaryHeap;
+use std::collections::hash_map::{Entry, HashMap};
 use std::iter::once;
 
 const X_FACTOR: usize = 16807;

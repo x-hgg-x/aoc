@@ -1,7 +1,7 @@
 use aoc::*;
 
 use eyre::{bail, ensure};
-use itertools::{izip, Itertools};
+use itertools::{Itertools, izip};
 use num_complex::Complex;
 
 use std::collections::{HashMap, VecDeque};

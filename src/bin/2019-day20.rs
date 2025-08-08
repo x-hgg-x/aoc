@@ -40,10 +40,10 @@ fn parse_map(input: &str) -> Result<(Map, Point, Point)> {
     let max_x_right = line_iter.rev().find(|&(_, x)| is_inside(x)).map(|(index, _)| index).value()?;
 
     let mut lines_iter = lines.iter().enumerate();
-    let min_y_top = lines_iter.find(|(_, &line)| is_inside_at(line, min_x_left)).map(|(index, _)| index).value()?;
-    let max_y_top = lines_iter.find(|(_, &line)| !is_inside_at(line, max_x_left + 1)).map(|(index, _)| index).value()? - 1;
-    let min_y_bottom = lines_iter.find(|(_, &line)| is_inside_at(line, max_x_left + 1)).map(|(index, _)| index).value()?;
-    let max_y_bottom = lines_iter.rev().find(|(_, &line)| is_inside_at(line, min_x_left)).map(|(index, _)| index).value()?;
+    let min_y_top = lines_iter.find(|&(_, &line)| is_inside_at(line, min_x_left)).map(|(index, _)| index).value()?;
+    let max_y_top = lines_iter.find(|&(_, &line)| !is_inside_at(line, max_x_left + 1)).map(|(index, _)| index).value()? - 1;
+    let min_y_bottom = lines_iter.find(|&(_, &line)| is_inside_at(line, max_x_left + 1)).map(|(index, _)| index).value()?;
+    let max_y_bottom = lines_iter.rev().find(|&(_, &line)| is_inside_at(line, min_x_left)).map(|(index, _)| index).value()?;
 
     let width = lines.iter().map(|&line| line.len()).max().value()?;
     let height = lines.len();
@@ -133,10 +133,10 @@ fn solve(map: &Map, start_position: Point, goal_position: Point, has_depth: bool
             return Ok(distance);
         }
 
-        if let Some(old_distance) = visited.insert((position, depth), distance) {
-            if old_distance <= distance {
-                continue;
-            }
+        if let Some(old_distance) = visited.insert((position, depth), distance)
+            && old_distance <= distance
+        {
+            continue;
         }
 
         match map.tiles[map.get_index(position)] {

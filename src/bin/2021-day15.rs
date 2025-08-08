@@ -4,8 +4,8 @@ use eyre::ensure;
 use itertools::Itertools;
 
 use std::cmp::Ordering;
-use std::collections::hash_map::{Entry, HashMap};
 use std::collections::BinaryHeap;
+use std::collections::hash_map::{Entry, HashMap};
 
 struct Grid {
     width: i64,

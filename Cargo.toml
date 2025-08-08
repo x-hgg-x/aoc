@@ -2,7 +2,7 @@
 name = "aoc"
 version = "0.1.0"
 authors = ["x-hgg-x"]
-edition = "2021"
+edition = "2024"
 
 [dependencies]
 color-eyre = { version = "*", default-features = false }

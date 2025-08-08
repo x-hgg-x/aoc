@@ -3,7 +3,7 @@ use aoc::*;
 use eyre::bail;
 use itertools::Itertools;
 use regex::Regex;
-use smallvec::{smallvec, SmallVec};
+use smallvec::{SmallVec, smallvec};
 
 use std::collections::{HashMap, HashSet};
 use std::hash::{Hash, Hasher};
@@ -51,17 +51,8 @@ impl State {
     }
 
     fn is_valid(&self) -> bool {
-        if self.elevator_floor < 0 || self.elevator_floor > 3 {
-            false
-        } else {
-            self.pairs.iter().all(|pair| {
-                if pair.chip_floor == pair.gen_floor {
-                    true
-                } else {
-                    self.pairs.iter().all(|other_pair| other_pair.gen_floor != pair.chip_floor)
-                }
-            })
-        }
+        (0..=3).contains(&self.elevator_floor)
+            && self.pairs.iter().all(|p1| p1.chip_floor == p1.gen_floor || self.pairs.iter().all(|p2| p2.gen_floor != p1.chip_floor))
     }
 
     fn is_final(&self) -> bool {

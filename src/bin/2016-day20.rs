@@ -3,11 +3,7 @@ use aoc::*;
 use itertools::Itertools;
 
 fn merge((start1, end1): (u32, u32), (start2, end2): (u32, u32)) -> Option<(u32, u32)> {
-    if end1 + 1 < start2 {
-        None
-    } else {
-        Some((start1, end1.max(end2)))
-    }
+    (start2 <= end1.saturating_add(1)).then(|| (start1, end1.max(end2)))
 }
 
 fn main() -> Result<()> {

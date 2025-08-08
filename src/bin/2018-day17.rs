@@ -1,7 +1,7 @@
 use aoc::*;
 
 use eyre::{bail, ensure};
-use itertools::{iproduct, Itertools};
+use itertools::{Itertools, iproduct};
 use regex::Regex;
 
 const WATER_SPRING_X_COORD: i64 = 500;

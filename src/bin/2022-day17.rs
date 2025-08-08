@@ -3,8 +3,8 @@ use aoc::*;
 use itertools::Itertools;
 use num_complex::Complex;
 
-use std::collections::hash_map::{Entry, HashMap};
 use std::collections::HashSet;
+use std::collections::hash_map::{Entry, HashMap};
 
 const WIDTH: usize = 7;
 

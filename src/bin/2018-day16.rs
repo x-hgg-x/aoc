@@ -1,6 +1,6 @@
 use aoc::*;
 
-use eyre::{bail, ensure, Report};
+use eyre::{Report, bail, ensure};
 use itertools::Itertools;
 use regex::Regex;
 

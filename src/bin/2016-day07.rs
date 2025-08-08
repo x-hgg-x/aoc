@@ -1,6 +1,6 @@
 use aoc::*;
 
-use itertools::{iproduct, Itertools};
+use itertools::{Itertools, iproduct};
 use regex::bytes::Regex;
 
 use std::iter::once;

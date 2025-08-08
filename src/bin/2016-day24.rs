@@ -5,8 +5,8 @@ use itertools::Itertools;
 use smallvec::SmallVec;
 
 use std::cmp::Ordering;
-use std::collections::hash_map::{Entry, HashMap};
 use std::collections::BinaryHeap;
+use std::collections::hash_map::{Entry, HashMap};
 use std::iter::once;
 
 struct Permutations<'a, T, const N: usize> {

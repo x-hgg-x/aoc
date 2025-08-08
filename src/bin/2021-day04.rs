@@ -49,7 +49,7 @@ fn main() -> Result<()> {
         .value()?;
 
     let score = |index: usize, turn| {
-        let unmarked = boards[index].iter().zip(&board_orders[index]).filter(|(_, &order)| order > turn).map(|(&elem, _)| elem as u64).sum::<u64>();
+        let unmarked = boards[index].iter().zip(&board_orders[index]).filter(|&(_, &order)| order > turn).map(|(&elem, _)| elem as u64).sum::<u64>();
         let called_number = numbers[turn as usize] as u64;
         unmarked * called_number
     };

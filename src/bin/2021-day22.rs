@@ -18,7 +18,7 @@ impl Cuboid {
         iter::zip(start, end).all(|(s, e)| s <= e).then_some(Cuboid { start, end })
     }
 
-    fn difference(&self, intersection: &Self) -> impl Iterator<Item = Cuboid> {
+    fn difference(&self, intersection: &Self) -> impl Iterator<Item = Cuboid> + use<> {
         [
             (self.start[0] < intersection.start[0]).then(|| Cuboid { start: self.start, end: [intersection.start[0] - 1, self.end[1], self.end[2]] }),
             (self.start[1] < intersection.start[1]).then(|| Cuboid {

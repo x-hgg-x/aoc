@@ -167,15 +167,16 @@ fn main() -> Result<()> {
             }
         }
 
-        if idle && computers.iter().all(|x| x.inputs.is_empty()) {
-            if let Some([x, y]) = last_nat_received_packet {
-                computers[0].inputs.extend([x, y]);
+        if idle
+            && computers.iter().all(|x| x.inputs.is_empty())
+            && let Some([x, y]) = last_nat_received_packet
+        {
+            computers[0].inputs.extend([x, y]);
 
-                if last_y_sent_by_nat == Some(y) {
-                    break;
-                } else {
-                    last_y_sent_by_nat = Some(y);
-                }
+            if last_y_sent_by_nat == Some(y) {
+                break;
+            } else {
+                last_y_sent_by_nat = Some(y);
             }
         }
     }

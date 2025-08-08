@@ -9,12 +9,12 @@ fn step(rules: &HashMap<[u8; 2], u8>, pair_count: &mut HashMap<[u8; 2], u64>, ne
     new_pairs.clear();
 
     for (&[left, right], count) in pair_count.iter_mut() {
-        if *count > 0 {
-            if let Some(&middle) = rules.get(&[left, right]) {
-                new_pairs.push(([left, middle], *count));
-                new_pairs.push(([middle, right], *count));
-                *count = 0;
-            }
+        if *count > 0
+            && let Some(&middle) = rules.get(&[left, right])
+        {
+            new_pairs.push(([left, middle], *count));
+            new_pairs.push(([middle, right], *count));
+            *count = 0;
         }
     }
 

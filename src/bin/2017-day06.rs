@@ -21,7 +21,7 @@ fn main() -> Result<()> {
             Entry::Vacant(entry) => entry.insert(count),
         };
 
-        let (index_max, &max) = banks.iter().enumerate().rev().max_by_key(|(_, &x)| x).value()?;
+        let (index_max, &max) = banks.iter().enumerate().rev().max_by_key(|&(_, &x)| x).value()?;
 
         let q = max / size;
         let r = max % size;

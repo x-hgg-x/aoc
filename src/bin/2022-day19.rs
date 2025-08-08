@@ -1,6 +1,6 @@
 use aoc::*;
 
-use itertools::{izip, Itertools};
+use itertools::{Itertools, izip};
 use regex::Regex;
 
 use std::iter;

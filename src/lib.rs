@@ -1,4 +1,4 @@
-use eyre::{eyre, Report};
+use eyre::{Report, eyre};
 use itertools::ProcessResults;
 
 use std::env;
@@ -9,7 +9,9 @@ use std::path::{Path, PathBuf};
 pub type Result<T> = eyre::Result<T>;
 
 pub fn setup(input_file: &str) -> Result<Vec<u8>> {
-    env::set_var("RUST_BACKTRACE", "full");
+    // SAFETY: program is single-thread
+    unsafe { env::set_var("RUST_BACKTRACE", "full") };
+
     color_eyre::install().unwrap_or_default();
 
     let mut path = PathBuf::from("inputs").join(Path::new(input_file).file_stem().value()?);

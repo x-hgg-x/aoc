@@ -4,8 +4,8 @@ use eyre::ensure;
 use itertools::Itertools;
 use regex::Regex;
 
-use std::collections::hash_map::{Entry, HashMap};
 use std::collections::VecDeque;
+use std::collections::hash_map::{Entry, HashMap};
 
 struct Valve<'a> {
     id: u8,
@@ -105,7 +105,7 @@ fn main() -> Result<()> {
     let result2 = compute_best_pressures(&connections, start_valve_id, 26)
         .iter()
         .tuple_combinations()
-        .filter(|((&open_valves_1, _), (&open_valves_2, _))| {
+        .filter(|&((&open_valves_1, _), (&open_valves_2, _))| {
             let count1 = open_valves_1.count_ones();
             let count2 = open_valves_2.count_ones();
             let count = (open_valves_1 | open_valves_2).count_ones();

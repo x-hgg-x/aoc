@@ -106,10 +106,10 @@ fn main() -> Result<()> {
             }
         }
 
-        if bot_61_17.is_none() {
-            if let [17, 61] | [61, 17] = bots[bot_number].values[..] {
-                bot_61_17 = Some(bot_number);
-            }
+        if bot_61_17.is_none()
+            && let [17, 61] | [61, 17] = bots[bot_number].values[..]
+        {
+            bot_61_17 = Some(bot_number);
         }
     }
 

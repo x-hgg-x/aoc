@@ -70,18 +70,18 @@ fn compute_target_selection(
 }
 
 fn attack(army: &[Option<Group>], enemy_army: &mut [Option<Group>], group_index: usize, attacks: &[Option<(usize, i64)>], boost: i64, locked: &mut bool) {
-    if let (Some(group), Some((enemy_index, attack_factor))) = (army[group_index].as_ref(), attacks[group_index]) {
-        if let Some(enemy_group) = enemy_army[enemy_index].as_mut() {
-            let casualties = attack_factor * group.unit_count * (group.attack_damage + boost) / enemy_group.unit_hp;
-            enemy_group.unit_count -= casualties;
+    if let (Some(group), Some((enemy_index, attack_factor))) = (army[group_index].as_ref(), attacks[group_index])
+        && let Some(enemy_group) = enemy_army[enemy_index].as_mut()
+    {
+        let casualties = attack_factor * group.unit_count * (group.attack_damage + boost) / enemy_group.unit_hp;
+        enemy_group.unit_count -= casualties;
 
-            if casualties > 0 {
-                *locked = false;
-            }
+        if casualties > 0 {
+            *locked = false;
+        }
 
-            if enemy_group.unit_count < 0 {
-                enemy_army[enemy_index] = None;
-            }
+        if enemy_group.unit_count < 0 {
+            enemy_army[enemy_index] = None;
         }
     }
 }

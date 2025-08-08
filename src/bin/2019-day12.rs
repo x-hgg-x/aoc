@@ -1,6 +1,6 @@
 use aoc::*;
 
-use itertools::{izip, Itertools};
+use itertools::{Itertools, izip};
 use regex::Regex;
 
 fn gcd(mut x: usize, mut y: usize) -> usize {

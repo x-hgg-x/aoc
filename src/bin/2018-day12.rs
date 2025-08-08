@@ -45,7 +45,7 @@ fn step(plants: &mut Plants, buf: &mut VecDeque<u8>, rules: &[u8; 32]) {
 }
 
 fn compute_sum(plants: &mut Plants) -> i64 {
-    (plants.current_start_index..).zip(&plants.pots).filter(|(_, &pot)| pot == 1).map(|(index, _)| index).sum()
+    (plants.current_start_index..).zip(&plants.pots).filter(|&(_, &pot)| pot == 1).map(|(index, _)| index).sum()
 }
 
 fn main() -> Result<()> {

@@ -1,7 +1,7 @@
 use aoc::*;
 
 use eyre::bail;
-use itertools::{iproduct, Itertools};
+use itertools::{Itertools, iproduct};
 
 fn run(mut program: Vec<usize>, noun: usize, verb: usize) -> Result<usize> {
     program[1] = noun;

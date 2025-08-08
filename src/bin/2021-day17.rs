@@ -1,7 +1,7 @@
 use aoc::*;
 
 use eyre::ensure;
-use itertools::{iproduct, Itertools};
+use itertools::{Itertools, iproduct};
 use regex::Regex;
 
 fn main() -> Result<()> {
@@ -36,7 +36,7 @@ fn main() -> Result<()> {
 
             sums.iter()
                 .enumerate()
-                .filter(|(_, &s)| (ymin..=ymax).contains(&(offset - s)))
+                .filter(|&(_, &s)| (ymin..=ymax).contains(&(offset - s)))
                 .map(|(index, _)| index)
                 .minmax()
                 .into_option()
@@ -87,7 +87,7 @@ fn main() -> Result<()> {
             [&mut x_step_iter, &mut y_step_iter]
                 .into_iter()
                 .flat_map(|iter| {
-                    iter.take_while_ref(|(_, &(x, _))| x <= unique_y).filter(|(_, &(x, _))| x == unique_y).map(|(index, _)| index).minmax().into_option()
+                    iter.take_while_ref(|&(_, &(x, _))| x <= unique_y).filter(|&(_, &(x, _))| x == unique_y).map(|(index, _)| index).minmax().into_option()
                 })
                 .next_tuple()
                 .map(|(index_x, index_y)| (index_x.0..=index_x.1, index_y.0..=index_y.1))

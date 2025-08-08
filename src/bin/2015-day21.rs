@@ -1,10 +1,10 @@
 use aoc::*;
 
-use itertools::{iproduct, Itertools};
+use itertools::{Itertools, iproduct};
 use regex::Regex;
-use smallvec::{smallvec, SmallVec};
+use smallvec::{SmallVec, smallvec};
 
-use std::iter::{once, Sum};
+use std::iter::{Sum, once};
 
 const HP: i64 = 100;
 
@@ -85,11 +85,7 @@ fn main() -> Result<()> {
     let (result1, result2) = battles.iter().fold(
         (i64::MAX, i64::MIN),
         |(min_cost, max_cost), &(cost, win)| {
-            if win {
-                (cost.min(min_cost), max_cost)
-            } else {
-                (min_cost, cost.max(max_cost))
-            }
+            if win { (cost.min(min_cost), max_cost) } else { (min_cost, cost.max(max_cost)) }
         },
     );
 

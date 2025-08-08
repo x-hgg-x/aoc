@@ -49,7 +49,7 @@ fn main() -> Result<()> {
         let hash = md5::compute(&buf);
         let udlr_chars = [hash[0] >> 4, hash[0] & 0x0F, hash[1] >> 4, hash[1] & 0x0F];
 
-        udlr_chars.iter().zip(UDLR).filter(|(&x, _)| x >= 11).for_each(|(_, (direction, step))| {
+        udlr_chars.iter().zip(UDLR).filter(|&(&x, _)| x >= 11).for_each(|(_, (direction, step))| {
             let new_position = (state.position.0 + step.0, state.position.1 + step.1);
 
             if (0..4).contains(&new_position.0) && (0..4).contains(&new_position.1) {

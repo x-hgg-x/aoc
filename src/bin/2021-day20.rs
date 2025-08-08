@@ -1,7 +1,7 @@
 use aoc::*;
 
 use eyre::ensure;
-use itertools::{izip, Itertools};
+use itertools::{Itertools, izip};
 
 use std::iter::{self, repeat_n};
 

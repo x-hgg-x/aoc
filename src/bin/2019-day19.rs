@@ -1,7 +1,7 @@
 use aoc::*;
 
 use eyre::bail;
-use itertools::{iproduct, Itertools};
+use itertools::{Itertools, iproduct};
 use smallvec::SmallVec;
 
 use std::collections::HashMap;

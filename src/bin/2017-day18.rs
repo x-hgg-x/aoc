@@ -1,7 +1,7 @@
 use aoc::*;
 
 use eyre::{bail, eyre};
-use itertools::{izip, Itertools};
+use itertools::{Itertools, izip};
 use smallvec::SmallVec;
 
 use std::collections::{HashMap, VecDeque};

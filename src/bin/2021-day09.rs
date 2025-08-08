@@ -1,7 +1,7 @@
 use aoc::*;
 
 use eyre::ensure;
-use itertools::{izip, Itertools};
+use itertools::{Itertools, izip};
 
 use std::iter::{once, repeat_n};
 
@@ -78,13 +78,11 @@ fn main() -> Result<()> {
 
             queue.extend([(row - 1, column), (row + 1, column), (row, column - 1), (row, column + 1)].into_iter().filter_map(|(new_row, new_column)| {
                 let new_index = grid.get_index(new_row, new_column);
-                if grid.tiles[new_index] != 9 {
-                    if let Some(x) = processed.get_mut(new_index) {
-                        if *x {
-                            *x = false;
-                            return Some(new_index);
-                        }
-                    }
+                if grid.tiles[new_index] != 9
+                    && let Some(x @ true) = processed.get_mut(new_index)
+                {
+                    *x = false;
+                    return Some(new_index);
                 }
                 None
             }));
