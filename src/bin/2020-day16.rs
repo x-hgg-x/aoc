@@ -5,7 +5,7 @@ use itertools::Itertools;
 use regex::Regex;
 use smallvec::SmallVec;
 
-use std::iter::once;
+use std::iter;
 
 fn check_rules_mapping(
     mut rule_indices: SmallVec<[Option<u64>; 20]>,
@@ -111,7 +111,7 @@ fn main() -> Result<()> {
     for (index, (_, ranges)) in rules.iter().enumerate() {
         let bit = 1 << index;
 
-        for ticket in once(&self_ticket).chain(&nearby_tickets) {
+        for ticket in iter::chain([&self_ticket], &nearby_tickets) {
             for (value, possibility) in ticket.iter().zip(&mut possibilities) {
                 if !ranges.iter().any(|range| range.contains(value)) {
                     *possibility &= !bit;

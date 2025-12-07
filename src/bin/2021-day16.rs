@@ -211,7 +211,7 @@ fn main() -> Result<()> {
     let input = input.trim();
 
     ensure!(
-        input.len() % 2 == 0,
+        input.len().is_multiple_of(2),
         "input must have an even number of bytes"
     );
 

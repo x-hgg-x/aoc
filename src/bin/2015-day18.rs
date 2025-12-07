@@ -56,10 +56,9 @@ impl Grid {
                         .map(|(x0, x1, x2)| {
                             let center = x1[1];
 
-                            let neighbor_lights = x0
-                                .iter()
-                                .chain([&x1[0], &x1[2]])
-                                .chain(x2)
+                            let neighbor_lights = [x0, &[x1[0], x1[2]], x2]
+                                .into_iter()
+                                .flatten()
                                 .copied()
                                 .map_into::<usize>()
                                 .sum::<usize>();

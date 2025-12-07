@@ -4,7 +4,7 @@ use eyre::ensure;
 use itertools::Itertools;
 use regex::Regex;
 
-use std::iter::once;
+use std::iter;
 
 type Point = (i64, i64);
 
@@ -108,7 +108,7 @@ fn main() -> Result<()> {
     }
 
     let message = (grid.tiles.chunks_exact(grid.width).take(grid.height))
-        .flat_map(|row| row.iter().copied().chain(once(b'\n')))
+        .flat_map(|row| iter::chain(row, b"\n").copied())
         .collect_vec();
 
     let result1 = String::from_utf8_lossy(&message);

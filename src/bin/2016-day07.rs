@@ -39,7 +39,7 @@ fn main() -> Result<()> {
                 .chain(ranges)
                 .chain(once(bytes.len()..bytes.len()))
                 .tuple_windows()
-                .map(|(x, y)| (x.end..y.start))
+                .map(|(x, y)| x.end..y.start)
                 .filter(|x| !x.is_empty())
                 .map(|range| &bytes[range])
                 .collect_vec();

@@ -55,7 +55,7 @@ fn fuel_cost<'a>(
         let required_reaction = &reactions[required.name];
 
         let mut required_reaction_count = remaining / required_reaction.output.quantity;
-        if remaining % required_reaction.output.quantity != 0 {
+        if !remaining.is_multiple_of(required_reaction.output.quantity) {
             required_reaction_count += 1;
         }
 

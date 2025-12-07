@@ -6,6 +6,7 @@ use regex::Regex;
 use smallvec::SmallVec;
 
 use std::collections::{HashMap, VecDeque};
+use std::iter;
 
 enum State {
     NeedInput { outputs: Vec<i64> },
@@ -239,12 +240,7 @@ fn explore(intcode: &mut Intcode) -> Result<ExplorationState> {
 
                 for item in items_iter {
                     items.push(item.to_owned());
-                    intcode.inputs.extend(
-                        (*b"take ")
-                            .into_iter()
-                            .chain(item.bytes())
-                            .map_into::<i64>(),
-                    );
+                    (intcode.inputs).extend(iter::chain(*b"take ", item.bytes()).map_into::<i64>());
                 }
 
                 let doors = regex_doors
@@ -341,12 +337,10 @@ fn go_to_security_checkpoint(intcode: &mut Intcode, exploration_state: &Explorat
     let drop_item_inputs_iter = exploration_state
         .items
         .iter()
-        .flat_map(|item| (*b"drop ").into_iter().chain(item.bytes()))
+        .flat_map(|item| iter::chain(*b"drop ", item.bytes()))
         .map_into::<i64>();
 
-    intcode
-        .inputs
-        .extend(drop_item_inputs_iter.chain(new_inputs.iter().copied()));
+    (intcode.inputs).extend(iter::chain(drop_item_inputs_iter, new_inputs));
 }
 
 fn force_pressure_sensitive_floor(

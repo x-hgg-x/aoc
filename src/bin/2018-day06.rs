@@ -80,7 +80,7 @@ fn main() -> Result<()> {
 
         coordinates
             .iter()
-            .map(|&(x_pt, y_pt)| ((x - x_pt).abs() + (y - y_pt).abs()))
+            .map(|&(x_pt, y_pt)| (x - x_pt).abs() + (y - y_pt).abs())
             .enumerate()
             .for_each(|(coord_index, distance)| {
                 distance_sum += distance;

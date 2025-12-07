@@ -2,7 +2,7 @@ use aoc::*;
 
 use itertools::Itertools;
 
-use std::iter::once;
+use std::iter;
 
 const WIDTH: usize = 25;
 const HEIGHT: usize = 6;
@@ -48,7 +48,7 @@ fn main() -> Result<()> {
     let result2 = String::from_utf8(
         image
             .chunks_exact(WIDTH)
-            .flat_map(|row| row.iter().copied().chain(once(b'\n')))
+            .flat_map(|row| iter::chain(row, b"\n").copied())
             .collect_vec(),
     )?;
 

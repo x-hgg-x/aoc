@@ -6,7 +6,7 @@ use num_complex::Complex;
 use smallvec::SmallVec;
 
 use std::collections::HashMap;
-use std::iter::{once, repeat_n};
+use std::iter::repeat_n;
 
 struct Intcode {
     program: HashMap<usize, i64>,
@@ -182,7 +182,7 @@ fn main() -> Result<()> {
     let width = (max_re - min_re + 1) as usize;
     let height = (max_im - min_im + 1) as usize;
 
-    let mut image = repeat_n(repeat_n(b' ', width).chain(once(b'\n')), height)
+    let mut image = repeat_n(repeat_n(b' ', width).chain([b'\n']), height)
         .flatten()
         .collect_vec();
 

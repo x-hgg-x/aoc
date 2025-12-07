@@ -5,6 +5,7 @@ use itertools::Itertools;
 use regex::Regex;
 
 use std::cmp::Reverse;
+use std::iter;
 
 #[derive(Clone)]
 struct Group<'a> {
@@ -272,10 +273,11 @@ fn parse_initial_battle(input: &str) -> Result<Battle<'_>> {
     let immune_system = parse_army(cap_army.get(1).value()?.as_str())?;
     let infection = parse_army(cap_army.get(2).value()?.as_str())?;
 
-    let target_selection_order = (0..immune_system.len())
-        .map(GroupId::ImmuneSystem)
-        .chain((0..infection.len()).map(GroupId::Infection))
-        .collect_vec();
+    let target_selection_order = iter::chain(
+        (0..immune_system.len()).map(GroupId::ImmuneSystem),
+        (0..infection.len()).map(GroupId::Infection),
+    )
+    .collect_vec();
 
     let attack_order = target_selection_order.clone();
 

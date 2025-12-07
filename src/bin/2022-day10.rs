@@ -4,7 +4,7 @@ use eyre::bail;
 use itertools::Itertools;
 use smallvec::SmallVec;
 
-use std::iter::once;
+use std::iter;
 
 enum Instruction {
     Noop,
@@ -47,7 +47,7 @@ fn run(instructions: &[Instruction]) -> (i64, Vec<u8>) {
 
     let image = buffer
         .chunks_exact(40)
-        .flat_map(|x| x.iter().copied().chain(once(b'\n')))
+        .flat_map(|x| iter::chain(x, b"\n").copied())
         .collect_vec();
 
     (strength, image)

@@ -4,7 +4,7 @@ use eyre::bail;
 use itertools::Itertools;
 use regex::Regex;
 
-use std::iter::{once, repeat_n};
+use std::iter::repeat_n;
 
 enum Fold {
     X(usize),
@@ -80,7 +80,7 @@ fn main() -> Result<()> {
     let width = max_x + 1;
     let height = max_y + 1;
 
-    let mut image = repeat_n(repeat_n(b' ', width).chain(once(b'\n')), height)
+    let mut image = repeat_n(repeat_n(b' ', width).chain([b'\n']), height)
         .flatten()
         .collect_vec();
 

@@ -10,17 +10,12 @@ enum ValueType {
     Max,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Default)]
 enum Node {
+    #[default]
     None,
     Bot(usize, ValueType),
     Output(usize, ValueType),
-}
-
-impl Default for Node {
-    fn default() -> Self {
-        Self::None
-    }
 }
 
 #[derive(Clone, Default)]

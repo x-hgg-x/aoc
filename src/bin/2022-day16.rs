@@ -6,6 +6,7 @@ use regex::Regex;
 
 use std::collections::VecDeque;
 use std::collections::hash_map::{Entry, HashMap};
+use std::iter;
 
 struct Valve<'a> {
     id: u8,
@@ -108,7 +109,7 @@ fn main() -> Result<()> {
                     let valve = &valves[valves_map[link]];
 
                     if let Entry::Vacant(entry) = connections.entry(valve.id) {
-                        let new_path = path.iter().copied().chain([valve.id]).collect_vec();
+                        let new_path = iter::chain(&path, &[valve.id]).copied().collect_vec();
                         entry.insert((new_path.clone(), valve.flow));
                         current.push_back((link, new_path));
                     }

@@ -2,20 +2,22 @@ use aoc::*;
 
 use itertools::Itertools;
 
-use std::iter::once;
+use std::iter;
 
 fn main() -> Result<()> {
     let input = setup(file!())?;
 
-    let locations = once((0i64, 0i64))
-        .chain(input.iter().filter_map(|x| match x {
+    let locations = iter::chain(
+        [(0i64, 0i64)],
+        input.iter().filter_map(|x| match x {
             b'^' => Some((0, 1)),
             b'v' => Some((0, -1)),
             b'<' => Some((-1, 0)),
             b'>' => Some((1, 0)),
             _ => None,
-        }))
-        .collect_vec();
+        }),
+    )
+    .collect_vec();
 
     let result1 = locations
         .iter()

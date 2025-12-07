@@ -89,7 +89,7 @@ fn run(
             for &item in &*buffer {
                 let item = operation.value(item % divisor_product) / relief_factor;
 
-                if item % divisor == 0 {
+                if item.is_multiple_of(divisor) {
                     true_items.push(item);
                 } else {
                     false_items.push(item);

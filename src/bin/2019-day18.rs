@@ -7,6 +7,7 @@ use smallvec::SmallVec;
 
 use std::cmp::Reverse;
 use std::collections::{BinaryHeap, HashMap, HashSet, VecDeque};
+use std::iter;
 
 const DIRECTIONS: [Complex<i64>; 4] = [
     Complex::new(0, 1),
@@ -188,7 +189,7 @@ fn main() -> Result<()> {
 
     let result1 = solve(&map)?;
 
-    for direction in DIRECTIONS.into_iter().chain([0.into()]) {
+    for direction in iter::chain(DIRECTIONS, [0.into()]) {
         let index = map.get_index(map.initial_position + direction);
         map.tiles[index] = b'#';
     }

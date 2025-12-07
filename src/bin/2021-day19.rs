@@ -190,7 +190,7 @@ fn compute_scanner_frames(scanners: &mut [Scanner], mut overlaps: VecDeque<Overl
         let diff2 = pair_2a[1].sub(&pair_2a[0]);
 
         ensure!(
-            diff1.iter().chain(&diff2).all(|&v| v != 0),
+            iter::chain(diff1, diff2).all(|v| v != 0),
             "all differences of beacon pairs should have non-zero coordinates"
         );
 

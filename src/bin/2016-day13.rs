@@ -22,7 +22,8 @@ fn main() -> Result<()> {
 
     let is_valid = |&Point { x, y }: &Point| {
         let is_pos = x >= 0 && y >= 0;
-        is_pos && (x * x + 3 * x + 2 * x * y + y + y * y + favorite_number).count_ones() % 2 == 0
+        let res = x * x + 3 * x + 2 * x * y + y + y * y + favorite_number;
+        is_pos && res.count_ones().is_multiple_of(2)
     };
 
     let start = Point::new(1, 1);

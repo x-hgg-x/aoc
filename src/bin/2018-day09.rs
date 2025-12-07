@@ -5,7 +5,7 @@ use regex::Regex;
 use std::collections::VecDeque;
 
 fn step(marbles: &mut VecDeque<u64>, scores: &mut [u64], marble: u64) -> Result<()> {
-    if marble % 23 == 0 {
+    if marble.is_multiple_of(23) {
         marbles.rotate_right(7);
         scores[marble as usize % scores.len()] += marble + marbles.pop_back().value()?;
         marbles.rotate_left(1);

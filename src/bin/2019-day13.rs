@@ -7,7 +7,7 @@ use smallvec::SmallVec;
 
 use std::collections::HashMap;
 use std::io::{StdoutLock, Write};
-use std::iter::{once, repeat_n};
+use std::iter::repeat_n;
 use std::time::Duration;
 
 enum State {
@@ -232,7 +232,7 @@ fn play(mut intcode: Intcode, width: usize, height: usize, origin: Complex<i64>)
     let mut paddle_x = 0i64;
     let mut score = 0;
 
-    let mut image = repeat_n(repeat_n(b' ', width).chain(once(b'\n')), height)
+    let mut image = repeat_n(repeat_n(b' ', width).chain([b'\n']), height)
         .flatten()
         .collect_vec();
 

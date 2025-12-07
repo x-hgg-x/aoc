@@ -2,7 +2,7 @@ use aoc::*;
 
 use itertools::Itertools;
 
-use std::iter::once;
+use std::iter;
 
 fn get_code(input: &[u8], keypad: &[&[u32]], start_pos: (usize, usize)) -> Result<String> {
     let (height, width) = (keypad.len(), keypad[0].len());
@@ -32,7 +32,7 @@ fn get_code(input: &[u8], keypad: &[&[u32]], start_pos: (usize, usize)) -> Resul
 fn main() -> Result<()> {
     let input = setup(file!())?;
     let input = String::from_utf8_lossy(&input);
-    let input = input.lines().chain(once("")).join("\n");
+    let input = iter::chain(input.lines(), [""]).join("\n");
     let input = input.as_bytes();
 
     let keypad1 = [&[1, 2, 3][..], &[4, 5, 6][..], &[7, 8, 9][..]];

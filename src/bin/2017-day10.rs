@@ -1,3 +1,5 @@
+use std::iter;
+
 use aoc::*;
 
 use itertools::Itertools;
@@ -24,10 +26,8 @@ fn knot_hash_round(
 }
 
 fn knot_hash(input: &[u8]) -> Result<String> {
-    let lengths = input
-        .iter()
+    let lengths = iter::chain(input, &[17, 31, 73, 47, 23])
         .map(|&x| x as usize)
-        .chain([17, 31, 73, 47, 23])
         .collect_vec();
 
     let mut list = (0..=u8::MAX).collect_vec();

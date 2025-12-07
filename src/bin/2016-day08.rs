@@ -4,7 +4,7 @@ use itertools::Itertools;
 use regex::Regex;
 use smallvec::SmallVec;
 
-use std::iter::once;
+use std::iter;
 
 const WIDTH: usize = 50;
 const HEIGHT: usize = 6;
@@ -54,7 +54,7 @@ fn main() -> Result<()> {
 
     let message = pixels
         .chunks_exact(WIDTH)
-        .flat_map(|row| row.iter().copied().chain(once(b'\n')))
+        .flat_map(|row| iter::chain(row, b"\n").copied())
         .collect_vec();
 
     let result1 = count;

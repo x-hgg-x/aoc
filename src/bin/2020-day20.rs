@@ -479,7 +479,7 @@ fn main() -> Result<()> {
     }
 
     for dependencies in graph.values_mut() {
-        dependencies.sort_unstable_by_key(|&(id, ..)| (id));
+        dependencies.sort_unstable_by_key(|&(id, ..)| id);
         dependencies.dedup_by_key(|&mut (id, ..)| id);
     }
 

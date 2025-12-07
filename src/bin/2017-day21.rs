@@ -123,7 +123,7 @@ fn run(
     rules_2x2: &[Option<Mat3x3>],
     rules_3x3: &[Option<Mat4x4>],
 ) -> Result<()> {
-    if grid.size % 2 == 0 {
+    if grid.size.is_multiple_of(2) {
         apply_rules::<Mat2x2, _>(grid, buf, rules_2x2, 2, 3)?;
     } else {
         apply_rules::<Mat3x3, _>(grid, buf, rules_3x3, 3, 4)?;

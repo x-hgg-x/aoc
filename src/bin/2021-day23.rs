@@ -280,8 +280,7 @@ fn solve(initial_state: State) -> u64 {
                             .take_while(|&(_, &value)| value == EMPTY);
 
                         current_states.extend(
-                            iter_left
-                                .chain(iter_right)
+                            iter::chain(iter_left, iter_right)
                                 .filter(|&(index, _)| !ROOM_INDICES.contains(&(index as u8)))
                                 .map(|(index, _)| {
                                     let mut burrow = state.burrow.clone();
