@@ -4,7 +4,7 @@ use itertools::ProcessResults;
 use std::env;
 use std::fs;
 use std::iter::Sum;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 pub type Result<T> = eyre::Result<T>;
 
@@ -14,7 +14,7 @@ pub fn setup(input_file: &str) -> Result<Vec<u8>> {
 
     color_eyre::install().unwrap_or_default();
 
-    let mut path = PathBuf::from("inputs").join(Path::new(input_file).file_stem().value()?);
+    let mut path = Path::new("inputs").join(Path::new(input_file).file_stem().value()?);
     path.set_extension("txt");
     Ok(fs::read(path)?)
 }
