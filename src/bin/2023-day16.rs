@@ -32,7 +32,7 @@ impl BeamFlag {
     }
 }
 
-#[derive(Copy, Clone, PartialEq, Eq, Hash)]
+#[derive(Copy, Clone)]
 enum Tile {
     Empty,
     SplitHorizontal,
